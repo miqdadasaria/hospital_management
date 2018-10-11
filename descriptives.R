@@ -21,17 +21,7 @@ non_medics %>% summarise(sum(FTE))
 
 afc_pay = tbl(con, "pay_scale") %>% 
   collect() %>%
-  bind_rows(data_frame(YEAR=2017,AFC_BAND="Very Senior Manager",BOTTOM=142500,AVERAGE=142500,TOP=142500)) 
-
-subtotals = non_medics %>% 
-  group_by(ORG_CODE, MAIN_STAFF_GROUP_NAME, STAFF_GROUP_1_NAME, STAFF_GROUP_2_NAME, AREA, LEVEL, AFC_BAND) %>%
-  filter(grepl("Band 8", AFC_BAND) | grepl("Band 9", AFC_BAND) | grepl("Very", AFC_BAND)) %>%
-  summarise(FTE = sum(FTE)) %>%
-  left_join(afc_pay %>% select(AFC_BAND,PAY=TOP)) %>%
-  mutate(MANAGEMENT_SPEND=round(FTE*PAY)) %>%
-  ungroup()
-
-subtotals %>% group_by(AFC_BAND) %>% summarise(sum(FTE))
+  bind_rows(data_frame(YEAR=2017,AFC_BAND=c("Very Senior Manager","Non AfC Grade"),BOTTOM=142500,AVERAGE=142500,TOP=142500)) 
 
 medics = tbl(con, "medical_staff") %>% collect()
 
@@ -40,67 +30,114 @@ providers = tbl(con, "provider") %>%
   left_join(tbl(con, "ae_target") %>% select(ORG_CODE,AE_SCORE)) %>%
   left_join(tbl(con, "cqc_rating") %>% filter(POPULATION=="Overall" & QUESTION=="Overall") %>% select(ORG_CODE,RATING_SCORE)) %>%
   left_join(tbl(con, "cqc_rating_lookup"), by = c("RATING_SCORE"="SCORE")) %>%
-  left_join(tbl(con, "nhs_ss_management_score") %>% filter(YEAR==2017 & QUESTION=="overall") %>% mutate(MANAGEMENT_QUALITY=((VALUE-1)/4)*100) %>% select(ORG_CODE, MANAGEMENT_QUALITY)) %>%
+  left_join(tbl(con, "nhs_ss_management_score") %>% filter(YEAR==2017 & QUESTION=="overall") %>% mutate(MANAGEMENT_QUALITY=round(((VALUE-1)/4)*100,1)) %>% select(ORG_CODE, MANAGEMENT_QUALITY)) %>%
   left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2016) %>% select(ORG_CODE, TOTAL_EPISODES_2016 = TOTAL_EPISODES)) %>%
   left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2017) %>% select(ORG_CODE, TOTAL_EPISODES_2017 = TOTAL_EPISODES)) %>%
   left_join(tbl(con, "hee_region")) %>%
   collect() %>%
-  left_join(subtotals %>% group_by(ORG_CODE) %>% summarise(MANAGEMENT_SPEND=sum(MANAGEMENT_SPEND), MANAGEMENT_FTE=sum(FTE))) %>%
-  mutate(MAN_SPEND_PER_1000_FCE = MANAGEMENT_SPEND*1000/TOTAL_EPISODES_2016, 
-         MAN_FTE_PER_1000_FCE = MANAGEMENT_FTE*1000/TOTAL_EPISODES_2016,
-         RATING = factor(RATING_SCORE,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding")),
-         QUALITY_WEIGHTED_SPEND = MAN_SPEND_PER_1000_FCE*MANAGEMENT_QUALITY/100)
+  mutate(RATING = factor(RATING_SCORE,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
+  filter(ORG_TYPE == "Acute") 
+ 
+dbDisconnect(con)
 
-acute_providers = providers %>% filter(ORG_TYPE == "Acute" & MAN_FTE_PER_1000_FCE<4)
+attach_management_measure = function(providers, afc_pay, non_medics, medics, afc_8, level_1_manager, central_functions){
+  managers = non_medics %>% 
+    group_by(ORG_CODE, MAIN_STAFF_GROUP_NAME, STAFF_GROUP_1_NAME, STAFF_GROUP_2_NAME, AREA, LEVEL, AFC_BAND)
+  
+  if(afc_8){
+    managers = managers %>%
+      filter(grepl("Band 8", AFC_BAND) | grepl("Band 9", AFC_BAND) | grepl("Very", AFC_BAND) | grepl("Non AfC", AFC_BAND))
+  } 
+  
+  if(level_1_manager){
+    managers = managers %>%
+      filter(grepl("Managers", STAFF_GROUP_1_NAME) | grepl("Senior managers", STAFF_GROUP_1_NAME))
+  }
+  
+  if(central_functions){
+    managers = managers %>%
+      filter(grepl("Central", AREA))
+  }
 
-# plot some basic correlations
+  managers = managers %>%
+    summarise(FTE = sum(FTE)) %>%
+    left_join(afc_pay %>% select(AFC_BAND,PAY=TOP)) %>%
+    mutate(MANAGEMENT_SPEND=round(FTE*PAY)) %>%
+    ungroup()
+  
+  results = providers %>%
+    left_join(managers %>% group_by(ORG_CODE) %>% 
+              summarise(MANAGEMENT_SPEND=sum(MANAGEMENT_SPEND), MANAGEMENT_FTE=sum(FTE))) %>%
+    mutate(MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES_2016,0), 
+           MAN_FTE_PER_1000_FCE = round(MANAGEMENT_FTE*1000/TOTAL_EPISODES_2016,2),
+           QUALITY_WEIGHTED_FTE = round(MAN_FTE_PER_1000_FCE*MANAGEMENT_QUALITY/100,2),
+           QUALITY_WEIGHTED_SPEND = round(MAN_SPEND_PER_1000_FCE*MANAGEMENT_QUALITY/100,0),
+           HEE_REGION_NAME = gsub("Health Education ","",HEE_REGION_NAME),
+           ORG_NAME = gsub("NHS Trust","",ORG_NAME),
+           ORG_NAME = gsub("NHS Foundation Trust","",ORG_NAME)) %>%
+    select(ORG_CODE,
+           ORG_NAME,
+           HEE_REGION=HEE_REGION_NAME,
+           ADMISSIONS=TOTAL_EPISODES_2016,
+           CQC_RATING=RATING,
+           AE_SCORE,
+           NHS_SS=MANAGEMENT_QUALITY,
+           MANAGEMENT_FTE,
+           MANAGEMENT_SPEND,
+           MAN_FTE_PER_1000_FCE,
+           MAN_SPEND_PER_1000_FCE,
+           QUALITY_WEIGHTED_FTE,
+           QUALITY_WEIGHTED_SPEND)  
+  print(nrow(results))
+  return(results)
+}
 
-fce_vs_fte = ggplot(data=acute_providers) +
-  geom_point(aes(TOTAL_EPISODES_2016, MANAGEMENT_FTE))
 
-fce_vs_spend = ggplot(data=acute_providers) +
-  geom_point(aes(TOTAL_EPISODES_2016, MANAGEMENT_SPEND))
 
-fte_vs_nss = ggplot(data=acute_providers,
-                    aes(MAN_FTE_PER_1000_FCE, MANAGEMENT_QUALITY)) +
-  geom_point(aes(size=TOTAL_EPISODES_2016)) +
-  geom_smooth(method = "lm", aes(weight=TOTAL_EPISODES_2016), se=FALSE) +
-  geom_text(aes(label=ifelse(MAN_FTE_PER_1000_FCE>2,ORG_CODE,'')),hjust=1,vjust=0) +
-  ylab("Overall Management Score (NHS Staff Survey)") +
-  xlab("Managers per 1000 FCE (FTE)") +
-  facet_wrap(RATING~.)
 
-fte_vs_ae = ggplot(data=acute_providers,
-                   aes(MAN_FTE_PER_1000_FCE,AE_SCORE)) +
-  geom_point(aes(size=TOTAL_EPISODES_2016)) +
-  geom_text(aes(label=ifelse(MAN_FTE_PER_1000_FCE>2,ORG_CODE,'')),hjust=1,vjust=0) +
-  geom_smooth(method = "lm", aes(weight=TOTAL_EPISODES_2016), se=FALSE) +
-  ylab("A&E 4 hour target met (%)") +
-  xlab("Managers per 1000 FCE (FTE)") 
-
-qual_vs_ae = ggplot(data=acute_providers,
-                   aes(MANAGEMENT_QUALITY,AE_SCORE)) +
-  geom_point(aes(size=TOTAL_EPISODES_2016)) +
-  geom_smooth(method = "lm", aes(weight=TOTAL_EPISODES_2016), se=FALSE) +
-  ylab("A&E 4 hour target met (%)") +
-  xlab("Overall Management Score (NHS Staff Survey)") 
-
-spend_vs_ae = ggplot(data=acute_providers,
-                   aes(MAN_SPEND_PER_1000_FCE,AE_SCORE)) +
-  geom_point(aes(size=TOTAL_EPISODES_2016)) +
-  geom_text(aes(label=ifelse(MAN_FTE_PER_1000_FCE>2,ORG_CODE,'')),hjust=1,vjust=0) +
-  geom_smooth(method = "lm", aes(weight=TOTAL_EPISODES_2016), se=FALSE) +
-  ylab("A&E 4 hour target met (%)") +
-  xlab("Spend on managers per 1000 FCE (£)")
-
-qs_vs_ae = ggplot(data=acute_providers,
-                     aes(QUALITY_WEIGHTED_SPEND,AE_SCORE)) +
-  geom_point(aes(size=TOTAL_EPISODES_2016)) +
-  geom_text(aes(label=ifelse(MAN_FTE_PER_1000_FCE>2,ORG_CODE,'')),hjust=1,vjust=0) +
-  geom_smooth(method = "lm", aes(weight=TOTAL_EPISODES_2016), se=FALSE) +
-  ylab("A&E 4 hour target met (%)") +
-  xlab("Quality weighted spend on mangers per 1000 FCE (£)")
-
-db_list_tables(con)
-
-dbDisconnect(db)
+scatter_plot = function(acute_providers, x_var, y_var, size_var, trim, trend_line, facet_var){
+  
+  variables = data_frame(
+    code=c("ae","cqc_rating","hee_region","nhs_ss","fce","fte","spend","fte_fce","spend_fce","fte_quality","spend_quality"),
+    variable=c("AE_SCORE","CQC_RATING","HEE_REGION","NHS_SS","ADMISSIONS","MANAGEMENT_FTE","MANAGEMENT_SPEND","MAN_FTE_PER_1000_FCE","MAN_SPEND_PER_1000_FCE","QUALITY_WEIGHTED_FTE","QUALITY_WEIGHTED_SPEND"),
+    label=c("A&E 4 hour wait target met (%)","CQC Overall Rating","Health Education England Region","NHS staff survey consolidated management score","Total inpatient admissions (2016/17)","Management (FTE)","Management Spend (£)","Management (FTE per 1000 admissions)","Management Spend (£ per 1000 admissions)","Quality adjusted (FTE per 1000 admissions)","Quality adjusted (£ per 1000 admissions)")
+  )
+  
+  x = variables %>% filter(code==x_var) %>% select(variable, label)
+  y = variables %>% filter(code==y_var) %>% select(variable, label)
+  if(size_var != "none"){
+    s = variables %>% filter(code==size_var) %>% select(variable)
+  }
+  if(facet_var != "none"){
+    f = variables %>% filter(code==facet_var) %>% select(variable)
+  }
+  
+  graph_data = acute_providers %>% 
+    filter(MAN_FTE_PER_1000_FCE<trim)
+  
+  plot = ggplot(data=graph_data, aes_string(x$variable, y$variable)) +
+    ylab(y$label) +
+    xlab(x$label)
+  
+  if(size_var != "none"){
+    plot = plot + geom_point(aes_string(size=s$variable))
+  } else {
+    plot = plot + geom_point()
+  }
+  
+  if(trend_line){
+    plot = plot + geom_smooth(method = "lm", aes(weight=ADMISSIONS), se=FALSE)
+  }
+  
+  if(facet_var != "none"){
+    plot = plot + facet_wrap(f$variable)
+  }
+  
+  plot = plot + theme_bw() + theme(panel.grid.major = element_blank(), 
+                            panel.grid.minor = element_blank(), 
+                            plot.title = element_blank(),
+                            plot.margin = unit(c(1, 1, 1, 1), "lines"),
+                            text=element_text(family = "Roboto", colour = "#3e3f3a"))
+  
+  return(plot)
+}

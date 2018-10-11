@@ -36,3 +36,5 @@ vignettes/*.pdf
 rsconnect/
 >>>>>>> 54f004fc8b7b9f6ff999a14f69dd14232d42f584
 .Rproj.user
+
+.DS_Store
