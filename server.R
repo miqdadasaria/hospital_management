@@ -14,7 +14,8 @@ shinyServer(function(input, output, session) {
       providers, 
       afc_pay, 
       non_medics, 
-      medics, 
+      medics,
+      input$specialist,
       input$afc_8, 
       input$level_1_manager, 
       input$central_functions)
@@ -34,7 +35,7 @@ shinyServer(function(input, output, session) {
         style = 'bootstrap',
 	      rownames = FALSE,
 	      colnames = gsub("_"," ",colnames(table)),
-	      options = list(pageLength = 4, autoWidth = TRUE, dom='ftrpi'))
+	      options = list(pageLength = 8, autoWidth = TRUE, dom='ftrpi'))
 	  })
 	})
 	

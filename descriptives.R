@@ -2,11 +2,8 @@ library("tidyverse")
 library("RSQLite")
 library("dbplyr")
 
-db_file = "/Users/asariam/OneDrive - London School of Economics/NHS management/data/csv/NHS_management.sqlite3"
+db_file = "data/NHS_management.sqlite3"
 con = dbConnect(SQLite(), dbname=db_file)
-
-tbl(con, "descriptives")
-dbListTables(con)
 
 # summarise descriptives of different definitions of manager
 non_medics = tbl(con, "non_medical_staff") %>% 
@@ -17,8 +14,6 @@ non_medics = tbl(con, "non_medical_staff") %>%
   select(ORG_CODE, MAIN_STAFF_GROUP_NAME, STAFF_GROUP_1_NAME, STAFF_GROUP_2_NAME, AREA, LEVEL, AFC_BAND, FTE) %>%
   collect()
 
-non_medics %>% summarise(sum(FTE))
-
 afc_pay = tbl(con, "pay_scale") %>% 
   collect() %>%
   bind_rows(data_frame(YEAR=2017,AFC_BAND=c("Very Senior Manager","Non AfC Grade"),BOTTOM=142500,AVERAGE=142500,TOP=142500)) 
@@ -28,19 +23,22 @@ medics = tbl(con, "medical_staff") %>% collect()
 # provider information and performance
 providers = tbl(con, "provider") %>%
   left_join(tbl(con, "ae_target") %>% select(ORG_CODE,AE_SCORE)) %>%
+  left_join(tbl(con, "rtt_target") %>% select(ORG_CODE,RTT_SCORE)) %>%
+  left_join(tbl(con, "dtoc") %>% select(ORG_CODE,ACUTE_DTOC,NON_ACUTE_DTOC,TOTAL_DTOC)) %>%
   left_join(tbl(con, "cqc_rating") %>% filter(POPULATION=="Overall" & QUESTION=="Overall") %>% select(ORG_CODE,RATING_SCORE)) %>%
-  left_join(tbl(con, "cqc_rating_lookup"), by = c("RATING_SCORE"="SCORE")) %>%
+  left_join(tbl(con, "cqc_rating") %>% filter(POPULATION=="Overall" & QUESTION=="Well-led") %>% select(ORG_CODE,RATING_SCORE_LEADERSHIP=RATING_SCORE)) %>%
   left_join(tbl(con, "nhs_ss_management_score") %>% filter(YEAR==2017 & QUESTION=="overall") %>% mutate(MANAGEMENT_QUALITY=round(((VALUE-1)/4)*100,1)) %>% select(ORG_CODE, MANAGEMENT_QUALITY)) %>%
   left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2016) %>% select(ORG_CODE, TOTAL_EPISODES_2016 = TOTAL_EPISODES)) %>%
   left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2017) %>% select(ORG_CODE, TOTAL_EPISODES_2017 = TOTAL_EPISODES)) %>%
   left_join(tbl(con, "hee_region")) %>%
   collect() %>%
   mutate(RATING = factor(RATING_SCORE,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
+  mutate(RATING_LEADERSHIP = factor(RATING_SCORE_LEADERSHIP,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
   filter(ORG_TYPE == "Acute") 
  
 dbDisconnect(con)
 
-attach_management_measure = function(providers, afc_pay, non_medics, medics, afc_8, level_1_manager, central_functions){
+attach_management_measure = function(providers, afc_pay, non_medics, medics, specialist, afc_8, level_1_manager, central_functions){
   managers = non_medics %>% 
     group_by(ORG_CODE, MAIN_STAFF_GROUP_NAME, STAFF_GROUP_1_NAME, STAFF_GROUP_2_NAME, AREA, LEVEL, AFC_BAND)
   
@@ -65,7 +63,13 @@ attach_management_measure = function(providers, afc_pay, non_medics, medics, afc
     mutate(MANAGEMENT_SPEND=round(FTE*PAY)) %>%
     ungroup()
   
-  results = providers %>%
+  results = providers
+  
+  if(!specialist){
+    results = results %>% filter(SPECIALIST==FALSE)
+  }
+  
+  results = results %>%
     left_join(managers %>% group_by(ORG_CODE) %>% 
               summarise(MANAGEMENT_SPEND=sum(MANAGEMENT_SPEND), MANAGEMENT_FTE=sum(FTE))) %>%
     mutate(MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES_2016,0), 
@@ -77,10 +81,16 @@ attach_management_measure = function(providers, afc_pay, non_medics, medics, afc
            ORG_NAME = gsub("NHS Foundation Trust","",ORG_NAME)) %>%
     select(ORG_CODE,
            ORG_NAME,
+           SPECIALIST,
            HEE_REGION=HEE_REGION_NAME,
            ADMISSIONS=TOTAL_EPISODES_2016,
            CQC_RATING=RATING,
+           CQC_WELL_LED_RATING=RATING_LEADERSHIP,
+           RTT_SCORE,
            AE_SCORE,
+           ACUTE_DTOC,
+           NON_ACUTE_DTOC,
+           TOTAL_DTOC,
            NHS_SS=MANAGEMENT_QUALITY,
            MANAGEMENT_FTE,
            MANAGEMENT_SPEND,
@@ -98,9 +108,9 @@ attach_management_measure = function(providers, afc_pay, non_medics, medics, afc
 scatter_plot = function(acute_providers, x_var, y_var, size_var, trim, trend_line, facet_var){
   
   variables = data_frame(
-    code=c("ae","cqc_rating","hee_region","nhs_ss","fce","fte","spend","fte_fce","spend_fce","fte_quality","spend_quality"),
-    variable=c("AE_SCORE","CQC_RATING","HEE_REGION","NHS_SS","ADMISSIONS","MANAGEMENT_FTE","MANAGEMENT_SPEND","MAN_FTE_PER_1000_FCE","MAN_SPEND_PER_1000_FCE","QUALITY_WEIGHTED_FTE","QUALITY_WEIGHTED_SPEND"),
-    label=c("A&E 4 hour wait target met (%)","CQC Overall Rating","Health Education England Region","NHS staff survey consolidated management score","Total inpatient admissions (2016/17)","Management (FTE)","Management Spend (£)","Management (FTE per 1000 admissions)","Management Spend (£ per 1000 admissions)","Quality adjusted (FTE per 1000 admissions)","Quality adjusted (£ per 1000 admissions)")
+    code=c("acute_dtoc","non_acute_dtoc","total_dtoc","rtt","ae","cqc_rating","cqc_well_led_rating","hee_region","nhs_ss","fce","fte","spend","fte_fce","spend_fce","fte_quality","spend_quality"),
+    variable=c("ACUTE_DTOC","NON_ACUTE_DTOC","TOTAL_DTOC","RTT_SCORE","AE_SCORE","CQC_RATING","CQC_WELL_LED_RATING","HEE_REGION","NHS_SS","ADMISSIONS","MANAGEMENT_FTE","MANAGEMENT_SPEND","MAN_FTE_PER_1000_FCE","MAN_SPEND_PER_1000_FCE","QUALITY_WEIGHTED_FTE","QUALITY_WEIGHTED_SPEND"),
+    label=c("Acute delayed transfers of care","Non-acute delayed transfers of care","Total delayed transfers of care","Referral to treatment in 18 weeks (%)","A&E 4 hour wait target met (%)","CQC Overall Rating","CQC Well Led Rating","Health Education England Region","NHS staff survey consolidated management score","Total inpatient admissions (2016/17)","Management (FTE)","Management Spend (£)","Management (FTE per 1000 admissions)","Management Spend (£ per 1000 admissions)","Quality adjusted (FTE per 1000 admissions)","Quality adjusted (£ per 1000 admissions)")
   )
   
   x = variables %>% filter(code==x_var) %>% select(variable, label)

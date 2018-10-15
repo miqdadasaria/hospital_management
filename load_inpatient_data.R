@@ -1,6 +1,6 @@
 library("tidyverse")
 
-setwd("/Users/asariam/OneDrive - London School of Economics/NHS management/data/csv/")
+setwd("data/csv")
 inpatient = read_csv("inpatient_data.csv")
 inpatient = inpatient %>% mutate(ORG_CODE = str_remove(ORG_CODE, "-X"))
 hee_region = read_csv("hee_region.csv")
@@ -16,6 +16,8 @@ cqc_rating_lookup = read_csv("CQC_ratings_lookup.csv")
 nhs_ss = read_csv("NHS_SS_management.csv")
 nhs_ss_questions = read_csv("NHS_SS_questions.csv")
 ae_target = read_csv("AE_target_Q42017.csv")
+dtoc = read_csv("DTOC_august_2018.csv")
+rtt = read_csv("RTT-March-2018-full-extract.csv")
 
 # calculate total score per question by provider
 # and convert data to long 'tidy' format
@@ -37,7 +39,7 @@ nhs_ss = nhs_ss %>% filter(SCORE=="TOTAL_SCORE") %>%
   bind_rows(nhs_ss)
 
 library("RSQLite")
-db = dbConnect(SQLite(), dbname="NHS_management.sqlite3")
+db = dbConnect(SQLite(), dbname="../NHS_management.sqlite3")
 dbWriteTable(conn = db, name = "inpatient_data", inpatient, overwrite=TRUE)
 dbWriteTable(conn = db, name = "hee_region", hee_region, overwrite=TRUE)
 dbWriteTable(conn = db, name = "medical_staff", medical_staff, overwrite=TRUE)
@@ -52,6 +54,8 @@ dbWriteTable(conn = db, name = "cqc_rating_lookup", cqc_rating_lookup, overwrite
 dbWriteTable(conn = db, name = "nhs_ss_management_score", nhs_ss, overwrite=TRUE)
 dbWriteTable(conn = db, name = "nhs_ss_questions", nhs_ss_questions, overwrite=TRUE)
 dbWriteTable(conn = db, name = "ae_target", ae_target, overwrite=TRUE)
+dbWriteTable(conn = db, name = "dtoc", dtoc, overwrite=TRUE)
+dbWriteTable(conn = db, name = "rtt_target", rtt, overwrite=TRUE)
 
 dbDisconnect(db)
 

@@ -23,11 +23,15 @@ shinyUI(fluidPage(theme = "sandstone.css",
 	                   "NHS staff survey management score" = "nhs_ss", 
 	                   "Quality adjusted (FTE per 1000 admissions)" = "fte_quality", 
 	                   "Quality adjusted (£ per 1000 admissions)" = "spend_quality"), 
-	              selected="nhs_ss"),
+	              selected="fte_fce"),
 	  
 	  selectInput("y_var", 
 	              "Outcome variable to plot on y-axis:",
-	              list("A&E target" = "ae", 
+	              list("A&E target" = "ae",
+	                   "RTT target" = "rtt",
+	                   "Delayed transfers of care (acute)" = "acute_dtoc",
+	                   "Delayed transfers of care (non-acute)" = "non_acute_dtoc",
+	                   "Delayed transfers of care (total)" = "total_dtoc",
 	                   "NHS staff survey management score" = "nhs_ss"), 
 	              selected="ae"),
 	  
@@ -39,13 +43,16 @@ shinyUI(fluidPage(theme = "sandstone.css",
 	  
 	  sliderInput("trim", 
 	              "Plot trusts with upto managers per 1000 inpatient admissions", 
-	              min=0, max=20, value=4),
+	              min=0, max=31, value=4),
 	  
 	  checkboxInput("trend_line", label="Show linear trend line on the plot", value=TRUE),
-	
+
+	  checkboxInput("specialist", label="Include specialist trusts", value=TRUE),
+	  	
 	  selectInput("facet_var", 
 	              "Split plots by:",
-	              list("CQC overall rating" = "cqc_rating", 
+	              list("CQC overall rating" = "cqc_rating",
+	                   "CQC well-led rating" = "cqc_well_led_rating",
 	                   "HEE Region" = "hee_region", 
 	                   "None" = "none"), 
 	              selected="none"),
@@ -71,7 +78,7 @@ shinyUI(fluidPage(theme = "sandstone.css",
 	      textOutput("ccg"),
 	      tabsetPanel(id="tabset",
 	        tabPanel("Scatter", plotOutput("scatter_plot")),
-				  tabPanel("Table", dataTableOutput("trust_data")),
+				  tabPanel("Table", div(dataTableOutput("trust_data"), style = "font-size:70%")),
 				  tabPanel("Notes", tags$div(HTML("<p>&nbsp;<p>
 
                                            <dl class='dl-horizontal'>

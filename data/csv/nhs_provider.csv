@@ -1,0 +1,432 @@
+﻿ORG_CODE,ORG_NAME,ORG_TYPE,HEE_REGION_CODE,SPECIALIST
+00D ,"NHS Durham Dales, Easington and Sedgefield CCG ",Clinical Commissioning Group,YDF30,FALSE
+00J ,NHS North Durham CCG ,Clinical Commissioning Group,YDF30,FALSE
+00M ,NHS South Tees CCG ,Clinical Commissioning Group,YDF30,FALSE
+00P ,NHS Sunderland CCG ,Clinical Commissioning Group,YDF30,FALSE
+00Q ,NHS Blackburn with Darwen CCG ,Clinical Commissioning Group,YDF31,FALSE
+00R ,NHS Blackpool CCG ,Clinical Commissioning Group,YDF31,FALSE
+00T ,NHS Bolton CCG ,Clinical Commissioning Group,YDF31,FALSE
+00V ,NHS Bury CCG ,Clinical Commissioning Group,YDF31,FALSE
+00X ,NHS Chorley and South Ribble CCG ,Clinical Commissioning Group,YDF31,FALSE
+00Y ,NHS Oldham CCG ,Clinical Commissioning Group,YDF31,FALSE
+01A ,NHS East Lancashire CCG ,Clinical Commissioning Group,YDF31,FALSE
+01C ,NHS Eastern Cheshire CCG ,Clinical Commissioning Group,YDF31,FALSE
+01D ,"NHS Heywood, Middleton and Rochdale CCG ",Clinical Commissioning Group,YDF31,FALSE
+01E ,NHS Greater Preston CCG ,Clinical Commissioning Group,YDF31,FALSE
+01F ,NHS Halton CCG ,Clinical Commissioning Group,YDF31,FALSE
+01G ,NHS Salford CCG ,Clinical Commissioning Group,YDF31,FALSE
+01H ,NHS North Cumbria CCG ,Clinical Commissioning Group,YDF31,FALSE
+01J ,NHS Knowsley CCG ,Clinical Commissioning Group,YDF31,FALSE
+01K ,NHS Morecambe Bay CCG ,Clinical Commissioning Group,YDF31,FALSE
+01R ,NHS South Cheshire CCG ,Clinical Commissioning Group,YDF31,FALSE
+01T ,NHS South Sefton CCG ,Clinical Commissioning Group,YDF31,FALSE
+01W ,NHS Stockport CCG ,Clinical Commissioning Group,YDF31,FALSE
+01X ,NHS St Helens CCG ,Clinical Commissioning Group,YDF31,FALSE
+01Y ,NHS Tameside and Glossop CCG ,Clinical Commissioning Group,YDF31,FALSE
+02A ,NHS Trafford CCG ,Clinical Commissioning Group,YDF31,FALSE
+02D ,NHS Vale Royal CCG ,Clinical Commissioning Group,YDF31,FALSE
+02E ,NHS Warrington CCG ,Clinical Commissioning Group,YDF31,FALSE
+02F ,NHS West Cheshire CCG ,Clinical Commissioning Group,YDF31,FALSE
+02G ,NHS West Lancashire CCG ,Clinical Commissioning Group,YDF31,FALSE
+02H ,NHS Wigan Borough CCG ,Clinical Commissioning Group,YDF31,FALSE
+02M ,NHS Fylde and Wyre CCG ,Clinical Commissioning Group,YDF31,FALSE
+02N ,"NHS Airedale, Wharfedale and Craven CCG ",Clinical Commissioning Group,YDF23,FALSE
+02P ,NHS Barnsley CCG ,Clinical Commissioning Group,YDF23,FALSE
+02Q ,NHS Bassetlaw CCG ,Clinical Commissioning Group,YDF23,FALSE
+02R ,NHS Bradford Districts CCG ,Clinical Commissioning Group,YDF23,FALSE
+02T ,NHS Calderdale CCG ,Clinical Commissioning Group,YDF23,FALSE
+02V ,NHS Leeds North CCG ,Clinical Commissioning Group,YDF23,FALSE
+02W ,NHS Bradford City CCG ,Clinical Commissioning Group,YDF23,FALSE
+02X ,NHS Doncaster CCG ,Clinical Commissioning Group,YDF23,FALSE
+02Y ,NHS East Riding of Yorkshire CCG ,Clinical Commissioning Group,YDF23,FALSE
+03A ,NHS Greater Huddersfield CCG ,Clinical Commissioning Group,YDF23,FALSE
+03C ,NHS Leeds West CCG ,Clinical Commissioning Group,YDF23,FALSE
+03D ,"NHS Hambleton, Richmondshire and Whitby CCG ",Clinical Commissioning Group,YDF23,FALSE
+03E ,NHS Harrogate and Rural District CCG ,Clinical Commissioning Group,YDF23,FALSE
+03F ,NHS Hull CCG ,Clinical Commissioning Group,YDF23,FALSE
+03G ,NHS Leeds South and East CCG ,Clinical Commissioning Group,YDF23,FALSE
+03H ,NHS North East Lincolnshire CCG ,Clinical Commissioning Group,YDF23,FALSE
+03J ,NHS North Kirklees CCG ,Clinical Commissioning Group,YDF23,FALSE
+03K ,NHS North Lincolnshire CCG ,Clinical Commissioning Group,YDF23,FALSE
+03L ,NHS Rotherham CCG ,Clinical Commissioning Group,YDF23,FALSE
+03M ,NHS Scarborough and Ryedale CCG ,Clinical Commissioning Group,YDF23,FALSE
+03N ,NHS Sheffield CCG ,Clinical Commissioning Group,YDF23,FALSE
+03Q ,NHS Vale of York CCG ,Clinical Commissioning Group,YDF23,FALSE
+03R ,NHS Wakefield CCG ,Clinical Commissioning Group,YDF23,FALSE
+03T ,NHS Lincolnshire East CCG ,Clinical Commissioning Group,YDF21,FALSE
+03V ,NHS Corby CCG ,Clinical Commissioning Group,YDF21,FALSE
+03W ,NHS East Leicestershire and Rutland CCG ,Clinical Commissioning Group,YDF21,FALSE
+03X ,NHS Erewash CCG ,Clinical Commissioning Group,YDF21,FALSE
+03Y ,NHS Hardwick CCG ,Clinical Commissioning Group,YDF21,FALSE
+04C ,NHS Leicester City CCG ,Clinical Commissioning Group,YDF21,FALSE
+04D ,NHS Lincolnshire West CCG ,Clinical Commissioning Group,YDF21,FALSE
+04E ,NHS Mansfield and Ashfield CCG ,Clinical Commissioning Group,YDF21,FALSE
+04F ,NHS Milton Keynes CCG ,Clinical Commissioning Group,YDF25,FALSE
+04G ,NHS Nene CCG ,Clinical Commissioning Group,YDF21,FALSE
+04H ,NHS Newark and Sherwood CCG ,Clinical Commissioning Group,YDF21,FALSE
+04J ,NHS North Derbyshire CCG ,Clinical Commissioning Group,YDF21,FALSE
+04K ,NHS Nottingham City CCG ,Clinical Commissioning Group,YDF21,FALSE
+04L ,NHS Nottingham North and East CCG ,Clinical Commissioning Group,YDF21,FALSE
+04M ,NHS Nottingham West CCG ,Clinical Commissioning Group,YDF21,FALSE
+04N ,NHS Rushcliffe CCG ,Clinical Commissioning Group,YDF21,FALSE
+04Q ,NHS South West Lincolnshire CCG ,Clinical Commissioning Group,YDF21,FALSE
+04R ,NHS Southern Derbyshire CCG ,Clinical Commissioning Group,YDF21,FALSE
+04V ,NHS West Leicestershire CCG ,Clinical Commissioning Group,YDF21,FALSE
+04X ,NHS Birmingham South and Central CCG ,Clinical Commissioning Group,YDF32,FALSE
+04Y ,NHS Cannock Chase CCG ,Clinical Commissioning Group,YDF32,FALSE
+05A ,NHS Coventry and Rugby CCG ,Clinical Commissioning Group,YDF32,FALSE
+05C ,NHS Dudley CCG ,Clinical Commissioning Group,YDF32,FALSE
+05D ,NHS East Staffordshire CCG ,Clinical Commissioning Group,YDF32,FALSE
+05F ,NHS Herefordshire CCG ,Clinical Commissioning Group,YDF32,FALSE
+05G ,NHS North Staffordshire CCG ,Clinical Commissioning Group,YDF32,FALSE
+05H ,NHS Warwickshire North CCG ,Clinical Commissioning Group,YDF32,FALSE
+05J ,NHS Redditch and Bromsgrove CCG ,Clinical Commissioning Group,YDF32,FALSE
+05L ,NHS Sandwell and West Birmingham CCG ,Clinical Commissioning Group,YDF32,FALSE
+05N ,NHS Shropshire CCG ,Clinical Commissioning Group,YDF32,FALSE
+05P ,NHS Solihull CCG ,Clinical Commissioning Group,YDF32,FALSE
+05Q ,NHS South East Staffordshire and Seisdon Peninsula CCG ,Clinical Commissioning Group,YDF32,FALSE
+05R ,NHS South Warwickshire CCG ,Clinical Commissioning Group,YDF32,FALSE
+05T ,NHS South Worcestershire CCG ,Clinical Commissioning Group,YDF32,FALSE
+05V ,NHS Stafford and Surrounds CCG ,Clinical Commissioning Group,YDF32,FALSE
+05W ,NHS Stoke on Trent CCG ,Clinical Commissioning Group,YDF32,FALSE
+05X ,NHS Telford and Wrekin CCG ,Clinical Commissioning Group,YDF32,FALSE
+05Y ,NHS Walsall CCG ,Clinical Commissioning Group,YDF32,FALSE
+06A ,NHS Wolverhampton CCG ,Clinical Commissioning Group,YDF32,FALSE
+06D ,NHS Wyre Forest CCG ,Clinical Commissioning Group,YDF32,FALSE
+06F ,NHS Bedfordshire CCG ,Clinical Commissioning Group,YDF22,FALSE
+06H ,NHS Cambridgeshire and Peterborough CCG ,Clinical Commissioning Group,YDF22,FALSE
+06K ,NHS East and North Hertfordshire CCG ,Clinical Commissioning Group,YDF22,FALSE
+06M ,NHS Great Yarmouth and Waveney CCG ,Clinical Commissioning Group,YDF22,FALSE
+06N ,NHS Herts Valleys CCG ,Clinical Commissioning Group,YDF22,FALSE
+06P ,NHS Luton CCG ,Clinical Commissioning Group,YDF22,FALSE
+06Q ,NHS Mid Essex CCG ,Clinical Commissioning Group,YDF22,FALSE
+06T ,NHS North East Essex CCG ,Clinical Commissioning Group,YDF22,FALSE
+06V ,NHS North Norfolk CCG ,Clinical Commissioning Group,YDF22,FALSE
+06W ,NHS Norwich CCG ,Clinical Commissioning Group,YDF22,FALSE
+06Y ,NHS South Norfolk CCG ,Clinical Commissioning Group,YDF22,FALSE
+07G ,NHS Thurrock CCG ,Clinical Commissioning Group,YDF22,FALSE
+07H ,NHS West Essex CCG ,Clinical Commissioning Group,YDF22,FALSE
+07J ,NHS West Norfolk CCG ,Clinical Commissioning Group,YDF22,FALSE
+07K ,NHS West Suffolk CCG ,Clinical Commissioning Group,YDF22,FALSE
+07L ,NHS Barking and Dagenham CCG ,Clinical Commissioning Group,YDF28,FALSE
+07M ,NHS Barnet CCG ,Clinical Commissioning Group,YDF28,FALSE
+07N ,NHS Bexley CCG ,Clinical Commissioning Group,YDF27,FALSE
+07P ,NHS Brent CCG ,Clinical Commissioning Group,YDF26,FALSE
+07Q ,NHS Bromley CCG ,Clinical Commissioning Group,YDF27,FALSE
+07R ,NHS Camden CCG ,Clinical Commissioning Group,YDF28,FALSE
+07T ,NHS City and Hackney CCG ,Clinical Commissioning Group,YDF28,FALSE
+07V ,NHS Croydon CCG ,Clinical Commissioning Group,YDF27,FALSE
+07W ,NHS Ealing CCG ,Clinical Commissioning Group,YDF26,FALSE
+07X ,NHS Enfield CCG ,Clinical Commissioning Group,YDF28,FALSE
+07Y ,NHS Hounslow CCG ,Clinical Commissioning Group,YDF26,FALSE
+08A ,NHS Greenwich CCG ,Clinical Commissioning Group,YDF27,FALSE
+08C ,NHS Hammersmith and Fulham CCG ,Clinical Commissioning Group,YDF26,FALSE
+08D ,NHS Haringey CCG ,Clinical Commissioning Group,YDF28,FALSE
+08E ,NHS Harrow CCG ,Clinical Commissioning Group,YDF26,FALSE
+08F ,NHS Havering CCG ,Clinical Commissioning Group,YDF28,FALSE
+08G ,NHS Hillingdon CCG ,Clinical Commissioning Group,YDF26,FALSE
+08H ,NHS Islington CCG ,Clinical Commissioning Group,YDF28,FALSE
+08J ,NHS Kingston CCG ,Clinical Commissioning Group,YDF27,FALSE
+08K ,NHS Lambeth CCG ,Clinical Commissioning Group,YDF27,FALSE
+08L ,NHS Lewisham CCG ,Clinical Commissioning Group,YDF27,FALSE
+08M ,NHS Newham CCG ,Clinical Commissioning Group,YDF28,FALSE
+08N ,NHS Redbridge CCG ,Clinical Commissioning Group,YDF28,FALSE
+08P ,NHS Richmond CCG ,Clinical Commissioning Group,YDF27,FALSE
+08Q ,NHS Southwark CCG ,Clinical Commissioning Group,YDF27,FALSE
+08R ,NHS Merton CCG ,Clinical Commissioning Group,YDF27,FALSE
+08T ,NHS Sutton CCG ,Clinical Commissioning Group,YDF27,FALSE
+08V ,NHS Tower Hamlets CCG ,Clinical Commissioning Group,YDF28,FALSE
+08W ,NHS Waltham Forest CCG ,Clinical Commissioning Group,YDF28,FALSE
+08X ,NHS Wandsworth CCG ,Clinical Commissioning Group,YDF27,FALSE
+08Y ,NHS West London CCG ,Clinical Commissioning Group,YDF26,FALSE
+09A ,NHS Central London (Westminster) CCG ,Clinical Commissioning Group,YDF26,FALSE
+09C ,NHS Ashford CCG ,Clinical Commissioning Group,YDF29,FALSE
+09D ,NHS Brighton and Hove CCG ,Clinical Commissioning Group,YDF29,FALSE
+09E ,NHS Canterbury and Coastal CCG ,Clinical Commissioning Group,YDF29,FALSE
+09F ,"NHS Eastbourne, Hailsham and Seaford CCG ",Clinical Commissioning Group,YDF29,FALSE
+09G ,NHS Coastal West Sussex CCG ,Clinical Commissioning Group,YDF29,FALSE
+09H ,NHS Crawley CCG ,Clinical Commissioning Group,YDF29,FALSE
+09J ,"NHS Dartford, Gravesham and Swanley CCG ",Clinical Commissioning Group,YDF29,FALSE
+09L ,NHS East Surrey CCG ,Clinical Commissioning Group,YDF29,FALSE
+09N ,NHS Guildford and Waverley CCG ,Clinical Commissioning Group,YDF29,FALSE
+09P ,NHS Hastings and Rother CCG ,Clinical Commissioning Group,YDF29,FALSE
+09W ,NHS Medway CCG ,Clinical Commissioning Group,YDF29,FALSE
+09X ,NHS Horsham and Mid Sussex CCG ,Clinical Commissioning Group,YDF29,FALSE
+09Y ,NHS North West Surrey CCG ,Clinical Commissioning Group,YDF29,FALSE
+10A ,NHS South Kent Coast CCG ,Clinical Commissioning Group,YDF29,FALSE
+10C ,NHS Surrey Heath CCG ,Clinical Commissioning Group,YDF29,FALSE
+10D ,NHS Swale CCG ,Clinical Commissioning Group,YDF29,FALSE
+10E ,NHS Thanet CCG ,Clinical Commissioning Group,YDF29,FALSE
+10G ,NHS Bracknell and Ascot CCG ,Clinical Commissioning Group,YDF25,FALSE
+10H ,NHS Chiltern CCG ,Clinical Commissioning Group,YDF25,FALSE
+10J ,NHS North Hampshire CCG ,Clinical Commissioning Group,YDF24,FALSE
+10K ,NHS Fareham and Gosport CCG ,Clinical Commissioning Group,YDF24,FALSE
+10L ,NHS Isle of Wight CCG ,Clinical Commissioning Group,YDF24,FALSE
+10M ,NHS Newbury and District CCG ,Clinical Commissioning Group,YDF25,FALSE
+10N ,NHS North and West Reading CCG ,Clinical Commissioning Group,YDF25,FALSE
+10Q ,NHS Oxfordshire CCG ,Clinical Commissioning Group,YDF25,FALSE
+10R ,NHS Portsmouth CCG ,Clinical Commissioning Group,YDF24,FALSE
+10T ,NHS Slough CCG ,Clinical Commissioning Group,YDF25,FALSE
+10V ,NHS South Eastern Hampshire CCG ,Clinical Commissioning Group,YDF24,FALSE
+10W ,NHS South Reading CCG ,Clinical Commissioning Group,YDF25,FALSE
+10X ,NHS Southampton CCG ,Clinical Commissioning Group,YDF24,FALSE
+11A ,NHS West Hampshire CCG ,Clinical Commissioning Group,YDF24,FALSE
+11C ,"NHS Windsor, Ascot and Maidenhead CCG ",Clinical Commissioning Group,YDF25,FALSE
+11D ,NHS Wokingham CCG ,Clinical Commissioning Group,YDF25,FALSE
+11E ,NHS Bath and North East Somerset CCG ,Clinical Commissioning Group,YDF33,FALSE
+11H ,NHS Bristol CCG ,Clinical Commissioning Group,YDF33,FALSE
+11J ,NHS Dorset CCG ,Clinical Commissioning Group,YDF24,FALSE
+11M ,NHS Gloucestershire CCG ,Clinical Commissioning Group,YDF33,FALSE
+11N ,NHS Kernow CCG ,Clinical Commissioning Group,YDF33,FALSE
+11T ,NHS North Somerset CCG ,Clinical Commissioning Group,YDF33,FALSE
+11X ,NHS Somerset CCG ,Clinical Commissioning Group,YDF33,FALSE
+12A ,NHS South Gloucestershire CCG ,Clinical Commissioning Group,YDF33,FALSE
+12D ,NHS Swindon CCG ,Clinical Commissioning Group,YDF33,FALSE
+12F ,NHS Wirral CCG ,Clinical Commissioning Group,YDF31,FALSE
+13P ,NHS Birmingham CrossCity CCG ,Clinical Commissioning Group,YDF32,FALSE
+14L ,NHS Manchester CCG ,Clinical Commissioning Group,YDF31,FALSE
+99A ,NHS Liverpool CCG ,Clinical Commissioning Group,YDF31,FALSE
+99D ,NHS South Lincolnshire CCG ,Clinical Commissioning Group,YDF21,FALSE
+99E ,NHS Basildon and Brentwood CCG ,Clinical Commissioning Group,YDF22,FALSE
+99F ,NHS Castle Point and Rochford CCG ,Clinical Commissioning Group,YDF22,FALSE
+99G ,NHS Southend CCG ,Clinical Commissioning Group,YDF22,FALSE
+99H ,NHS Surrey Downs CCG ,Clinical Commissioning Group,YDF29,FALSE
+99J ,NHS West Kent CCG ,Clinical Commissioning Group,YDF29,FALSE
+99K ,NHS High Weald Lewes Havens CCG ,Clinical Commissioning Group,YDF29,FALSE
+99M ,NHS North East Hampshire and Farnham CCG ,Clinical Commissioning Group,YDF24,FALSE
+99N ,NHS Wiltshire CCG ,Clinical Commissioning Group,YDF33,FALSE
+99P ,"NHS Northern, Eastern and Western Devon CCG ",Clinical Commissioning Group,YDF33,FALSE
+99Q ,NHS South Devon and Torbay CCG ,Clinical Commissioning Group,YDF33,FALSE
+R1A ,Worcestershire Health and Care NHS Trust ,Community Provider Trust,YDF32,FALSE
+R1C ,Solent NHS Trust ,Community Provider Trust,YDF24,FALSE
+R1D ,Shropshire Community Health NHS Trust ,Community Provider Trust,YDF32,FALSE
+R1E ,Staffordshire and Stoke on Trent Partnership NHS Trust ,Community Provider Trust,YDF32,FALSE
+R1F ,Isle of Wight NHS Trust ,Community Provider Trust,YDF24,FALSE
+R1H ,Barts Health NHS Trust ,Acute,YDF28,FALSE
+R1J ,Gloucestershire Care Services NHS Trust ,Community Provider Trust,YDF33,FALSE
+R1K ,London North West Healthcare NHS Trust ,Acute,YDF26,FALSE
+R1L ,Essex Partnership University NHS Foundation Trust ,Mental Health,YDF22,FALSE
+RA2 ,Royal Surrey County Hospital NHS Foundation Trust ,Acute,YDF29,FALSE
+RA3 ,Weston Area Health NHS Trust ,Acute,YDF33,FALSE
+RA4 ,Yeovil District Hospital NHS Foundation Trust ,Acute,YDF33,FALSE
+RA7 ,University Hospitals Bristol NHS Foundation Trust ,Acute,YDF33,FALSE
+RA9 ,Torbay and South Devon NHS Foundation Trust ,Acute,YDF33,FALSE
+RAE ,Bradford Teaching Hospitals NHS Foundation Trust ,Acute,YDF23,FALSE
+RAJ ,Southend University Hospital NHS Foundation Trust ,Acute,YDF22,FALSE
+RAL ,Royal Free London NHS Foundation Trust ,Acute,YDF28,FALSE
+RAN ,Royal National Orthopaedic Hospital NHS Trust ,Acute,YDF28,TRUE
+RAP ,North Middlesex University Hospital NHS Trust ,Acute,YDF28,FALSE
+RAS ,Hillingdon Hospitals NHS Foundation Trust ,Acute,YDF26,FALSE
+RAT ,North East London NHS Foundation Trust ,Mental Health,YDF28,FALSE
+RAX ,Kingston Hospital NHS Foundation Trust ,Acute,YDF27,FALSE
+RBA ,Taunton and Somerset NHS Foundation Trust ,Acute,YDF33,FALSE
+RBD ,Dorset County Hospital NHS Foundation Trust ,Acute,YDF24,FALSE
+RBK ,Walsall Healthcare NHS Trust ,Acute,YDF32,FALSE
+RBL ,Wirral University Teaching Hospital NHS Foundation Trust ,Acute,YDF31,FALSE
+RBN ,St Helens and Knowsley Hospitals NHS Trust ,Acute,YDF31,FALSE
+RBQ ,Liverpool Heart and Chest Hospital NHS Foundation Trust ,Acute,YDF31,TRUE
+RBS ,Alder Hey Children's NHS Foundation Trust ,Acute,YDF31,TRUE
+RBT ,Mid Cheshire Hospitals NHS Foundation Trust ,Acute,YDF31,FALSE
+RBV ,Christie NHS Foundation Trust ,Acute,YDF31,TRUE
+RBZ ,Northern Devon Healthcare NHS Trust ,Acute,YDF33,FALSE
+RC1 ,Bedford Hospital NHS Trust ,Acute,YDF22,FALSE
+RC9 ,Luton and Dunstable University Hospital NHS Foundation Trust ,Acute,YDF22,FALSE
+RCB ,York Teaching Hospital NHS Foundation Trust ,Acute,YDF23,FALSE
+RCD ,Harrogate and District NHS Foundation Trust ,Acute,YDF23,FALSE
+RCF ,Airedale NHS Foundation Trust ,Acute,YDF23,FALSE
+RCU ,Sheffield Children's NHS Foundation Trust ,Acute,YDF23,FALSE
+RCX ,Queen Elizabeth Hospital King's Lynn NHS Foundation Trust ,Acute,YDF22,FALSE
+RD1 ,Royal United Hospitals Bath NHS Foundation Trust ,Acute,YDF33,FALSE
+RD3 ,Poole Hospital NHS Foundation Trust ,Acute,YDF24,FALSE
+RD8 ,Milton Keynes University Hospital NHS Foundation Trust ,Acute,YDF25,FALSE
+RDD ,Basildon and Thurrock University Hospitals NHS Foundation Trust ,Acute,YDF22,FALSE
+RDE ,Colchester Hospital University NHS Foundation Trust ,Acute,YDF22,FALSE
+RDR ,Sussex Community NHS Foundation Trust ,Community Provider Trust,YDF29,FALSE
+RDU ,Frimley Health NHS Foundation Trust ,Acute,YDF29,FALSE
+RDY ,Dorset Healthcare University NHS Foundation Trust ,Mental Health,YDF24,FALSE
+RDZ ,Royal Bournemouth and Christchurch Hospitals NHS Foundation Trust ,Acute,YDF24,FALSE
+RE9 ,South Tyneside NHS Foundation Trust ,Acute,YDF30,FALSE
+REF ,Royal Cornwall Hospitals NHS Trust ,Acute,YDF33,FALSE
+REM ,Aintree University Hospital NHS Foundation Trust ,Acute,YDF31,FALSE
+REN ,Clatterbridge Cancer Centre NHS Foundation Trust ,Acute,YDF31,TRUE
+REP ,Liverpool Women's NHS Foundation Trust ,Acute,YDF31,TRUE
+RET ,Walton Centre NHS Foundation Trust ,Acute,YDF31,TRUE
+RF4 ,"Barking, Havering and Redbridge University Hospitals NHS Trust ",Acute,YDF28,FALSE
+RFF ,Barnsley Hospital NHS Foundation Trust ,Acute,YDF23,FALSE
+RFR ,Rotherham NHS Foundation Trust ,Acute,YDF23,FALSE
+RFS ,Chesterfield Royal Hospital NHS Foundation Trust ,Acute,YDF21,FALSE
+RGD ,Leeds and York Partnership NHS Foundation Trust ,Mental Health,YDF23,FALSE
+RGM ,Papworth Hospital NHS Foundation Trust ,Acute,YDF22,TRUE
+RGN ,North West Anglia NHS Foundation Trust ,Acute,YDF22,FALSE
+RGP ,James Paget University Hospitals NHS Foundation Trust ,Acute,YDF22,FALSE
+RGQ ,Ipswich Hospital NHS Trust ,Acute,YDF22,FALSE
+RGR ,West Suffolk NHS Foundation Trust ,Acute,YDF22,FALSE
+RGT ,Cambridge University Hospitals NHS Foundation Trust ,Acute,YDF22,FALSE
+RH5 ,Somerset Partnership NHS Foundation Trust ,Mental Health,YDF33,FALSE
+RH8 ,Royal Devon and Exeter NHS Foundation Trust ,Acute,YDF33,FALSE
+RHA ,Nottinghamshire Healthcare NHS Foundation Trust ,Mental Health,YDF21,FALSE
+RHM ,University Hospital Southampton NHS Foundation Trust ,Acute,YDF24,FALSE
+RHQ ,Sheffield Teaching Hospitals NHS Foundation Trust ,Acute,YDF23,FALSE
+RHU ,Portsmouth Hospitals NHS Trust ,Acute,YDF24,FALSE
+RHW ,Royal Berkshire NHS Foundation Trust ,Acute,YDF25,FALSE
+RJ1 ,Guy's and St Thomas' NHS Foundation Trust ,Acute,YDF27,FALSE
+RJ2 ,Lewisham and Greenwich NHS Trust ,Acute,YDF27,FALSE
+RJ6 ,Croydon Health Services NHS Trust ,Acute,YDF27,FALSE
+RJ7 ,St George's University Hospitals NHS Foundation Trust ,Acute,YDF27,FALSE
+RJ8 ,Cornwall Partnership NHS Foundation Trust ,Mental Health,YDF33,FALSE
+RJC ,South Warwickshire NHS Foundation Trust ,Acute,YDF32,FALSE
+RJE ,University Hospitals of North Midlands NHS Trust ,Acute,YDF32,FALSE
+RJF ,Burton Hospitals NHS Foundation Trust ,Acute,YDF32,FALSE
+RJL ,Northern Lincolnshire and Goole NHS Foundation Trust ,Acute,YDF23,FALSE
+RJN ,East Cheshire NHS Trust ,Acute,YDF31,FALSE
+RJR ,Countess of Chester Hospital NHS Foundation Trust ,Acute,YDF31,FALSE
+RJZ ,King's College Hospital NHS Foundation Trust ,Acute,YDF27,FALSE
+RK5 ,Sherwood Forest Hospitals NHS Foundation Trust ,Acute,YDF21,FALSE
+RK9 ,Plymouth Hospitals NHS Trust ,Acute,YDF33,FALSE
+RKB ,University Hospitals Coventry and Warwickshire NHS Trust ,Acute,YDF32,FALSE
+RKE ,Whittington Hospital NHS Trust ,Acute,YDF28,FALSE
+RKL ,West London Mental Health NHS Trust ,Mental Health,YDF26,FALSE
+RL1 ,Robert Jones and Agnes Hunt Orthopaedic Hospital NHS Foundation Trust ,Acute,YDF32,TRUE
+RL4 ,Royal Wolverhampton NHS Trust ,Acute,YDF32,FALSE
+RLN ,City Hospitals Sunderland NHS Foundation Trust ,Acute,YDF30,FALSE
+RLQ ,Wye Valley NHS Trust ,Acute,YDF32,FALSE
+RLT ,George Eliot Hospital NHS Trust ,Acute,YDF32,FALSE
+RLY ,North Staffordshire Combined Healthcare NHS Trust ,Mental Health,YDF32,FALSE
+RM1 ,Norfolk and Norwich University Hospitals NHS Foundation Trust ,Acute,YDF22,FALSE
+RM2 ,University Hospital of South Manchester NHS Foundation Trust ,Acute,YDF31,FALSE
+RM3 ,Salford Royal NHS Foundation Trust ,Acute,YDF31,FALSE
+RMC ,Bolton NHS Foundation Trust ,Acute,YDF31,FALSE
+RMP ,Tameside and Glossop Integrated Care NHS Foundation Trust ,Acute,YDF31,FALSE
+RMY ,Norfolk and Suffolk NHS Foundation Trust ,Mental Health,YDF22,FALSE
+RN3 ,Great Western Hospitals NHS Foundation Trust ,Acute,YDF33,FALSE
+RN5 ,Hampshire Hospitals NHS Foundation Trust ,Acute,YDF24,FALSE
+RN7 ,Dartford and Gravesham NHS Trust ,Acute,YDF29,FALSE
+RNA ,Dudley Group NHS Foundation Trust ,Acute,YDF32,FALSE
+RNK ,Tavistock and Portman NHS Foundation Trust ,Mental Health,YDF28,FALSE
+RNL ,North Cumbria University Hospitals NHS Trust ,Acute,YDF31,FALSE
+RNN ,Cumbria Partnership NHS Foundation Trust ,Mental Health,YDF31,FALSE
+RNQ ,Kettering General Hospital NHS Foundation Trust ,Acute,YDF21,FALSE
+RNS ,Northampton General Hospital NHS Trust ,Acute,YDF21,FALSE
+RNU ,Oxford Health NHS Foundation Trust ,Mental Health,YDF25,FALSE
+RNZ ,Salisbury NHS Foundation Trust ,Acute,YDF24,FALSE
+RP1 ,Northamptonshire Healthcare NHS Foundation Trust ,Mental Health,YDF21,FALSE
+RP4 ,Great Ormond Street Hospital For Children NHS Foundation Trust ,Acute,YDF28,TRUE
+RP5 ,Doncaster and Bassetlaw Teaching Hospitals NHS Foundation Trust ,Acute,YDF23,FALSE
+RP6 ,Moorfields Eye Hospital NHS Foundation Trust ,Acute,YDF28,TRUE
+RP7 ,Lincolnshire Partnership NHS Foundation Trust ,Mental Health,YDF21,FALSE
+RPA ,Medway NHS Foundation Trust ,Acute,YDF29,FALSE
+RPC ,Queen Victoria Hospital NHS Foundation Trust ,Acute,YDF29,TRUE
+RPG ,Oxleas NHS Foundation Trust ,Mental Health,YDF27,FALSE
+RPY ,Royal Marsden NHS Foundation Trust ,Acute,YDF26,TRUE
+RQ3 ,Birmingham Women's and Children's NHS Foundation Trust ,Acute,YDF32,TRUE
+RQ6 ,Royal Liverpool and Broadgreen University Hospitals NHS Trust ,Acute,YDF31,FALSE
+RQ8 ,Mid Essex Hospital Services NHS Trust ,Acute,YDF22,FALSE
+RQM ,Chelsea and Westminster Hospital NHS Foundation Trust ,Acute,YDF26,FALSE
+RQW ,Princess Alexandra Hospital NHS Trust ,Acute,YDF22,FALSE
+RQX ,Homerton University Hospital NHS Foundation Trust ,Acute,YDF28,FALSE
+RQY ,South West London and St George's Mental Health NHS Trust ,Mental Health,YDF27,FALSE
+RR1 ,Heart of England NHS Foundation Trust ,Acute,YDF32,FALSE
+RR7 ,Gateshead Health NHS Foundation Trust ,Acute,YDF30,FALSE
+RR8 ,Leeds Teaching Hospitals NHS Trust ,Acute,YDF23,FALSE
+RRE ,South Staffordshire and Shropshire Healthcare NHS Foundation Trust ,Mental Health,YDF32,FALSE
+RRF ,"Wrightington, Wigan and Leigh NHS Foundation Trust ",Acute,YDF31,FALSE
+RRJ ,Royal Orthopaedic Hospital NHS Foundation Trust ,Acute,YDF32,TRUE
+RRK ,University Hospitals Birmingham NHS Foundation Trust ,Acute,YDF32,FALSE
+RRP ,"Barnet, Enfield and Haringey Mental Health NHS Trust ",Mental Health,YDF28,FALSE
+RRU ,London Ambulance Service NHS Trust ,Ambulance,YDF26,FALSE
+RRV ,University College London Hospitals NHS Foundation Trust ,Acute,YDF28,FALSE
+RT1 ,Cambridgeshire and Peterborough NHS Foundation Trust ,Mental Health,YDF22,FALSE
+RT2 ,Pennine Care NHS Foundation Trust ,Mental Health,YDF31,FALSE
+RT3 ,Royal Brompton and Harefield NHS Foundation Trust ,Acute,YDF26,TRUE
+RT5 ,Leicestershire Partnership NHS Trust ,Mental Health,YDF21,FALSE
+RTD ,Newcastle Upon Tyne Hospitals NHS Foundation Trust ,Acute,YDF30,FALSE
+RTE ,Gloucestershire Hospitals NHS Foundation Trust ,Acute,YDF33,FALSE
+RTF ,Northumbria Healthcare NHS Foundation Trust ,Acute,YDF30,FALSE
+RTG ,Derby Teaching Hospitals NHS Foundation Trust ,Acute,YDF21,FALSE
+RTH ,Oxford University Hospitals NHS Foundation Trust ,Acute,YDF25,FALSE
+RTK ,Ashford and St. Peter's Hospitals NHS Foundation Trust ,Acute,YDF29,FALSE
+RTP ,Surrey and Sussex Healthcare NHS Trust ,Acute,YDF29,FALSE
+RTQ ,2Gether NHS Foundation Trust ,Mental Health,YDF33,FALSE
+RTR ,South Tees Hospitals NHS Foundation Trust ,Acute,YDF30,FALSE
+RTV ,North West Boroughs Healthcare NHS Foundation Trust ,Mental Health,YDF31,FALSE
+RTX ,University Hospitals of Morecambe Bay NHS Foundation Trust ,Acute,YDF31,FALSE
+RV3 ,Central and North West London NHS Foundation Trust ,Mental Health,YDF26,FALSE
+RV5 ,South London and Maudsley NHS Foundation Trust ,Mental Health,YDF27,FALSE
+RV9 ,Humber NHS Foundation Trust ,Mental Health,YDF23,FALSE
+RVJ ,North Bristol NHS Trust ,Acute,YDF33,FALSE
+RVN ,Avon and Wiltshire Mental Health Partnership NHS Trust ,Mental Health,YDF33,FALSE
+RVR ,Epsom and St Helier University Hospitals NHS Trust ,Acute,YDF27,FALSE
+RVV ,East Kent Hospitals University NHS Foundation Trust ,Acute,YDF29,FALSE
+RVW ,North Tees and Hartlepool NHS Foundation Trust ,Acute,YDF30,FALSE
+RVY ,Southport and Ormskirk Hospital NHS Trust ,Acute,YDF31,FALSE
+RW1 ,Southern Health NHS Foundation Trust ,Mental Health,YDF24,FALSE
+RW3 ,Central Manchester University Hospitals NHS Foundation Trust ,Acute,YDF31,FALSE
+RW4 ,Mersey Care NHS Foundation Trust ,Mental Health,YDF31,FALSE
+RW5 ,Lancashire Care NHS Foundation Trust ,Mental Health,YDF31,FALSE
+RW6 ,Pennine Acute Hospitals NHS Trust ,Acute,YDF31,FALSE
+RWA ,Hull and East Yorkshire Hospitals NHS Trust ,Acute,YDF23,FALSE
+RWD ,United Lincolnshire Hospitals NHS Trust ,Acute,YDF21,FALSE
+RWE ,University Hospitals of Leicester NHS Trust ,Acute,YDF21,FALSE
+RWF ,Maidstone and Tunbridge Wells NHS Trust ,Acute,YDF29,FALSE
+RWG ,West Hertfordshire Hospitals NHS Trust ,Acute,YDF22,FALSE
+RWH ,East and North Hertfordshire NHS Trust ,Acute,YDF22,FALSE
+RWJ ,Stockport NHS Foundation Trust ,Acute,YDF31,FALSE
+RWK ,East London NHS Foundation Trust ,Mental Health,YDF28,FALSE
+RWP ,Worcestershire Acute Hospitals NHS Trust ,Acute,YDF32,FALSE
+RWR ,Hertfordshire Partnership University NHS Foundation Trust ,Mental Health,YDF22,FALSE
+RWV ,Devon Partnership NHS Trust ,Mental Health,YDF33,FALSE
+RWW ,Warrington and Halton Hospitals NHS Foundation Trust ,Acute,YDF31,FALSE
+RWX ,Berkshire Healthcare NHS Foundation Trust ,Mental Health,YDF25,FALSE
+RWY ,Calderdale and Huddersfield NHS Foundation Trust ,Acute,YDF23,FALSE
+RX1 ,Nottingham University Hospitals NHS Trust ,Acute,YDF21,FALSE
+RX2 ,Sussex Partnership NHS Foundation Trust ,Mental Health,YDF29,FALSE
+RX3 ,"Tees, Esk and Wear Valleys NHS Foundation Trust ",Mental Health,YDF30,FALSE
+RX4 ,"Northumberland, Tyne and Wear NHS Foundation Trust ",Mental Health,YDF30,FALSE
+RX6 ,North East Ambulance Service NHS Foundation Trust ,Ambulance,YDF30,FALSE
+RX7 ,North West Ambulance Service NHS Trust ,Ambulance,YDF31,FALSE
+RX8 ,Yorkshire Ambulance Service NHS Trust ,Ambulance,YDF23,FALSE
+RX9 ,East Midlands Ambulance Service NHS Trust ,Ambulance,YDF21,FALSE
+RXA ,Cheshire and Wirral Partnership NHS Foundation Trust ,Mental Health,YDF31,FALSE
+RXC ,East Sussex Healthcare NHS Trust ,Acute,YDF29,FALSE
+RXE ,Rotherham Doncaster and South Humber NHS Foundation Trust ,Mental Health,YDF23,FALSE
+RXF ,Mid Yorkshire Hospitals NHS Trust ,Acute,YDF23,FALSE
+RXG ,South West Yorkshire Partnership NHS Foundation Trust ,Mental Health,YDF23,FALSE
+RXH ,Brighton and Sussex University Hospitals NHS Trust ,Acute,YDF29,FALSE
+RXK ,Sandwell and West Birmingham Hospitals NHS Trust ,Acute,YDF32,FALSE
+RXL ,Blackpool Teaching Hospitals NHS Foundation Trust ,Acute,YDF31,FALSE
+RXM ,Derbyshire Healthcare NHS Foundation Trust ,Mental Health,YDF21,FALSE
+RXN ,Lancashire Teaching Hospitals NHS Foundation Trust ,Acute,YDF31,FALSE
+RXP ,County Durham and Darlington NHS Foundation Trust ,Acute,YDF30,FALSE
+RXQ ,Buckinghamshire Healthcare NHS Trust ,Acute,YDF25,FALSE
+RXR ,East Lancashire Hospitals NHS Trust ,Acute,YDF31,FALSE
+RXT ,Birmingham and Solihull Mental Health NHS Foundation Trust ,Mental Health,YDF32,FALSE
+RXV ,Greater Manchester Mental Health NHS Foundation Trust ,Mental Health,YDF31,FALSE
+RXW ,Shrewsbury and Telford Hospital NHS Trust ,Acute,YDF32,FALSE
+RXX ,Surrey and Borders Partnership NHS Foundation Trust ,Mental Health,YDF29,FALSE
+RXY ,Kent and Medway NHS and Social Care Partnership Trust ,Mental Health,YDF29,FALSE
+RY1 ,Liverpool Community Health NHS Trust ,Community Provider Trust,YDF31,FALSE
+RY2 ,Bridgewater Community Healthcare NHS Foundation Trust ,Community Provider Trust,YDF31,FALSE
+RY3 ,Norfolk Community Health and Care NHS Trust ,Community Provider Trust,YDF22,FALSE
+RY4 ,Hertfordshire Community NHS Trust ,Community Provider Trust,YDF22,FALSE
+RY5 ,Lincolnshire Community Health Services NHS Trust ,Community Provider Trust,YDF21,FALSE
+RY6 ,Leeds Community Healthcare NHS Trust ,Community Provider Trust,YDF23,FALSE
+RY7 ,Wirral Community NHS Foundation Trust ,Community Provider Trust,YDF31,FALSE
+RY8 ,Derbyshire Community Health Services NHS Foundation Trust ,Community Provider Trust,YDF21,FALSE
+RY9 ,Hounslow and Richmond Community Healthcare NHS Trust ,Community Provider Trust,YDF26,FALSE
+RYA ,West Midlands Ambulance Service NHS Foundation Trust ,Ambulance,YDF32,FALSE
+RYC ,East of England Ambulance Service NHS Trust ,Ambulance,YDF22,FALSE
+RYD ,South East Coast Ambulance Service NHS Foundation Trust ,Ambulance,YDF29,FALSE
+RYE ,South Central Ambulance Service NHS Foundation Trust ,Ambulance,YDF25,FALSE
+RYF ,South Western Ambulance Service NHS Foundation Trust ,Ambulance,YDF33,FALSE
+RYG ,Coventry and Warwickshire Partnership NHS Trust ,Mental Health,YDF32,FALSE
+RYJ ,Imperial College Healthcare NHS Trust ,Acute,YDF26,FALSE
+RYK ,Dudley and Walsall Mental Health Partnership NHS Trust ,Mental Health,YDF32,FALSE
+RYR ,Western Sussex Hospitals NHS Foundation Trust ,Acute,YDF29,FALSE
+RYV ,Cambridgeshire Community Services NHS Trust ,Community Provider Trust,YDF22,FALSE
+RYW ,Birmingham Community Healthcare NHS Foundation Trust ,Community Provider Trust,YDF32,FALSE
+RYX ,Central London Community Healthcare NHS Trust ,Community Provider Trust,YDF26,FALSE
+RYY ,Kent Community Health NHS Foundation Trust ,Community Provider Trust,YDF29,FALSE
+TAD ,Bradford District Care NHS Foundation Trust ,Mental Health,YDF23,FALSE
+TAF ,Camden and Islington NHS Foundation Trust ,Mental Health,YDF28,FALSE
+TAH ,Sheffield Health and Social Care NHS Foundation Trust ,Mental Health,YDF23,FALSE
+TAJ ,Black Country Partnership NHS Foundation Trust ,Mental Health,YDF32,FALSE
