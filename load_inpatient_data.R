@@ -18,6 +18,7 @@ nhs_ss_questions = read_csv("NHS_SS_questions.csv")
 ae_target = read_csv("AE_target_Q42017.csv")
 dtoc = read_csv("DTOC_august_2018.csv")
 rtt = read_csv("RTT-March-2018-full-extract.csv")
+financial_position = read_csv("financials_1617.csv")
 
 # calculate total score per question by provider
 # and convert data to long 'tidy' format
@@ -56,6 +57,7 @@ dbWriteTable(conn = db, name = "nhs_ss_questions", nhs_ss_questions, overwrite=T
 dbWriteTable(conn = db, name = "ae_target", ae_target, overwrite=TRUE)
 dbWriteTable(conn = db, name = "dtoc", dtoc, overwrite=TRUE)
 dbWriteTable(conn = db, name = "rtt_target", rtt, overwrite=TRUE)
+dbWriteTable(conn = db, name = "financial_position", financial_position, overwrite=TRUE)
 
 dbDisconnect(db)
 
