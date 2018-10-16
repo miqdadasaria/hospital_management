@@ -21,7 +21,7 @@ shinyServer(function(input, output, session) {
       input$central_functions)
   })
   
-  output$scatter_plot = renderPlot({
+  output$scatter_plot = renderPlotly({
     withProgress(message = paste0('Updating trust scatter plot'),{
       scatter_plot(providerData(), input$x_var, input$y_var, input$size_var, input$trim, input$trend_line, input$facet_var)
     })

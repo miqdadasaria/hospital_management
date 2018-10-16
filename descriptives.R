@@ -1,6 +1,7 @@
 library("tidyverse")
 library("RSQLite")
 library("dbplyr")
+library("plotly")
 
 db_file = "data/NHS_management.sqlite3"
 con = dbConnect(SQLite(), dbname=db_file)
@@ -80,7 +81,8 @@ attach_management_measure = function(providers, afc_pay, non_medics, medics, spe
            FIN_POS_PERC = round((FINANCIAL_POSITION/OP_COST)*100,2),
            HEE_REGION_NAME = gsub("Health Education ","",HEE_REGION_NAME),
            ORG_NAME = gsub("NHS Trust","",ORG_NAME),
-           ORG_NAME = gsub("NHS Foundation Trust","",ORG_NAME)) %>%
+           ORG_NAME = gsub("NHS Foundation Trust","",ORG_NAME),
+           MAN_FTE_PER_TEN_MIL_OC = round((MANAGEMENT_FTE*10000000)/OP_COST,2)) %>%
     select(ORG_CODE,
            ORG_NAME,
            SPECIALIST,
@@ -99,6 +101,7 @@ attach_management_measure = function(providers, afc_pay, non_medics, medics, spe
            NHS_SS=MANAGEMENT_QUALITY,
            MANAGEMENT_FTE,
            MANAGEMENT_SPEND,
+           MAN_FTE_PER_TEN_MIL_OC,
            MAN_FTE_PER_1000_FCE,
            MAN_SPEND_PER_1000_FCE,
            QUALITY_WEIGHTED_FTE,
@@ -113,9 +116,9 @@ attach_management_measure = function(providers, afc_pay, non_medics, medics, spe
 scatter_plot = function(acute_providers, x_var, y_var, size_var, trim, trend_line, facet_var){
   
   variables = data_frame(
-    code=c("fin_pos_perc","op_cost","fin_pos","acute_dtoc","non_acute_dtoc","total_dtoc","rtt","ae","cqc_rating","cqc_well_led_rating","hee_region","nhs_ss","fce","fte","spend","fte_fce","spend_fce","fte_quality","spend_quality"),
-    variable=c("NET_FINANCIAL_POSITION_PERCENT","OPERATING_COST","NET_FINANCIAL_POSITION","ACUTE_DTOC","NON_ACUTE_DTOC","TOTAL_DTOC","RTT_SCORE","AE_SCORE","CQC_RATING","CQC_WELL_LED_RATING","HEE_REGION","NHS_SS","ADMISSIONS","MANAGEMENT_FTE","MANAGEMENT_SPEND","MAN_FTE_PER_1000_FCE","MAN_SPEND_PER_1000_FCE","QUALITY_WEIGHTED_FTE","QUALITY_WEIGHTED_SPEND"),
-    label=c("Net financial position (%)","Total Operating Cost (£)","Net financial position (£)","Acute delayed transfers of care","Non-acute delayed transfers of care","Total delayed transfers of care","Referral to treatment in 18 weeks (%)","A&E 4 hour wait target met (%)","CQC Overall Rating","CQC Well Led Rating","Health Education England Region","NHS staff survey consolidated management score","Total inpatient admissions (2016/17)","Management (FTE)","Management Spend (£)","Management (FTE per 1000 admissions)","Management Spend (£ per 1000 admissions)","Quality adjusted (FTE per 1000 admissions)","Quality adjusted (£ per 1000 admissions)")
+    code=c("fte_per_ten_mil","fin_pos_perc","op_cost","fin_pos","acute_dtoc","non_acute_dtoc","total_dtoc","rtt","ae","cqc_rating","cqc_well_led_rating","hee_region","nhs_ss","fce","fte","spend","fte_fce","spend_fce","fte_quality","spend_quality"),
+    variable=c("MAN_FTE_PER_TEN_MIL_OC","NET_FINANCIAL_POSITION_PERCENT","OPERATING_COST","NET_FINANCIAL_POSITION","ACUTE_DTOC","NON_ACUTE_DTOC","TOTAL_DTOC","RTT_SCORE","AE_SCORE","CQC_RATING","CQC_WELL_LED_RATING","HEE_REGION","NHS_SS","ADMISSIONS","MANAGEMENT_FTE","MANAGEMENT_SPEND","MAN_FTE_PER_1000_FCE","MAN_SPEND_PER_1000_FCE","QUALITY_WEIGHTED_FTE","QUALITY_WEIGHTED_SPEND"),
+    label=c("Management (FTE per £10 million operating cost)","Net financial position (%)","Total Operating Cost (£)","Net financial position (£)","Acute delayed transfers of care","Non-acute delayed transfers of care","Total delayed transfers of care","Referral to treatment in 18 weeks (%)","A&E 4 hour wait target met (%)","CQC Overall Rating","CQC Well Led Rating","Health Education England Region","NHS staff survey consolidated management score","Total inpatient admissions (2016/17)","Management (FTE)","Management Spend (£)","Management (FTE per 1000 admissions)","Management Spend (£ per 1000 admissions)","Quality adjusted (FTE per 1000 admissions)","Quality adjusted (£ per 1000 admissions)")
   )
   
   x = variables %>% filter(code==x_var) %>% select(variable, label)
@@ -130,7 +133,7 @@ scatter_plot = function(acute_providers, x_var, y_var, size_var, trim, trend_lin
   graph_data = acute_providers %>% 
     filter(MAN_FTE_PER_1000_FCE<trim)
   
-  plot = ggplot(data=graph_data, aes_string(x$variable, y$variable)) +
+  plot = ggplot(data=graph_data, aes_string(x$variable, y$variable, text="ORG_NAME")) +
     ylab(y$label) +
     xlab(x$label)
   
@@ -158,5 +161,6 @@ scatter_plot = function(acute_providers, x_var, y_var, size_var, trim, trend_lin
                             plot.margin = unit(c(1, 1, 1, 1), "lines"),
                             text=element_text(family = "Roboto", colour = "#3e3f3a"))
   
-  return(plot)
+  plotly = ggplotly(plot)
+  return(plotly)
 }

@@ -5,6 +5,7 @@
 ########################################################
 
 library(shiny)
+library(plotly)
 library(DT)
 
 shinyUI(fluidPage(theme = "sandstone.css",
@@ -18,6 +19,7 @@ shinyUI(fluidPage(theme = "sandstone.css",
 	              "Input variable to plot on x-axis:",
 	              list("Management (FTE)" = "fte", 
 	                   "Management Spend (£)" = "spend", 
+	                   "Management (FTE per £10 million operating cost)" = "fte_per_ten_mil",
 	                   "Management (FTE per 1000 admissions)" = "fte_fce", 
 	                   "Management Spend (£ per 1000 admissions)" = "spend_fce", 
 	                   "NHS staff survey management score" = "nhs_ss", 
@@ -35,7 +37,9 @@ shinyUI(fluidPage(theme = "sandstone.css",
 	                   "Delayed transfers of care (acute)" = "acute_dtoc",
 	                   "Delayed transfers of care (non-acute)" = "non_acute_dtoc",
 	                   "Delayed transfers of care (total)" = "total_dtoc",
-	                   "NHS staff survey management score" = "nhs_ss"), 
+	                   "NHS staff survey management score" = "nhs_ss",
+	                   "# inpatient admissions" = "fce",
+	                   "overall operating cost (£)" = "op_cost"), 
 	              selected="fin_pos_perc"),
 	  
 	  selectInput("size_var", 
@@ -81,7 +85,7 @@ shinyUI(fluidPage(theme = "sandstone.css",
 	      h3(textOutput("title")),
 	      textOutput("ccg"),
 	      tabsetPanel(id="tabset",
-	        tabPanel("Scatter", plotOutput("scatter_plot")),
+	        tabPanel("Scatter", plotlyOutput("scatter_plot")),
 				  tabPanel("Table", div(dataTableOutput("trust_data"), style = "font-size:70%")),
 				  tabPanel("Notes", tags$div(HTML("<p>&nbsp;<p>
 
