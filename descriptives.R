@@ -16,34 +16,45 @@ non_medics = tbl(con, "non_medical_staff") %>%
 
 medics = tbl(con, "medical_staff") %>% collect()
 
-managers = non_medics %>% filter(grepl("manager",LEVEL,ignore.case=TRUE))
-
 nurses = non_medics %>% 
   filter(grepl("nurse",STAFF_GROUP_2_NAME,ignore.case=TRUE)) %>%
   group_by(ORG_CODE) %>%
-  summarise(NURSES=sum(FTE))
+  summarise(NURSES=round(sum(FTE),1))
+
+other_clinical = non_medics %>% 
+  filter(!grepl("nurse",STAFF_GROUP_2_NAME,ignore.case=TRUE) &
+           grepl("Professionally qualified clinical staff",MAIN_STAFF_GROUP_NAME,ignore.case=TRUE)) %>%
+  group_by(ORG_CODE) %>%
+  summarise(OTHER_CLINICAL_STAFF=round(sum(FTE),1))
+
 
 others = non_medics %>%
-  filter(!grepl("nurse",STAFF_GROUP_2_NAME,ignore.case=TRUE) &
+  filter(!grepl("Professionally qualified clinical staff",MAIN_STAFF_GROUP_NAME,ignore.case=TRUE) &
            !grepl("manager",STAFF_GROUP_2_NAME,ignore.case=TRUE)) %>%
   group_by(ORG_CODE) %>%
-  summarise(OTHER_STAFF=sum(FTE))
+  summarise(OTHER_STAFF=round(sum(FTE),1))
   
 consultants = medics %>%
   filter(grepl("consultant",GRADE,ignore.case=TRUE)) %>%
   group_by(ORG_CODE) %>%
-  summarise(CONSULTANTS=sum(FTE))
+  summarise(CONSULTANTS=round(sum(FTE),1))
 
 doctors = medics %>%
   group_by(ORG_CODE) %>%
-  summarise(DOCTORS=sum(FTE))
+  summarise(DOCTORS=round(sum(FTE),1))
+
+junior_doctors = medics %>%
+  filter(!grepl("consultant",GRADE,ignore.case=TRUE)) %>%
+  group_by(ORG_CODE) %>%
+  summarise(JUNIOR_DOCTORS=round(sum(FTE),1))
 
 staff = others %>%
   left_join(nurses) %>%
+  left_join(junior_doctors) %>%
   left_join(consultants) %>%
   left_join(doctors) %>%
-  mutate(CLINICAL_STAFF=DOCTORS+NURSES)
-
+  left_join(other_clinical) %>%
+  mutate(CLINICAL_STAFF=DOCTORS+NURSES+OTHER_CLINICAL_STAFF)
 
 afc_pay = tbl(con, "pay_scale") %>% 
   collect() %>%
@@ -65,55 +76,123 @@ providers = tbl(con, "provider") %>%
   left_join(staff) %>%
   mutate(RATING = factor(RATING_SCORE,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
   mutate(RATING_LEADERSHIP = factor(RATING_SCORE_LEADERSHIP,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
+  mutate(ACUTE_DTOC=round(ACUTE_DTOC,1),NON_ACUTE_DTOC=round(NON_ACUTE_DTOC,1),TOTAL_DTOC=round(TOTAL_DTOC,1)) %>%
   filter(ORG_TYPE == "Acute") 
  
 dbDisconnect(con)
 
-attach_management_measure = function(providers, afc_pay, non_medics, medics, specialist, afc_8, level_1_manager, central_functions){
-  managers = non_medics %>% 
-    group_by(ORG_CODE, MAIN_STAFF_GROUP_NAME, STAFF_GROUP_1_NAME, STAFF_GROUP_2_NAME, AREA, LEVEL, AFC_BAND)
-  
-  if(afc_8){
-    managers = managers %>%
-      filter(grepl("Band 8", AFC_BAND) | grepl("Band 9", AFC_BAND) | grepl("Very", AFC_BAND) | grepl("Non AfC", AFC_BAND))
-  } 
-  
-  if(level_1_manager){
-    managers = managers %>%
-      filter(grepl("Managers", STAFF_GROUP_1_NAME) | grepl("Senior managers", STAFF_GROUP_1_NAME))
-  }
-  
-  if(central_functions){
-    managers = managers %>%
-      filter(grepl("Central", AREA))
-  }
+managers = non_medics %>% 
+  filter(grepl("manager",LEVEL,ignore.case=TRUE)) %>% 
+  inner_join(providers %>% select(ORG_CODE)) %>% 
+  mutate(STAFF_GROUP = if_else(grepl("manager",STAFF_GROUP_1_NAME,ignore.case = TRUE),paste("Manager",gsub("00[1234]_","",AREA)),STAFF_GROUP_1_NAME)) %>% 
+  group_by(ORG_CODE,STAFF_GROUP,AFC_BAND) %>% 
+  summarise(FTE=sum(FTE)) %>%
+  ungroup()
 
-  managers = managers %>%
-    summarise(FTE = sum(FTE)) %>%
-    left_join(afc_pay %>% select(AFC_BAND,PAY=TOP)) %>%
-    mutate(MANAGEMENT_SPEND=round(FTE*PAY)) %>%
-    ungroup()
-  
-  results = providers
-  
-  if(!specialist){
-    results = results %>% filter(SPECIALIST==FALSE)
+attach_management_measure = function(providers, afc_pay, managers, selected_staff_group, selected_pay_grade){
+
+  pay_grade = vector()
+  if("afc_2" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Band 2")  
   }
   
-  results = results %>%
-    left_join(managers %>% group_by(ORG_CODE) %>% 
-              summarise(MANAGEMENT_SPEND=sum(MANAGEMENT_SPEND), MANAGEMENT_FTE=sum(FTE))) %>%
+  if("afc_3" %in% selected_pay_grade ){
+    pay_grade = append(pay_grade,"Band 3")  
+  }
+  
+  if("afc_4" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Band 4")  
+  }
+  
+  if("afc_5" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Band 5")  
+  }
+  
+  if("afc_6" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Band 6")  
+  }
+  
+  if("afc_7" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Band 7")  
+  }
+  
+  if("afc_8a" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Band 8a")  
+  }
+  
+  if("afc_8b" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Band 8b")  
+  }
+  
+  if("afc_8c" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Band 8c")  
+  }
+  
+  if("afc_8d" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Band 8d")  
+  }
+  
+  if("afc_9" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Band 9")  
+  }
+  
+  if("afc_vsm" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Very Senior Manager")  
+  }
+  
+  if("afc_nafc" %in% selected_pay_grade){
+    pay_grade = append(pay_grade,"Non AfC Grade")  
+  }
+  
+  managers = managers %>% filter(AFC_BAND %in% pay_grade)
+  
+  staff_group = vector()
+  if("man_central_functions" %in% selected_staff_group){
+    staff_group = append(staff_group,"Manager Central functions")
+  }
+  
+  if("man_estates" %in% selected_staff_group){
+    staff_group = append(staff_group,"Manager Hotel, property & estates")
+  }
+  
+  if("man_clinical_support" %in% selected_staff_group){
+    staff_group = append(staff_group,"Manager Clinical support")
+  }
+  
+  if("man_scientific" %in% selected_staff_group){
+    staff_group = append(staff_group,"Manager Scientific, therapeutic & technical support")
+  }
+  
+  if("nurse" %in% selected_staff_group){
+    staff_group = append(staff_group,"Nurses & health visitors")    
+  }
+  
+  if("scientific" %in% selected_staff_group){
+    staff_group = append(staff_group,"Scientific, therapeutic & technical staff")    
+  }
+    
+  managers = managers %>% filter(STAFF_GROUP %in% staff_group)
+  
+  managers = managers %>%
+    left_join(afc_pay %>% select(AFC_BAND,PAY=TOP)) %>%
+    mutate(MANAGEMENT_SPEND=round(FTE*PAY,0)) %>%
+    group_by(ORG_CODE) %>%
+    summarise(MANAGEMENT_SPEND=sum(MANAGEMENT_SPEND), MANAGERS=round(sum(FTE),1))
+    
+  
+  results = providers %>%
+    left_join(managers) %>% 
     mutate(MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES_2016,0), 
-           MAN_FTE_PER_1000_FCE = round(MANAGEMENT_FTE*1000/TOTAL_EPISODES_2016,2),
+           MAN_FTE_PER_1000_FCE = round(MANAGERS*1000/TOTAL_EPISODES_2016,2),
            QUALITY_WEIGHTED_FTE = round(MAN_FTE_PER_1000_FCE*MANAGEMENT_QUALITY/100,2),
            QUALITY_WEIGHTED_SPEND = round(MAN_SPEND_PER_1000_FCE*MANAGEMENT_QUALITY/100,0),
            FIN_POS_PERC = round((FINANCIAL_POSITION/OP_COST)*100,2),
            HEE_REGION_NAME = gsub("Health Education ","",HEE_REGION_NAME),
            ORG_NAME = gsub("NHS Trust","",ORG_NAME),
            ORG_NAME = gsub("NHS Foundation Trust","",ORG_NAME),
-           MAN_FTE_PER_TEN_MIL_OC = round((MANAGEMENT_FTE*10000000)/OP_COST,2),
+           MAN_FTE_PER_TEN_MIL_OC = round((MANAGERS*10000000)/OP_COST,2),
            SPECIALIST = factor(SPECIALIST, levels=c(0,1), labels=c("Non-specialist","Specialist")),
-           MANAGER_CLINICIAN_RATIO=MANAGEMENT_FTE/CLINICAL_STAFF) %>%
+           MANAGER_CLINICIAN_RATIO=round(MANAGERS/CLINICAL_STAFF,2)) %>%
     select(ORG_CODE,
            ORG_NAME,
            SPECIALIST,
@@ -130,12 +209,14 @@ attach_management_measure = function(providers, afc_pay, non_medics, medics, spe
            NON_ACUTE_DTOC,
            TOTAL_DTOC,
            NHS_SS=MANAGEMENT_QUALITY,
+           JUNIOR_DOCTORS,
            CONSULTANTS,
            DOCTORS,
            NURSES,
+           OTHER_CLINICAL_STAFF,
            CLINICAL_STAFF,
            OTHER_STAFF,
-           MANAGEMENT_FTE,
+           MANAGERS,
            MANAGEMENT_SPEND,
            MAN_FTE_PER_TEN_MIL_OC,
            MAN_FTE_PER_1000_FCE,
@@ -146,11 +227,11 @@ attach_management_measure = function(providers, afc_pay, non_medics, medics, spe
   return(results)
 }
 
-scatter_plot = function(acute_providers, x_var, y_var, size_var, trim, trend_line, facet_var){
+scatter_plot = function(acute_providers, x_var, y_var, size_var, trim, specialist, trend_line, facet_var){
   
   variables = data_frame(
     code=c("fte_clin_ratio","fte_per_ten_mil","fin_pos_perc","op_cost","fin_pos","acute_dtoc","non_acute_dtoc","total_dtoc","rtt","ae","cqc_rating","cqc_well_led_rating","hee_region","nhs_ss","fce","fte","spend","fte_fce","spend_fce","fte_quality","spend_quality"),
-    variable=c("MANAGER_CLINICIAN_RATIO","MAN_FTE_PER_TEN_MIL_OC","NET_FINANCIAL_POSITION_PERCENT","OPERATING_COST","NET_FINANCIAL_POSITION","ACUTE_DTOC","NON_ACUTE_DTOC","TOTAL_DTOC","RTT_SCORE","AE_SCORE","CQC_RATING","CQC_WELL_LED_RATING","HEE_REGION","NHS_SS","ADMISSIONS","MANAGEMENT_FTE","MANAGEMENT_SPEND","MAN_FTE_PER_1000_FCE","MAN_SPEND_PER_1000_FCE","QUALITY_WEIGHTED_FTE","QUALITY_WEIGHTED_SPEND"),
+    variable=c("MANAGER_CLINICIAN_RATIO","MAN_FTE_PER_TEN_MIL_OC","NET_FINANCIAL_POSITION_PERCENT","OPERATING_COST","NET_FINANCIAL_POSITION","ACUTE_DTOC","NON_ACUTE_DTOC","TOTAL_DTOC","RTT_SCORE","AE_SCORE","CQC_RATING","CQC_WELL_LED_RATING","HEE_REGION","NHS_SS","ADMISSIONS","MANAGERS","MANAGEMENT_SPEND","MAN_FTE_PER_1000_FCE","MAN_SPEND_PER_1000_FCE","QUALITY_WEIGHTED_FTE","QUALITY_WEIGHTED_SPEND"),
     label=c("Manager to clinical staff ratio","Management (FTE per £10 million operating cost)","Net financial position (%)","Total Operating Cost (£)","Net financial position (£)","Acute delayed transfers of care","Non-acute delayed transfers of care","Total delayed transfers of care","Referral to treatment in 18 weeks (%)","A&E 4 hour wait target met (%)","CQC Overall Rating","CQC Well Led Rating","Health Education England Region","NHS staff survey consolidated management score","Total inpatient admissions (2016/17)","Management (FTE)","Management Spend (£)","Management (FTE per 1000 admissions)","Management Spend (£ per 1000 admissions)","Quality adjusted (FTE per 1000 admissions)","Quality adjusted (£ per 1000 admissions)")
   )
   
@@ -165,6 +246,10 @@ scatter_plot = function(acute_providers, x_var, y_var, size_var, trim, trend_lin
   
   graph_data = acute_providers %>% 
     filter(MAN_FTE_PER_1000_FCE<trim)
+  
+  if(!specialist){
+    graph_data = graph_data %>% filter(SPECIALIST=="Non-specialist")
+  }
   
   plot = ggplot(data=graph_data, aes_string(x=x$variable, y=y$variable, label="ORG_NAME")) +
     ylab(y$label) +
@@ -201,3 +286,13 @@ scatter_plot = function(acute_providers, x_var, y_var, size_var, trim, trend_lin
   plotly = ggplotly(plot)
   return(plotly)
 }
+
+make_regression_data_set = function(provider_data){
+  regression_data = provider_data %>%
+    select()
+  return(regression_data)
+}
+
+
+
+                   

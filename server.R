@@ -13,17 +13,14 @@ shinyServer(function(input, output, session) {
     attach_management_measure(
       providers, 
       afc_pay, 
-      non_medics, 
-      medics,
-      input$specialist,
-      input$afc_8, 
-      input$level_1_manager, 
-      input$central_functions)
+      managers, 
+      input$staff_group, 
+      input$pay_grade)
   })
   
   output$scatter_plot = renderPlotly({
     withProgress(message = paste0('Updating trust scatter plot'),{
-      scatter_plot(providerData(), input$x_var, input$y_var, input$size_var, input$trim, input$trend_line, input$facet_var)
+      scatter_plot(providerData(), input$x_var, input$y_var, input$size_var, input$trim, input$specialist, input$trend_line, input$facet_var)
     })
   })
   
