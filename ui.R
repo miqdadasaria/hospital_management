@@ -158,14 +158,18 @@ tabPanel("Managment Definition",
                               "Nurses (FTE)" = "nurses",
                               "Other clinical (FTE)" = "other_clinical",
                               "Other non-clinical (FTE)" = "other_non_clinical",
+                              "All doctors (FTE)" = "doctors",
+                              "All clinical staff (FTE)" = "all_clinical",
                               "Management Spend (£)" = "spend", 
                               "NHS staff survey management score" = "nhs_ss", 
                               "Total operating cost" = "op_cost",
                               "# inpatient admissions" = "fce",
                               "Case-mix adjust for age and sex" = "casemix",
                               "Specialist status" = "specialist"), 
-                         selected=c("fte","doctors","consultants","nurses","other_clinical","other_non_clinical","nhs_ss","op_cost","casemix","specialist"),
-                         multiple=TRUE)
+                         selected=c("fte","junior_doctors","consultants","nurses","other_clinical","other_non_clinical","nhs_ss","op_cost","casemix","specialist"),
+                         multiple=TRUE),
+             
+             checkboxInput("mean_centre", label="Mean centre covariates", value=TRUE)
            ),
            mainPanel(
              htmlOutput("regression_results")

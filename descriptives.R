@@ -321,7 +321,7 @@ manager_plot = function(providers){
   return(plotly)
 }
 
-run_regression = function(acute_providers, variables, dependent_vars, independent_vars){
+run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre){
   
   independent_vars_string = vector(mode="character")
   independent_vars_labels = vector(mode="character")
@@ -339,13 +339,17 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   
   formula_independents = paste(independent_vars_string, collapse=" + ")
   
+  independent_vars = acute_providers %>% select(independent_vars_string)
+  if(mean_centre){
+    independent_vars = independent_vars %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
+  }
+  
   regressions = list()
   for(y_var in dependent_vars){
     y = get_variable(y_var, variables)
     dependent_vars_labels = c(dependent_vars_labels, y$label)
     reg_formula = as.formula(paste(y$variable,formula_independents,sep=" ~ "))
-    print(reg_formula)
-    regressions[[y$variable]] = lm(reg_formula, data=acute_providers)
+    regressions[[y$variable]] = lm(reg_formula, data=bind_cols(independent_vars,acute_providers%>%select(y$variable)))
   }
   
   results = paste(capture.output(stargazer(regressions, 

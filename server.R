@@ -80,7 +80,7 @@ shinyServer(function(input, output, session) {
 	
 	output$regression_results = renderText({
 	  withProgress(message = paste0('Calculating regression results'),{
-	    run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars)
+	    run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre)
 	  })
 	})
 	
