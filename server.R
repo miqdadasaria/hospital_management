@@ -24,7 +24,12 @@ shinyServer(function(input, output, session) {
     })
   })
   
-	
+  output$manager_plot = renderPlotly({
+    withProgress(message = paste0('Updating managers violin plot'),{
+      manager_plot(providerData())
+    })
+  })
+  
 	output$trust_data = renderDataTable({
 	  withProgress(message = 'Loading trust data table',{
 	    table = providerData()

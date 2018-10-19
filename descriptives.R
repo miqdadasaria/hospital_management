@@ -69,15 +69,24 @@ providers = tbl(con, "provider") %>%
   left_join(tbl(con, "cqc_rating") %>% filter(POPULATION=="Overall" & QUESTION=="Overall") %>% select(ORG_CODE,RATING_SCORE)) %>%
   left_join(tbl(con, "cqc_rating") %>% filter(POPULATION=="Overall" & QUESTION=="Well-led") %>% select(ORG_CODE,RATING_SCORE_LEADERSHIP=RATING_SCORE)) %>%
   left_join(tbl(con, "nhs_ss_management_score") %>% filter(YEAR==2017 & QUESTION=="overall") %>% mutate(MANAGEMENT_QUALITY=round(((VALUE-1)/4)*100,1)) %>% select(ORG_CODE, MANAGEMENT_QUALITY)) %>%
-  left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2016) %>% select(ORG_CODE, TOTAL_EPISODES_2016 = TOTAL_EPISODES)) %>%
+  left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2016) %>% select(ORG_CODE, TOTAL_EPISODES_2016 = TOTAL_EPISODES,FEMALE_ADMISSIONS,"0-14","15-29","30-44","45-59","60-74","75-89","90+")) %>%
   left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2017) %>% select(ORG_CODE, TOTAL_EPISODES_2017 = TOTAL_EPISODES)) %>%
   left_join(tbl(con, "hee_region")) %>%
   collect() %>%
+  filter(ORG_TYPE == "Acute") %>%
   left_join(staff) %>%
   mutate(RATING = factor(RATING_SCORE,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
   mutate(RATING_LEADERSHIP = factor(RATING_SCORE_LEADERSHIP,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
   mutate(ACUTE_DTOC=round(ACUTE_DTOC,1),NON_ACUTE_DTOC=round(NON_ACUTE_DTOC,1),TOTAL_DTOC=round(TOTAL_DTOC,1)) %>%
-  filter(ORG_TYPE == "Acute") 
+  mutate(FEMALE_ADMISSIONS=round(FEMALE_ADMISSIONS/TOTAL_EPISODES_2016,2),
+         all_age = `0-14`+`15-29`+`30-44`+`45-59`+`60-74`+`75-89`+`90+`,
+         `0-14`=round(`0-14`/all_age,2),
+         `15-29`=round(`15-29`/all_age,2),
+         `30-44`=round(`30-44`/all_age,2),
+         `45-59`=round(`45-59`/all_age,2),
+         `60-74`=round(`60-74`/all_age,2),
+         `75-89`=round(`75-89`/all_age,2),
+         `90+`=round(`90+`/all_age,2))
  
 dbDisconnect(con)
 
@@ -223,7 +232,15 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            MAN_SPEND_PER_1000_FCE,
            QUALITY_WEIGHTED_FTE,
            QUALITY_WEIGHTED_SPEND,
-           MANAGER_CLINICIAN_RATIO)  
+           MANAGER_CLINICIAN_RATIO,
+           FEMALE_ADMISSIONS,
+           `0-14`,
+           `15-29`,
+           `30-44`,
+           `45-59`,
+           `60-74`,
+           `75-89`,
+           `90+`)  
   return(results)
 }
 
@@ -287,11 +304,22 @@ scatter_plot = function(acute_providers, x_var, y_var, size_var, trim, specialis
   return(plotly)
 }
 
-make_regression_data_set = function(provider_data){
-  regression_data = provider_data %>%
-    select()
-  return(regression_data)
+manager_plot = function(providers){
+  plot = ggplot(data=providers,aes(x=MANAGERS)) + 
+    geom_histogram(fill="#E69F00", colour="black") + 
+    xlab("Number of Managers by NHS Trust (FTE)") +
+    theme_bw() + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(), 
+          plot.title = element_blank(),
+          plot.margin = unit(c(1, 1, 1, 1), "lines"),
+          legend.position="none",
+                        text=element_text(family = "Roboto", colour = "#3e3f3a"))
+  plotly = ggplotly(plot)
+  return(plotly)
 }
+
+
 
 
 
