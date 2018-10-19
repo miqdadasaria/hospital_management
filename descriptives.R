@@ -321,6 +321,23 @@ manager_plot = function(providers){
   return(plotly)
 }
 
+manager_counts = function(managers){
+  manager_counts = managers %>% 
+    group_by(STAFF_GROUP,AFC_BAND) %>% 
+    summarise(FTE=sum(FTE)) %>% 
+    spread(AFC_BAND, FTE, fill = 0)
+  
+  manager_counts = manager_counts %>%
+    bind_rows(manager_counts[-1] %>% 
+                summarise_if(is.numeric,sum) %>% 
+                bind_cols("STAFF_GROUP"="Total"))
+  
+  manager_counts = manager_counts %>% 
+                bind_cols("Total"=rowSums(manager_counts[,-1]))
+  
+  return(manager_counts)
+}
+
 run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre){
   
   independent_vars_string = vector(mode="character")

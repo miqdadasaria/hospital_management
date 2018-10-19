@@ -30,6 +30,17 @@ shinyServer(function(input, output, session) {
     })
   })
   
+  output$manager_counts = renderDataTable({
+    withProgress(message = 'Loading manager summary counts data table',{
+      table = manager_counts(managers)
+      datatable(table,
+                style = 'bootstrap',
+                rownames = FALSE,
+                colnames = gsub("_"," ",colnames(table)),
+                options = list(pageLength = 8, autoWidth = TRUE, dom='ftrpi'))
+    })
+  })
+  
 	output$trust_data = renderDataTable({
 	  withProgress(message = 'Loading trust data table',{
 	    table = providerData()

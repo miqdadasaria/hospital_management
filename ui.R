@@ -117,7 +117,11 @@ tabPanel("Managment Definition",
                      selected=c("afc_7","afc_8a","afc_8b","afc_8c","afc_8d","afc_9","afc_vsm","afc_nafc"),
                      multiple=TRUE)),
          mainPanel(
-           plotlyOutput("manager_plot", height="100%", width="100%")
+           tabsetPanel(id="tabset",
+                       tabPanel("Managers Histogram", plotlyOutput("manager_plot", height="100%", width="100%")),
+                       tabPanel("Staff", div(dataTableOutput("manager_counts"), style = "font-size:70%"))
+           )
+           
          )
   ),
 
