@@ -174,7 +174,9 @@ tabPanel("Managment Definition",
                          selected=c("fte","junior_doctors","consultants","nurses","other_clinical","other_non_clinical","nhs_ss","op_cost","casemix","specialist"),
                          multiple=TRUE),
              
-             checkboxInput("mean_centre", label="Mean centre covariates", value=TRUE)
+             checkboxInput("mean_centre", label="Mean centre covariates", value=TRUE),
+             checkboxInput("log_dep_vars", label="Log dependent variables", value=FALSE)
+             
            ),
            mainPanel(
              htmlOutput("regression_results")

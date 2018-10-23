@@ -342,7 +342,7 @@ manager_counts = function(managers){
   return(managers)
 }
 
-run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre){
+run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars){
   
   independent_vars_string = vector(mode="character")
   independent_vars_labels = vector(mode="character")
@@ -368,8 +368,15 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   regressions = list()
   for(y_var in dependent_vars){
     y = get_variable(y_var, variables)
-    dependent_vars_labels = c(dependent_vars_labels, y$label)
-    reg_formula = as.formula(paste(y$variable,formula_independents,sep=" ~ "))
+    if(log_dep_vars){
+      dep_var = paste0("log(",y$variable,")")
+      dep_var_label = paste0("log ", y$label)
+    } else {
+      dep_var = y$variable
+      dep_var_label = y$label
+    }
+    dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
+    reg_formula = as.formula(paste(dep_var,formula_independents,sep=" ~ "))
     regressions[[y$variable]] = lm(reg_formula, data=bind_cols(independent_vars,acute_providers%>%select(y$variable)))
   }
   
