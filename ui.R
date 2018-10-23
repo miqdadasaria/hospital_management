@@ -171,12 +171,13 @@ tabPanel("Managment Definition",
                               "# inpatient admissions" = "fce",
                               "Case-mix adjust for age and sex" = "casemix",
                               "Specialist status" = "specialist"), 
-                         selected=c("fte","junior_doctors","consultants","nurses","other_clinical","other_non_clinical","nhs_ss","op_cost","casemix","specialist"),
+                         selected=c("fte","all_clinical","other_non_clinical","nhs_ss","op_cost","specialist"),
                          multiple=TRUE),
              
              checkboxInput("mean_centre", label="Mean centre covariates", value=TRUE),
-             checkboxInput("log_dep_vars", label="Log dependent variables", value=FALSE)
-             
+             checkboxInput("log_dep_vars", label="Log dependent variables", value=FALSE),
+             checkboxInput("log_indep_vars", label="Log independent variables", value=FALSE),
+             checkboxInput("interactions", label="Include interaction terms", value=FALSE)
            ),
            mainPanel(
              htmlOutput("regression_results")

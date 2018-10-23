@@ -34,7 +34,7 @@ others = non_medics %>%
            !grepl("manager",STAFF_GROUP_2_NAME,ignore.case=TRUE)) %>%
   group_by(ORG_CODE) %>%
   summarise(OTHER_STAFF=round(sum(FTE),1))
-  
+
 consultants = medics %>%
   filter(grepl("consultant",GRADE,ignore.case=TRUE)) %>%
   group_by(ORG_CODE) %>%
@@ -80,15 +80,15 @@ providers = tbl(con, "provider") %>%
   mutate(RATING_LEADERSHIP = factor(RATING_SCORE_LEADERSHIP,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
   mutate(ACUTE_DTOC=round(ACUTE_DTOC,1),NON_ACUTE_DTOC=round(NON_ACUTE_DTOC,1),TOTAL_DTOC=round(TOTAL_DTOC,1)) %>%
   mutate(FEMALE_ADMISSIONS=round(FEMALE_ADMISSIONS/TOTAL_EPISODES_2016,2)*100,
-        all_age = `0-14`+`15-29`+`30-44`+`45-59`+`60-74`+`75-89`+`90+`,
-        AGE_0_14=round(`0-14`/all_age,2)*100,
-        AGE_15_29=round(`15-29`/all_age,2)*100,
-        AGE_30_44=round(`30-44`/all_age,2)*100,
-        AGE_45_59=round(`45-59`/all_age,2)*100,
-        AGE_60_74=round(`60-74`/all_age,2)*100,
-        AGE_75_89=round(`75-89`/all_age,2)*100,
-        AGE_90_PLUS=round(`90+`/all_age,2)*100)
- 
+         all_age = `0-14`+`15-29`+`30-44`+`45-59`+`60-74`+`75-89`+`90+`,
+         AGE_0_14=round(`0-14`/all_age,2)*100,
+         AGE_15_29=round(`15-29`/all_age,2)*100,
+         AGE_30_44=round(`30-44`/all_age,2)*100,
+         AGE_45_59=round(`45-59`/all_age,2)*100,
+         AGE_60_74=round(`60-74`/all_age,2)*100,
+         AGE_75_89=round(`75-89`/all_age,2)*100,
+         AGE_90_PLUS=round(`90+`/all_age,2)*100)
+
 dbDisconnect(con)
 
 managers = non_medics %>% 
@@ -107,7 +107,7 @@ get_variable = function(var, definitions){
 }
 
 attach_management_measure = function(providers, afc_pay, managers, selected_staff_group, selected_pay_grade){
-
+  
   pay_grade = vector()
   if("afc_2" %in% selected_pay_grade){
     pay_grade = append(pay_grade,"Band 2")  
@@ -187,7 +187,7 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
   if("scientific" %in% selected_staff_group){
     staff_group = append(staff_group,"Scientific, therapeutic & technical staff")    
   }
-    
+  
   managers = managers %>% filter(STAFF_GROUP %in% staff_group)
   
   managers = managers %>%
@@ -195,7 +195,7 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
     mutate(MANAGEMENT_SPEND=round(FTE*PAY,0)) %>%
     group_by(ORG_CODE) %>%
     summarise(MANAGEMENT_SPEND=sum(MANAGEMENT_SPEND), MANAGERS=round(sum(FTE),1))
-    
+  
   
   results = providers %>%
     left_join(managers) %>% 
@@ -297,11 +297,11 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
   }
   
   plot = plot + theme_bw() + theme(panel.grid.major = element_blank(), 
-                            panel.grid.minor = element_blank(), 
-                            plot.title = element_blank(),
-                            plot.margin = unit(c(1, 1, 1, 1), "lines"),
-                            legend.position="none",
-                            text=element_text(family = "Roboto", colour = "#3e3f3a"))
+                                   panel.grid.minor = element_blank(), 
+                                   plot.title = element_blank(),
+                                   plot.margin = unit(c(1, 1, 1, 1), "lines"),
+                                   legend.position="none",
+                                   text=element_text(family = "Roboto", colour = "#3e3f3a"))
   plotly = ggplotly(plot)
   return(plotly)
 }
@@ -316,7 +316,7 @@ manager_plot = function(providers){
           plot.title = element_blank(),
           plot.margin = unit(c(1, 1, 1, 1), "lines"),
           legend.position="none",
-                        text=element_text(family = "Roboto", colour = "#3e3f3a"))
+          text=element_text(family = "Roboto", colour = "#3e3f3a"))
   plotly = ggplotly(plot)
   return(plotly)
 }
@@ -333,7 +333,7 @@ manager_counts = function(managers){
                 bind_cols("STAFF_GROUP"="Total"))
   
   manager_counts = manager_counts %>% 
-                bind_cols("Total"=rowSums(manager_counts[,-1]))
+    bind_cols("Total"=rowSums(manager_counts[,-1]))
   
   manager_percentages = manager_counts %>% mutate_if(is.numeric, function(x){round(x*100/max(manager_counts[,-1]),2)}) 
   
@@ -342,7 +342,7 @@ manager_counts = function(managers){
   return(managers)
 }
 
-run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars){
+run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions){
   
   independent_vars_string = vector(mode="character")
   independent_vars_labels = vector(mode="character")
@@ -353,18 +353,29 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   }
   
   for(x_var in independent_vars){
-      x = get_variable(x_var, variables)
-      independent_vars_string = c(independent_vars_string, x$variable)
-      independent_vars_labels = c(independent_vars_labels, x$label)
+    x = get_variable(x_var, variables)
+    if(log_indep_vars & acute_providers %>% select(x$variable) %>% summarise_all(is.numeric)){
+      indep_var = paste0("log(",x$variable,")")
+      indep_var_label = paste0("log ", x$label)
+    } else {
+      indep_var = x$variable
+      indep_var_label = x$label
+    }    
+    independent_vars_string = c(independent_vars_string, indep_var)
+    independent_vars_labels = c(independent_vars_labels, indep_var_label)
   }
   
-  formula_independents = paste(independent_vars_string, collapse=" + ")
+  if(interactions){
+    formula_independents = paste(independent_vars_string, collapse=" * ")
+  } else {
+    formula_independents = paste(independent_vars_string, collapse=" + ")
+  }
   
-  independent_vars = acute_providers %>% select(independent_vars_string)
+  independent_vars = acute_providers %>% select(gsub("log\\(|)","",independent_vars_string))
   if(mean_centre){
     independent_vars = independent_vars %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
   }
-  
+  str(independent_vars)
   regressions = list()
   for(y_var in dependent_vars){
     y = get_variable(y_var, variables)
@@ -387,4 +398,3 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   return(results)
 }
 
-                   
