@@ -335,7 +335,11 @@ manager_counts = function(managers){
   manager_counts = manager_counts %>% 
                 bind_cols("Total"=rowSums(manager_counts[,-1]))
   
-  return(manager_counts)
+  manager_percentages = manager_counts %>% mutate_if(is.numeric, function(x){round(x*100/max(manager_counts[,-1]),2)}) 
+  
+  managers = list("counts" = manager_counts, "percentages" = manager_percentages)
+  
+  return(managers)
 }
 
 run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre){

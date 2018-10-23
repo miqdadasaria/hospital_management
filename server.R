@@ -32,7 +32,18 @@ shinyServer(function(input, output, session) {
   
   output$manager_counts = renderDataTable({
     withProgress(message = 'Loading manager summary counts data table',{
-      table = manager_counts(managers)
+      table = manager_counts(managers)[["counts"]]
+      datatable(table,
+                style = 'bootstrap',
+                rownames = FALSE,
+                colnames = gsub("_"," ",colnames(table)),
+                options = list(pageLength = 8, autoWidth = TRUE, dom='ftrpi'))
+    })
+  })
+
+  output$manager_percentages = renderDataTable({
+    withProgress(message = 'Loading manager summary percentages data table',{
+      table = manager_counts(managers)[["percentages"]]
       datatable(table,
                 style = 'bootstrap',
                 rownames = FALSE,
@@ -41,6 +52,7 @@ shinyServer(function(input, output, session) {
     })
   })
   
+    
 	output$trust_data = renderDataTable({
 	  withProgress(message = 'Loading trust data table',{
 	    table = providerData()

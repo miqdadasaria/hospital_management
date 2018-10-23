@@ -119,7 +119,8 @@ tabPanel("Managment Definition",
          mainPanel(
            tabsetPanel(id="tabset",
                        tabPanel("Managers Histogram", plotlyOutput("manager_plot", height="100%", width="100%")),
-                       tabPanel("Staff", div(dataTableOutput("manager_counts"), style = "font-size:70%"))
+                       tabPanel("Managers (counts)", div(dataTableOutput("manager_counts"), style = "font-size:70%")),
+                       tabPanel("Managers (%)", div(dataTableOutput("manager_percentages"), style = "font-size:70%"))
            )
            
          )
