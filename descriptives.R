@@ -306,10 +306,18 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
   return(plotly)
 }
 
-manager_plot = function(providers){
-  plot = ggplot(data=providers,aes(x=MANAGERS)) + 
+manager_plot = function(providers, variables, x_var, specialist){
+  
+  x = get_variable(x_var, variables)
+  
+  graph_data = providers
+  if(!specialist){
+    graph_data = graph_data %>% filter(SPECIALIST=="Non-specialist")
+  }
+    
+  plot = ggplot(data=graph_data,aes_string(x$variable)) + 
     geom_histogram(fill="#E69F00", colour="black") + 
-    xlab("Number of Managers by NHS Trust (FTE)") +
+    xlab(x$label) +
     theme_bw() + 
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(), 
@@ -398,3 +406,39 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   return(results)
 }
 
+
+descriptives = function(providers){
+  doctors = medics %>% 
+    inner_join(providers) %>% 
+    mutate(CONSULTANT=GRADE_SORT_ORDER==1) %>% 
+    group_by(CONSULTANT) %>% 
+    summarise(FTE=sum(FTE)) %>% 
+    spread(CONSULTANT,FTE) %>% 
+    mutate(MAIN_STAFF_GROUP_NAME="Doctor", STAFF_GROUP='Doctor') %>% 
+    select(MAIN_STAFF_GROUP_NAME, STAFF_GROUP, MANAGER=`TRUE`, OTHER=`FALSE`) %>% 
+    ungroup()
+  
+  others = non_medics %>%
+    inner_join(providers) %>% 
+    mutate(MANAGER=grepl("manager",LEVEL,ignore.case=TRUE)) %>%
+    mutate(STAFF_GROUP = if_else(grepl("manager",STAFF_GROUP_1_NAME,ignore.case = TRUE),paste("Manager",gsub("00[1234]_","",AREA)),STAFF_GROUP_1_NAME)) %>% 
+    group_by(MAIN_STAFF_GROUP_NAME, STAFF_GROUP, MANAGER) %>% 
+    summarise(FTE=sum(FTE)) %>% 
+    spread(MANAGER,FTE,fill=0) %>% 
+    select(MAIN_STAFF_GROUP_NAME, STAFF_GROUP, MANAGER=`TRUE`, OTHER=`FALSE`) %>% 
+    ungroup()
+    
+  all_staff = bind_rows(others, doctors) %>% 
+    mutate(MAIN_STAFF_GROUP=if_else(grepl("Doctor",STAFF_GROUP),
+                                    "Doctor",
+                                    if_else(grepl("Nurse",STAFF_GROUP),
+                                           "Nurse",
+                                                   if_else(grepl("Professionally",MAIN_STAFF_GROUP_NAME),
+                                                           "Other clinical",
+                                                   "Other non-clinical")))) %>%
+    select(MAIN_STAFF_GROUP,STAFF_GROUP, MANAGER, OTHER)
+  
+  all_staff_percentages = all_staff %>% mutate_if(is.numeric,function(x){x*100/sum(all_staff[-c(1,2)])})
+  
+  staff_summary = all_staff_percentages %>% group_by(MAIN_STAFF_GROUP) %>% summarise(MANAGER=sum(MANAGER),OTHER=sum(OTHER)) %>% mutate(TOTAL = MANAGER+OTHER)
+}

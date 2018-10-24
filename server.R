@@ -26,7 +26,7 @@ shinyServer(function(input, output, session) {
   
   output$manager_plot = renderPlotly({
     withProgress(message = paste0('Updating managers plot'),{
-      manager_plot(providerData())
+      manager_plot(providerData(), variable_definitions, input$x_var_hist, input$specialist_hist)
     })
   })
   
