@@ -49,7 +49,7 @@ all_staff = non_medics %>%
   inner_join(medics %>% 
                group_by(ORG_CODE) %>% 
                summarise(M_FTE=sum(FTE)) ) %>%
-  mutate(ALL_STAFF = NM_FTE + M_FTE) %>%
+  mutate(ALL_STAFF = round(NM_FTE + M_FTE,1)) %>%
   select(ORG_CODE, ALL_STAFF)
 
 

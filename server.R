@@ -92,7 +92,7 @@ shinyServer(function(input, output, session) {
 	output$management_data = renderDataTable({
 	  withProgress(message = 'Loading management data table',{
 	    table = providerData()
-	    table = table %>% select(c(2,33:41))
+	    table = table %>% select(c(2,33:42))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,
