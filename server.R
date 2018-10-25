@@ -68,7 +68,7 @@ shinyServer(function(input, output, session) {
 	output$outcomes_data = renderDataTable({
 	  withProgress(message = 'Loading outcomes data table',{
 	    table = providerData()
-	    table = table %>% select(c(2,15:24))
+	    table = table %>% select(c(2,15:25))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,
@@ -80,7 +80,7 @@ shinyServer(function(input, output, session) {
 	output$staff_data = renderDataTable({
 	  withProgress(message = 'Loading staff data table',{
 	    table = providerData()
-	    table = table %>% select(c(2,25:33))
+	    table = table %>% select(c(2,26:34))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,
@@ -92,7 +92,7 @@ shinyServer(function(input, output, session) {
 	output$management_data = renderDataTable({
 	  withProgress(message = 'Loading management data table',{
 	    table = providerData()
-	    table = table %>% select(c(2,33:42))
+	    table = table %>% select(c(2,34:43))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,

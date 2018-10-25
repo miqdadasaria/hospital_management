@@ -83,6 +83,7 @@ providers = tbl(con, "provider") %>%
   left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2016) %>% select(ORG_CODE, TOTAL_EPISODES_2016 = TOTAL_EPISODES,FEMALE_ADMISSIONS,"0-14","15-29","30-44","45-59","60-74","75-89","90+")) %>%
   left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2017) %>% select(ORG_CODE, TOTAL_EPISODES_2017 = TOTAL_EPISODES)) %>%
   left_join(tbl(con, "shmi") %>% filter(YEAR==2017) %>% select(ORG_CODE, SHMI)) %>%
+  left_join(tbl(con, "stability") %>% filter(YEAR==2017 & STABILITY>0) %>% select(ORG_CODE, STABILITY)) %>%
   left_join(tbl(con, "hee_region")) %>%
   collect() %>%
   filter(ORG_TYPE == "Acute") %>%
@@ -240,6 +241,7 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            CQC_WELL_LED_RATING=RATING_LEADERSHIP,
            NET_FINANCIAL_POSITION=FINANCIAL_POSITION,
            NET_FINANCIAL_POSITION_PERCENT=FIN_POS_PERC,
+           STABILITY,
            RTT_SCORE,
            AE_SCORE,
            ACUTE_DTOC,

@@ -21,6 +21,7 @@ dtoc = read_csv("DTOC_august_2018.csv")
 rtt = read_csv("RTT-March-2018-full-extract.csv")
 financial_position = read_csv("financials_1617.csv")
 shmi = read_csv("shmi.csv")
+stability = read_csv("stability.csv")
 
 # calculate total score per question by provider
 # and convert data to long 'tidy' format
@@ -61,6 +62,7 @@ dbWriteTable(conn = db, name = "dtoc", dtoc, overwrite=TRUE)
 dbWriteTable(conn = db, name = "rtt_target", rtt, overwrite=TRUE)
 dbWriteTable(conn = db, name = "financial_position", financial_position, overwrite=TRUE)
 dbWriteTable(conn = db, name = "shmi", shmi, overwrite=TRUE)
+dbWriteTable(conn = db, name = "stability", stability, overwrite=TRUE)
 
 dbDisconnect(db)
 

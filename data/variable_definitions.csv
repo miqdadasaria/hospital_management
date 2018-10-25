@@ -39,3 +39,4 @@ doctors,DOCTORS,All doctors (FTE)
 all_clinical,CLINICAL_STAFF,All clinical staff (FTE)
 shmi,SHMI,Summary Hospital-level Mortality Indicator
 man_percent,MAN_PERCENT,Management (% of all staff)
+stability,STABILITY,Stability excluding doctors in training (%)
