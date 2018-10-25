@@ -28,7 +28,6 @@ other_clinical = non_medics %>%
   group_by(ORG_CODE) %>%
   summarise(OTHER_CLINICAL_STAFF=round(sum(FTE),1))
 
-
 others = non_medics %>%
   filter(!grepl("Professionally qualified clinical staff",MAIN_STAFF_GROUP_NAME,ignore.case=TRUE) &
            !grepl("manager",STAFF_GROUP_2_NAME,ignore.case=TRUE)) %>%
@@ -44,6 +43,16 @@ doctors = medics %>%
   group_by(ORG_CODE) %>%
   summarise(DOCTORS=round(sum(FTE),1))
 
+all_staff = non_medics %>% 
+  group_by(ORG_CODE) %>% 
+  summarise(NM_FTE=sum(FTE)) %>%
+  inner_join(medics %>% 
+               group_by(ORG_CODE) %>% 
+               summarise(M_FTE=sum(FTE)) ) %>%
+  mutate(ALL_STAFF = NM_FTE + M_FTE) %>%
+  select(ORG_CODE, ALL_STAFF)
+
+
 junior_doctors = medics %>%
   filter(!grepl("consultant",GRADE,ignore.case=TRUE)) %>%
   group_by(ORG_CODE) %>%
@@ -55,7 +64,8 @@ staff = others %>%
   left_join(consultants) %>%
   left_join(doctors) %>%
   left_join(other_clinical) %>%
-  mutate(CLINICAL_STAFF=DOCTORS+NURSES+OTHER_CLINICAL_STAFF)
+  mutate(CLINICAL_STAFF=DOCTORS+NURSES+OTHER_CLINICAL_STAFF) %>%
+  left_join(all_staff)
 
 afc_pay = tbl(con, "pay_scale") %>% 
   collect() %>%
@@ -72,6 +82,7 @@ providers = tbl(con, "provider") %>%
   left_join(tbl(con, "nhs_ss_management_score") %>% filter(YEAR==2017 & QUESTION=="overall") %>% mutate(MANAGEMENT_QUALITY=round(((VALUE-1)/4)*100,1)) %>% select(ORG_CODE, MANAGEMENT_QUALITY)) %>%
   left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2016) %>% select(ORG_CODE, TOTAL_EPISODES_2016 = TOTAL_EPISODES,FEMALE_ADMISSIONS,"0-14","15-29","30-44","45-59","60-74","75-89","90+")) %>%
   left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2017) %>% select(ORG_CODE, TOTAL_EPISODES_2017 = TOTAL_EPISODES)) %>%
+  left_join(tbl(con, "shmi") %>% filter(YEAR==2017) %>% select(ORG_CODE, SHMI)) %>%
   left_join(tbl(con, "hee_region")) %>%
   collect() %>%
   filter(ORG_TYPE == "Acute") %>%
@@ -201,6 +212,7 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
     left_join(managers) %>% 
     mutate(MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES_2016,0), 
            MAN_FTE_PER_1000_FCE = round(MANAGERS*1000/TOTAL_EPISODES_2016,2),
+           MAN_PERCENT = round((MANAGERS/ALL_STAFF)*100,2),
            QUALITY_WEIGHTED_FTE = round(MAN_FTE_PER_1000_FCE*MANAGEMENT_QUALITY/100,2),
            QUALITY_WEIGHTED_SPEND = round(MAN_SPEND_PER_1000_FCE*MANAGEMENT_QUALITY/100,0),
            FIN_POS_PERC = round((FINANCIAL_POSITION/OP_COST)*100,2),
@@ -233,6 +245,8 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            ACUTE_DTOC,
            NON_ACUTE_DTOC,
            TOTAL_DTOC,
+           SHMI,
+           ALL_STAFF,
            JUNIOR_DOCTORS,
            CONSULTANTS,
            DOCTORS,
@@ -242,6 +256,7 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            OTHER_STAFF,
            MANAGERS,
            NHS_SS=MANAGEMENT_QUALITY,
+           MAN_PERCENT,
            MANAGEMENT_SPEND,
            MAN_FTE_PER_TEN_MIL_OC,
            MAN_FTE_PER_1000_FCE,
@@ -296,6 +311,10 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
     plot = plot + geom_hline(yintercept=0, linetype="dashed", colour="darkgrey", size=0.5)
   }
   
+  if(grepl("shmi", y_var)){
+    plot = plot + geom_hline(yintercept=1, linetype="dashed", colour="darkgrey", size=0.5)
+  }
+  
   plot = plot + theme_bw() + theme(panel.grid.major = element_blank(), 
                                    panel.grid.minor = element_blank(), 
                                    plot.title = element_blank(),
@@ -306,7 +325,7 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
   return(plotly)
 }
 
-manager_plot = function(providers, variables, x_var, specialist){
+histogram_plot = function(providers, variables, x_var, specialist){
   
   x = get_variable(x_var, variables)
   
@@ -318,6 +337,7 @@ manager_plot = function(providers, variables, x_var, specialist){
   plot = ggplot(data=graph_data,aes_string(x$variable)) + 
     geom_histogram(fill="#E69F00", colour="black") + 
     xlab(x$label) +
+    ylab("Count of acute NHS trusts") +
     theme_bw() + 
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(), 

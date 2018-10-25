@@ -26,7 +26,7 @@ shinyServer(function(input, output, session) {
   
   output$manager_plot = renderPlotly({
     withProgress(message = paste0('Updating managers plot'),{
-      manager_plot(providerData(), variable_definitions, input$x_var_hist, input$specialist_hist)
+      histogram_plot(providerData(), variable_definitions, input$x_var_hist_man, input$specialist_hist_man)
     })
   })
   
@@ -68,7 +68,7 @@ shinyServer(function(input, output, session) {
 	output$outcomes_data = renderDataTable({
 	  withProgress(message = 'Loading outcomes data table',{
 	    table = providerData()
-	    table = table %>% select(c(2,15:23))
+	    table = table %>% select(c(2,15:24))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,
@@ -80,7 +80,7 @@ shinyServer(function(input, output, session) {
 	output$staff_data = renderDataTable({
 	  withProgress(message = 'Loading staff data table',{
 	    table = providerData()
-	    table = table %>% select(c(2,24:31))
+	    table = table %>% select(c(2,25:33))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,
@@ -92,12 +92,18 @@ shinyServer(function(input, output, session) {
 	output$management_data = renderDataTable({
 	  withProgress(message = 'Loading management data table',{
 	    table = providerData()
-	    table = table %>% select(c(2,31:39))
+	    table = table %>% select(c(2,33:41))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,
 	              colnames = gsub("_"," ",colnames(table)),
 	              options = list(pageLength = 8, autoWidth = TRUE, dom='ftrpi'))
+	  })
+	})
+	
+	output$histogram = renderPlotly({
+	  withProgress(message = paste0('Updating variable distribution plot'),{
+	    histogram_plot(providerData(), variable_definitions, input$x_var_hist, input$specialist_hist)
 	  })
 	})
 	

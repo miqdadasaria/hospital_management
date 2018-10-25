@@ -1,18 +1,19 @@
 ﻿code,variable,label
 acute_dtoc,ACUTE_DTOC,Acute delayed transfers of care
 ae,AE_SCORE,A&E 4 hour wait target met (%)
+all_staff,ALL_STAFF,All staff (FTE)
 cqc_rating,CQC_RATING,CQC Overall Rating
 cqc_well_led_rating,CQC_WELL_LED_RATING,CQC Well Led Rating
 fce,ADMISSIONS,Total inpatient admissions (2016/17)
 fin_pos,NET_FINANCIAL_POSITION,Net financial position (£)
-fin_pos_perc,NET_FINANCIAL_POSITION_PERCENT,Net financial position (%)
+fin_pos_perc,NET_FINANCIAL_POSITION_PERCENT,Net financial position (% of operating cost)
 fte,MANAGERS,Management (FTE)
 fte_clin_ratio,MANAGER_CLINICIAN_RATIO,Manager to clinical staff ratio
 fte_fce,MAN_FTE_PER_1000_FCE,Management (FTE per 1000 admissions)
 fte_per_ten_mil,MAN_FTE_PER_TEN_MIL_OC,Management (FTE per £10 million operating cost)
 fte_quality,QUALITY_WEIGHTED_FTE,Quality adjusted (FTE per 1000 admissions)
 hee_region,HEE_REGION,Health Education England Region
-nhs_ss,NHS_SS,NHS staff survey consolidated management score
+nhs_ss,NHS_SS,NHS staff survey consolidated management score (%)
 non_acute_dtoc,NON_ACUTE_DTOC,Non-acute delayed transfers of care
 op_cost,OPERATING_COST,Total Operating Cost (£)
 rtt,RTT_SCORE,Referral to treatment in 18 weeks (%)
@@ -36,3 +37,5 @@ age_75_89,AGE_75_89,Inpatient admissions age 75-89 (%)
 age_90,AGE_90_PLUS,Inpatient admissions age 90+ (%)
 doctors,DOCTORS,All doctors (FTE)
 all_clinical,CLINICAL_STAFF,All clinical staff (FTE)
+shmi,SHMI,Summary Hospital-level Mortality Indicator
+man_percent,MAN_PERCENT,Management (% of all staff)

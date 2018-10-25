@@ -1,5 +1,6 @@
 library("tidyverse")
 
+working_dir = getwd()
 setwd("data/csv")
 inpatient = read_csv("inpatient_data.csv")
 inpatient = inpatient %>% mutate(ORG_CODE = str_remove(ORG_CODE, "-X"))
@@ -19,6 +20,7 @@ ae_target = read_csv("AE_target_Q42017.csv")
 dtoc = read_csv("DTOC_august_2018.csv")
 rtt = read_csv("RTT-March-2018-full-extract.csv")
 financial_position = read_csv("financials_1617.csv")
+shmi = read_csv("shmi.csv")
 
 # calculate total score per question by provider
 # and convert data to long 'tidy' format
@@ -58,11 +60,10 @@ dbWriteTable(conn = db, name = "ae_target", ae_target, overwrite=TRUE)
 dbWriteTable(conn = db, name = "dtoc", dtoc, overwrite=TRUE)
 dbWriteTable(conn = db, name = "rtt_target", rtt, overwrite=TRUE)
 dbWriteTable(conn = db, name = "financial_position", financial_position, overwrite=TRUE)
+dbWriteTable(conn = db, name = "shmi", shmi, overwrite=TRUE)
 
 dbDisconnect(db)
 
-nhs_ss %>% filter(QUESTION=="overall" & SCORE=="TOTAL_SCORE") %>%
-  inner_join(provider) %>%
-  filter(ORG_TYPE=="Acute") %>%
-  ggplot(aes(x=VALUE)) + geom_histogram(stat="bin", binwidth=0.03)
+setwd(working_dir)
+
 
