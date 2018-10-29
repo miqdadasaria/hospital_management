@@ -424,7 +424,7 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   results = paste(capture.output(stargazer(regressions, 
                                            covariate.labels=independent_vars_labels,
                                            dep.var.labels=dependent_vars_labels,
-                                           type=output)), collapse="") 
+                                           type=output)), collapse="\n") 
   return(results)
 }
 
