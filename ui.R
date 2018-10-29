@@ -148,7 +148,7 @@ tabPanel("Managment Definition",
                        tabPanel("Staff", div(dataTableOutput("staff_data"), style = "font-size:70%")),
                        tabPanel("Outcomes", div(dataTableOutput("outcomes_data"), style = "font-size:70%")),
                        tabPanel("Management Measures", div(dataTableOutput("management_data"), style = "font-size:70%")),
-                       tabPanel("Plot distributions",
+                       tabPanel("Explore and Download Data",
                                 sidebarPanel(
                                   h4("Plot distributions of variables by acute NHS Trust"),
 
@@ -192,7 +192,8 @@ tabPanel("Managment Definition",
                                                    "Total inpatient admissions (2016/17)" = "fce",
                                                    "Total Operating Cost (£)" = "op_cost"), 
                                               selected="ae"),
-                                  checkboxInput("specialist_hist", label="Include specialist hospitals", value=FALSE)
+                                  checkboxInput("specialist_hist", label="Include specialist hospitals", value=FALSE),
+                                  downloadButton("download_raw_data", "Download Full Dataset in CSV format")
                                 ),
                                 mainPanel(
                                   plotlyOutput("histogram", height="100%", width="100%")
@@ -243,7 +244,16 @@ tabPanel("Managment Definition",
              checkboxInput("mean_centre", label="Mean centre covariates", value=FALSE),
              checkboxInput("log_dep_vars", label="Log dependent variables", value=FALSE),
              checkboxInput("log_indep_vars", label="Log independent variables", value=FALSE),
-             checkboxInput("interactions", label="Include interaction terms", value=FALSE)
+             checkboxInput("interactions", label="Include interaction terms", value=FALSE),
+             selectInput("regression_output_type", "Choose a download format:",
+                         list("LaTeX" = "latex",
+                              "Text" = "text",
+                              "HTML" = "html"), 
+                         selected=c("latex")),
+             
+             # Button
+             downloadButton("download_regression", "Download Regression Results")
+             
            ),
            mainPanel(
              htmlOutput("regression_results")

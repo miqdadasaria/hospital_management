@@ -109,8 +109,24 @@ shinyServer(function(input, output, session) {
 	
 	output$regression_results = renderText({
 	  withProgress(message = paste0('Calculating regression results'),{
-	    run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions)
+	    run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, "html")
 	  })
 	})
+	
+	output$download_regression <- downloadHandler(
+	  filename = "regression_results.txt",
+	  content = function(file) {
+	    results = run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, input$regression_output_type)
+	    cat(results,file=file)
+	  }
+	)
+	
+	output$download_raw_data <- downloadHandler(
+	  filename = "raw_data.csv",
+	  content = function(file) {
+	    results = providerData()
+	    write_csv(results,file)
+	  }
+	)
 	
 })

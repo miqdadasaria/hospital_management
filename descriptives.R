@@ -372,7 +372,7 @@ manager_counts = function(managers){
   return(managers)
 }
 
-run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions){
+run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions, output){
   
   independent_vars_string = vector(mode="character")
   independent_vars_labels = vector(mode="character")
@@ -424,7 +424,7 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   results = paste(capture.output(stargazer(regressions, 
                                            covariate.labels=independent_vars_labels,
                                            dep.var.labels=dependent_vars_labels,
-                                           type="html")), collapse="") 
+                                           type=output)), collapse="") 
   return(results)
 }
 
