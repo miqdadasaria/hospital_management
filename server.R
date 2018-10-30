@@ -8,7 +8,8 @@ library(shiny)
 source("descriptives.R")
 
 shinyServer(function(input, output, session) {
-  
+
+  ##### central provider level dataset that drives all outouts ####
   providerData = reactive({
     attach_management_measure(
       providers, 
@@ -17,13 +18,15 @@ shinyServer(function(input, output, session) {
       input$staff_group, 
       input$pay_grade)
   })
-  
+
+  ##### outputs on descriptives tab ####  
   output$scatter_plot = renderPlotly({
     withProgress(message = paste0('Updating trust scatter plot'),{
       scatter_plot(providerData(), variable_definitions, input$x_var, input$y_var, input$size_var, input$trim, input$specialist, input$trend_line, input$facet_var)
     })
   })
   
+  ##### outputs on management definitions tab ####
   output$manager_plot = renderPlotly({
     withProgress(message = paste0('Updating managers plot'),{
       histogram_plot(providerData(), variable_definitions, input$x_var_hist_man, input$specialist_hist_man)
@@ -52,7 +55,8 @@ shinyServer(function(input, output, session) {
     })
   })
   
-    
+  ##### outputs on raw data tab ####
+  
 	output$trust_data = renderDataTable({
 	  withProgress(message = 'Loading trust data table',{
 	    table = providerData()
@@ -77,10 +81,22 @@ shinyServer(function(input, output, session) {
 	  })
 	})
 	
-	output$staff_data = renderDataTable({
+	output$staff_num_data = renderDataTable({
 	  withProgress(message = 'Loading staff data table',{
 	    table = providerData()
 	    table = table %>% select(c(2,26:34))
+	    datatable(table,
+	              style = 'bootstrap',
+	              rownames = FALSE,
+	              colnames = gsub("_"," ",colnames(table)),
+	              options = list(pageLength = 8, autoWidth = TRUE, dom='ftrpi'))
+	  })
+	})
+
+	output$staff_percent_data = renderDataTable({
+	  withProgress(message = 'Loading staff data table',{
+	    table = providerData()
+	    table = table %>% select(c(2,35:42))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,
@@ -92,7 +108,7 @@ shinyServer(function(input, output, session) {
 	output$management_data = renderDataTable({
 	  withProgress(message = 'Loading management data table',{
 	    table = providerData()
-	    table = table %>% select(c(2,34:43))
+	    table = table %>% select(c(2,34,42:50))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,
@@ -107,6 +123,16 @@ shinyServer(function(input, output, session) {
 	  })
 	})
 	
+	output$download_raw_data <- downloadHandler(
+	  filename = "raw_data.csv",
+	  content = function(file) {
+	    results = providerData()
+	    write_csv(results,file)
+	  }
+	)
+	
+	##### outputs on regressions tab ####
+	
 	output$regression_results = renderText({
 	  withProgress(message = paste0('Calculating regression results'),{
 	    run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, "html")
@@ -118,14 +144,6 @@ shinyServer(function(input, output, session) {
 	  content = function(file) {
 	    results = run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, input$regression_output_type)
 	    cat(results,file=file)
-	  }
-	)
-	
-	output$download_raw_data <- downloadHandler(
-	  filename = "raw_data.csv",
-	  content = function(file) {
-	    results = providerData()
-	    write_csv(results,file)
 	  }
 	)
 	

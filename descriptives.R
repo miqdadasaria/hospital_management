@@ -7,7 +7,7 @@ library("stargazer")
 db_file = "data/NHS_management.sqlite3"
 con = dbConnect(SQLite(), dbname=db_file)
 
-# summarise descriptives of different definitions of manager
+##### define staff groups ####
 non_medics = tbl(con, "non_medical_staff") %>% 
   inner_join(tbl(con, "main_staff_group")) %>%
   inner_join(tbl(con, "staff_group_1"))  %>% 
@@ -64,14 +64,23 @@ staff = others %>%
   left_join(consultants) %>%
   left_join(doctors) %>%
   left_join(other_clinical) %>%
-  mutate(CLINICAL_STAFF=DOCTORS+NURSES+OTHER_CLINICAL_STAFF) %>%
-  left_join(all_staff)
+  left_join(all_staff) %>%
+  mutate(CLINICAL_STAFF=DOCTORS+NURSES+OTHER_CLINICAL_STAFF, 
+         CLINICAL_STAFF_PERCENT=round(100*CLINICAL_STAFF/ALL_STAFF,1),
+         JUNIOR_DOCTORS_PERCENT=round(100*JUNIOR_DOCTORS/ALL_STAFF,1),
+         DOCTORS_PERCENT=round(100*DOCTORS/ALL_STAFF,1),
+         CONSULTANTS_PERCENT=round(100*CONSULTANTS/ALL_STAFF,1),
+         OTHER_STAFF_PERCENT=round(100*OTHER_STAFF/ALL_STAFF,1),
+         OTHER_CLINICAL_STAFF_PERCENT=round(100*OTHER_CLINICAL_STAFF/ALL_STAFF,1),
+         NURSES_PERCENT=round(100*NURSES/ALL_STAFF,1)
+         )
+
 
 afc_pay = tbl(con, "pay_scale") %>% 
   collect() %>%
   bind_rows(data_frame(YEAR=2017,AFC_BAND=c("Very Senior Manager","Non AfC Grade"),BOTTOM=142500,AVERAGE=142500,TOP=142500)) 
 
-# provider information and performance
+##### construct provider level dataset #### 
 providers = tbl(con, "provider") %>%
   left_join(tbl(con, "financial_position") %>% select(ORG_CODE,OP_COST,FINANCIAL_POSITION)) %>%
   left_join(tbl(con, "ae_target") %>% select(ORG_CODE,AE_SCORE)) %>%
@@ -111,13 +120,18 @@ managers = non_medics %>%
   summarise(FTE=sum(FTE)) %>%
   ungroup()
 
+##### import variables to use in data analysis ####
 variable_definitions = read_csv("data/variable_definitions.csv")
+
+all_vars=as.list(variable_definitions$code)
+names(all_vars)=variable_definitions$label
 
 get_variable = function(var, definitions){
   v = definitions %>% filter(code==var) %>% select(variable, label)
   return(v)
 }
 
+##### construct management measure as defined by UI ####
 attach_management_measure = function(providers, afc_pay, managers, selected_staff_group, selected_pay_grade){
   
   pay_grade = vector()
@@ -213,7 +227,7 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
     left_join(managers) %>% 
     mutate(MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES_2016,0), 
            MAN_FTE_PER_1000_FCE = round(MANAGERS*1000/TOTAL_EPISODES_2016,2),
-           MAN_PERCENT = round((MANAGERS/ALL_STAFF)*100,2),
+           MANAGERS_PERCENT = round((MANAGERS/ALL_STAFF)*100,2),
            QUALITY_WEIGHTED_FTE = round(MAN_FTE_PER_1000_FCE*MANAGEMENT_QUALITY/100,2),
            QUALITY_WEIGHTED_SPEND = round(MAN_SPEND_PER_1000_FCE*MANAGEMENT_QUALITY/100,0),
            FIN_POS_PERC = round((FINANCIAL_POSITION/OP_COST)*100,2),
@@ -257,8 +271,15 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            CLINICAL_STAFF,
            OTHER_STAFF,
            MANAGERS,
+           JUNIOR_DOCTORS_PERCENT,
+           CONSULTANTS_PERCENT,
+           DOCTORS_PERCENT,
+           NURSES_PERCENT,
+           OTHER_CLINICAL_STAFF_PERCENT,
+           CLINICAL_STAFF_PERCENT,
+           OTHER_STAFF_PERCENT,
+           MANAGERS_PERCENT,
            NHS_SS=MANAGEMENT_QUALITY,
-           MAN_PERCENT,
            MANAGEMENT_SPEND,
            MAN_FTE_PER_TEN_MIL_OC,
            MAN_FTE_PER_1000_FCE,
@@ -269,6 +290,8 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
   return(results)
 }
 
+
+##### scatter plots and histigrams for UI ####
 scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim, specialist, trend_line, facet_var){
   
   x = get_variable(x_var, variables)
@@ -351,6 +374,7 @@ histogram_plot = function(providers, variables, x_var, specialist){
   return(plotly)
 }
 
+##### tables of desriptives on managers ####
 manager_counts = function(managers){
   manager_counts = managers %>% 
     group_by(STAFF_GROUP,AFC_BAND) %>% 
@@ -372,6 +396,7 @@ manager_counts = function(managers){
   return(managers)
 }
 
+##### run regressions ####
 run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions, output){
   
   independent_vars_string = vector(mode="character")
@@ -428,7 +453,7 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   return(results)
 }
 
-
+##### misc descriptives for prenentations / journal articles ####
 descriptives = function(providers){
   doctors = medics %>% 
     inner_join(providers) %>% 

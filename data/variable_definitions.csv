@@ -1,33 +1,17 @@
 ﻿code,variable,label
-acute_dtoc,ACUTE_DTOC,Acute delayed transfers of care
 ae,AE_SCORE,A&E 4 hour wait target met (%)
+acute_dtoc,ACUTE_DTOC,Acute delayed transfers of care
+all_clinical_percent,CLINICAL_STAFF_PERCENT,All clinical staff (% of all staff)
+all_clinical,CLINICAL_STAFF,All clinical staff (FTE)
+doctors_percent,DOCTORS_PERCENT,All doctors (% of all staff)
+doctors,DOCTORS,All doctors (FTE)
 all_staff,ALL_STAFF,All staff (FTE)
+consultants_percent,CONSULTANTS_PERCENT,Consultants (% of all staff)
+consultants,CONSULTANTS,Consultants (FTE)
 cqc_rating,CQC_RATING,CQC Overall Rating
 cqc_well_led_rating,CQC_WELL_LED_RATING,CQC Well Led Rating
-fce,ADMISSIONS,Total inpatient admissions (2016/17)
-fin_pos,NET_FINANCIAL_POSITION,Net financial position (£)
-fin_pos_perc,NET_FINANCIAL_POSITION_PERCENT,Net financial position (% of operating cost)
-fte,MANAGERS,Management (FTE)
-fte_clin_ratio,MANAGER_CLINICIAN_RATIO,Manager to clinical staff ratio
-fte_fce,MAN_FTE_PER_1000_FCE,Management (FTE per 1000 admissions)
-fte_per_ten_mil,MAN_FTE_PER_TEN_MIL_OC,Management (FTE per £10 million operating cost)
-fte_quality,QUALITY_WEIGHTED_FTE,Quality adjusted (FTE per 1000 admissions)
-hee_region,HEE_REGION,Health Education England Region
-nhs_ss,NHS_SS,NHS staff survey consolidated management score (%)
-non_acute_dtoc,NON_ACUTE_DTOC,Non-acute delayed transfers of care
-op_cost,OPERATING_COST,Total Operating Cost (£)
-rtt,RTT_SCORE,Referral to treatment in 18 weeks (%)
-spend,MANAGEMENT_SPEND,Management Spend (£)
-spend_fce,MAN_SPEND_PER_1000_FCE,Management Spend (£ per 1000 admissions)
-spend_quality,QUALITY_WEIGHTED_SPEND,Quality adjusted (£ per 1000 admissions)
-total_dtoc,TOTAL_DTOC,Total delayed transfers of care
-junior_doctors,JUNIOR_DOCTORS,Junior Doctors (FTE)
-consultants,CONSULTANTS,Consultants (FTE)
-nurses,NURSES,Nurses (FTE)
-other_clinical,OTHER_CLINICAL_STAFF,Other clinical (FTE)
-other_non_clinical,OTHER_STAFF,Other non-clinical (FTE)
-specialist,SPECIALIST,Specialist status
 female,FEMALE_ADMISSIONS,Female share of inpatient admissions (%)
+hee_region,HEE_REGION,Health Education England Region
 age_0_14,AGE_0_14,Inpatient admissions age 0-14 (%)
 age_15_29,AGE_15_29,Inpatient admissions age 15-29 (%)
 age_30_44,AGE_30_44,Inpatient admissions age 30-44 (%)
@@ -35,8 +19,31 @@ age_45_59,AGE_45_59,Inpatient admissions age 45-59 (%)
 age_60_74,AGE_60_74,Inpatient admissions age 60-74 (%)
 age_75_89,AGE_75_89,Inpatient admissions age 75-89 (%)
 age_90,AGE_90_PLUS,Inpatient admissions age 90+ (%)
-doctors,DOCTORS,All doctors (FTE)
-all_clinical,CLINICAL_STAFF,All clinical staff (FTE)
+junior_doctors_percent,JUNIOR_DOCTORS_PERCENT,Junior Doctors (% of all staff)
+junior_doctors,JUNIOR_DOCTORS,Junior Doctors (FTE)
+man_percent,MANAGERS_PERCENT,Management (% of all staff)
+fte_per_ten_mil,MAN_FTE_PER_TEN_MIL_OC,Management (FTE per £10 million operating cost)
+fte_fce,MAN_FTE_PER_1000_FCE,Management (FTE per 1000 admissions)
+fte,MANAGERS,Management (FTE)
+spend_fce,MAN_SPEND_PER_1000_FCE,Management Spend (£ per 1000 admissions)
+spend,MANAGEMENT_SPEND,Management Spend (£)
+fte_clin_ratio,MANAGER_CLINICIAN_RATIO,Manager to clinical staff ratio
+fin_pos_perc,NET_FINANCIAL_POSITION_PERCENT,Net financial position (% of operating cost)
+fin_pos,NET_FINANCIAL_POSITION,Net financial position (£)
+nhs_ss,NHS_SS,NHS staff survey consolidated management score (%)
+non_acute_dtoc,NON_ACUTE_DTOC,Non-acute delayed transfers of care
+nurses_percent,NURSES_PERCENT,Nurses (% of all staff)
+nurses,NURSES,Nurses (FTE)
+other_clinical_percent,OTHER_CLINICAL_STAFF_PERCENT,Other clinical (% of all staff)
+other_clinical,OTHER_CLINICAL_STAFF,Other clinical (FTE)
+other_non_clinical_percent,OTHER_STAFF_PERCENT,Other non-clinical (% of all staff)
+other_non_clinical,OTHER_STAFF,Other non-clinical (FTE)
+spend_quality,QUALITY_WEIGHTED_SPEND,Quality adjusted (£ per 1000 admissions)
+fte_quality,QUALITY_WEIGHTED_FTE,Quality adjusted (FTE per 1000 admissions)
+rtt,RTT_SCORE,Referral to treatment in 18 weeks (%)
+specialist,SPECIALIST,Specialist status
+stability,STABILITY,Stability index excluding doctors in training (%)
 shmi,SHMI,Summary Hospital-level Mortality Indicator
-man_percent,MAN_PERCENT,Management (% of all staff)
-stability,STABILITY,Stability excluding doctors in training (%)
+total_dtoc,TOTAL_DTOC,Total delayed transfers of care
+fce,ADMISSIONS,Total inpatient admissions (2016/17)
+op_cost,OPERATING_COST,Total Operating Cost (£)
