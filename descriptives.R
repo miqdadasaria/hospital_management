@@ -412,6 +412,8 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
     if(log_indep_vars & acute_providers %>% select(x$variable) %>% summarise_all(is.numeric)){
       indep_var = paste0("log(",x$variable,")")
       indep_var_label = paste0("log ", x$label)
+      # remove zeros as upsets log
+      acute_providers[which(acute_providers[x$variable]==0),x$variable]=0.01
     } else {
       indep_var = x$variable
       indep_var_label = x$label
@@ -430,13 +432,14 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   if(mean_centre){
     independent_vars = independent_vars %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
   }
-  str(independent_vars)
   regressions = list()
   for(y_var in dependent_vars){
     y = get_variable(y_var, variables)
     if(log_dep_vars){
       dep_var = paste0("log(",y$variable,")")
       dep_var_label = paste0("log ", y$label)
+      # remove zeros as upsets log
+      acute_providers[which(acute_providers[y$variable]==0),y$variable]=0.01
     } else {
       dep_var = y$variable
       dep_var_label = y$label
