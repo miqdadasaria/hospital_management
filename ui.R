@@ -39,6 +39,10 @@ shinyUI(
 	    checkboxInput("specialist", label="Include specialist trusts", value=TRUE),
 	    
 	    checkboxInput("trend_line", label="Show linear trend line on the plot", value=TRUE),
+
+	    checkboxInput("log_x_var", label="Log the x-axis variable", value=FALSE),
+
+	    checkboxInput("log_y_var", label="Log the y-axis variable", value=FALSE),
 	    
 	    selectInput("facet_var", 
 	                "Split plots by:",

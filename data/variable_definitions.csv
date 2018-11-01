@@ -1,11 +1,13 @@
 ﻿code,variable,label
 ae,AE_SCORE,A&E 4 hour wait target met (%)
+ae_doc,EMERGENCY_MEDICS,A&E consultants (FTE)
 acute_dtoc,ACUTE_DTOC,Acute delayed transfers of care
 all_clinical_percent,CLINICAL_STAFF_PERCENT,All clinical staff (% of all staff)
 all_clinical,CLINICAL_STAFF,All clinical staff (FTE)
 doctors_percent,DOCTORS_PERCENT,All doctors (% of all staff)
 doctors,DOCTORS,All doctors (FTE)
 all_staff,ALL_STAFF,All staff (FTE)
+cardiologists,CARDIOLOGISTS,Cardiology consultants (FTE)
 consultants_percent,CONSULTANTS_PERCENT,Consultants (% of all staff)
 consultants,CONSULTANTS,Consultants (FTE)
 cqc_rating,CQC_RATING,CQC Overall Rating
@@ -34,6 +36,7 @@ nhs_ss,NHS_SS,NHS staff survey consolidated management score (%)
 non_acute_dtoc,NON_ACUTE_DTOC,Non-acute delayed transfers of care
 nurses_percent,NURSES_PERCENT,Nurses (% of all staff)
 nurses,NURSES,Nurses (FTE)
+orthopods,ORTHOPAEDIC_SURGEONS,Orthopaedic surgeons (FTE)
 other_clinical_percent,OTHER_CLINICAL_STAFF_PERCENT,Other clinical (% of all staff)
 other_clinical,OTHER_CLINICAL_STAFF,Other clinical (FTE)
 other_non_clinical_percent,OTHER_STAFF_PERCENT,Other non-clinical (% of all staff)

@@ -22,7 +22,7 @@ shinyServer(function(input, output, session) {
   ##### outputs on descriptives tab ####  
   output$scatter_plot = renderPlotly({
     withProgress(message = paste0('Updating trust scatter plot'),{
-      scatter_plot(providerData(), variable_definitions, input$x_var, input$y_var, input$size_var, input$trim, input$specialist, input$trend_line, input$facet_var)
+      scatter_plot(providerData(), variable_definitions, input$x_var, input$y_var, input$size_var, input$trim, input$specialist, input$trend_line, input$facet_var, input$log_x_var, input$log_y_var)
     })
   })
   
@@ -84,7 +84,7 @@ shinyServer(function(input, output, session) {
 	output$staff_num_data = renderDataTable({
 	  withProgress(message = 'Loading staff data table',{
 	    table = providerData()
-	    table = table %>% select(c(2,26:34))
+	    table = table %>% select(c(2,26:37))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,
@@ -96,7 +96,7 @@ shinyServer(function(input, output, session) {
 	output$staff_percent_data = renderDataTable({
 	  withProgress(message = 'Loading staff data table',{
 	    table = providerData()
-	    table = table %>% select(c(2,35:42))
+	    table = table %>% select(c(2,38:45))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,
@@ -108,7 +108,7 @@ shinyServer(function(input, output, session) {
 	output$management_data = renderDataTable({
 	  withProgress(message = 'Loading management data table',{
 	    table = providerData()
-	    table = table %>% select(c(2,34,42:50))
+	    table = table %>% select(c(2,37,45:53))
 	    datatable(table,
 	              style = 'bootstrap',
 	              rownames = FALSE,

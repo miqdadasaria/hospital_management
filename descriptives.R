@@ -39,6 +39,22 @@ consultants = medics %>%
   group_by(ORG_CODE) %>%
   summarise(CONSULTANTS=round(sum(FTE),1))
 
+cardiologists = medics %>%
+  filter(grepl("consultant",GRADE,ignore.case=TRUE) & grepl("cardiology",SPECIALTY,ignore.case=TRUE)) %>%
+  group_by(ORG_CODE) %>%
+  summarise(CARDIOLOGISTS=round(sum(FTE),1))
+
+ae_docs = medics %>%
+  filter(grepl("consultant",GRADE,ignore.case=TRUE) & grepl("emergency medicine",SPECIALTY,ignore.case=TRUE)) %>%
+  group_by(ORG_CODE) %>%
+  summarise(EMERGENCY_MEDICS=round(sum(FTE),1))
+
+orthopods = medics %>%
+  filter(grepl("consultant",GRADE,ignore.case=TRUE) & grepl("orthopaedic",SPECIALTY,ignore.case=TRUE)) %>%
+  group_by(ORG_CODE) %>%
+  summarise(ORTHOPAEDIC_SURGEONS=round(sum(FTE),1))
+
+
 doctors = medics %>%
   group_by(ORG_CODE) %>%
   summarise(DOCTORS=round(sum(FTE),1))
@@ -64,6 +80,9 @@ staff = others %>%
   left_join(consultants) %>%
   left_join(doctors) %>%
   left_join(other_clinical) %>%
+  left_join(cardiologists) %>%
+  left_join(orthopods) %>%
+  left_join(ae_docs) %>%
   left_join(all_staff) %>%
   mutate(CLINICAL_STAFF=DOCTORS+NURSES+OTHER_CLINICAL_STAFF, 
          CLINICAL_STAFF_PERCENT=round(100*CLINICAL_STAFF/ALL_STAFF,1),
@@ -265,6 +284,9 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            ALL_STAFF,
            JUNIOR_DOCTORS,
            CONSULTANTS,
+           CARDIOLOGISTS,
+           EMERGENCY_MEDICS,
+           ORTHOPAEDIC_SURGEONS,
            DOCTORS,
            NURSES,
            OTHER_CLINICAL_STAFF,
@@ -292,7 +314,7 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
 
 
 ##### scatter plots and histigrams for UI ####
-scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim, specialist, trend_line, facet_var){
+scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim, specialist, trend_line, facet_var, log_x_var, log_y_var){
   
   x = get_variable(x_var, variables)
   y = get_variable(y_var, variables)
@@ -308,6 +330,16 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
   
   if(!specialist){
     graph_data = graph_data %>% filter(SPECIALIST=="Non-specialist")
+  }
+  
+  if(log_x_var){
+    graph_data[x$variable] = log(graph_data[x$variable])
+    x$label = paste("log ", x$label)
+  }
+
+  if(log_y_var){
+    graph_data[y$variable] = log(graph_data[y$variable])
+    y$label = paste("log ", y$label)
   }
   
   plot = ggplot(data=graph_data, aes_string(x=x$variable, y=y$variable, label="ORG_NAME")) +
