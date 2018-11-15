@@ -23,12 +23,12 @@ age_75_89,AGE_75_89,Inpatient admissions age 75-89 (%)
 age_90,AGE_90_PLUS,Inpatient admissions age 90+ (%)
 junior_doctors_percent,JUNIOR_DOCTORS_PERCENT,Junior Doctors (% of all staff)
 junior_doctors,JUNIOR_DOCTORS,Junior Doctors (FTE)
-man_percent,MANAGERS_PERCENT,Management (% of all staff)
-fte_per_ten_mil,MAN_FTE_PER_TEN_MIL_OC,Management (FTE per £10 million operating cost)
-fte_fce,MAN_FTE_PER_1000_FCE,Management (FTE per 1000 admissions)
-fte,MANAGERS,Management (FTE)
-spend_fce,MAN_SPEND_PER_1000_FCE,Management Spend (£ per 1000 admissions)
-spend,MANAGEMENT_SPEND,Management Spend (£)
+man_percent,MANAGERS_PERCENT,Managers (% of all staff)
+fte_per_ten_mil,MAN_FTE_PER_TEN_MIL_OC,Managers (FTE per £10 million operating cost)
+fte_fce,MAN_FTE_PER_1000_FCE,Managers (FTE per 1000 admissions)
+fte,MANAGERS,Managers (FTE)
+spend_fce,MAN_SPEND_PER_1000_FCE,Management spend (£ per 1000 admissions)
+spend,MANAGEMENT_SPEND,Management spend (£)
 fte_clin_ratio,MANAGER_CLINICIAN_RATIO,Manager to clinical staff ratio
 fin_pos_perc,NET_FINANCIAL_POSITION_PERCENT,Net financial position (% of operating cost)
 fin_pos,NET_FINANCIAL_POSITION,Net financial position (£)
@@ -50,3 +50,5 @@ shmi,SHMI,Summary Hospital-level Mortality Indicator
 total_dtoc,TOTAL_DTOC,Total delayed transfers of care
 fce,ADMISSIONS,Total inpatient admissions (2016/17)
 op_cost,OPERATING_COST,Total Operating Cost (£)
+fte_sq,MANAGERS_SQ,Managers (FTE) squared
+spend_sq,MANAGEMENT_SPEND_SQ,Management spend (£) squared

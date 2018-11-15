@@ -140,7 +140,8 @@ managers = non_medics %>%
   ungroup()
 
 ##### import variables to use in data analysis ####
-variable_definitions = read_csv("data/variable_definitions.csv")
+variable_definitions = read_csv("data/variable_definitions.csv") %>% arrange(label)
+
 
 all_vars=as.list(variable_definitions$code)
 names(all_vars)=variable_definitions$label
@@ -244,7 +245,9 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
   
   results = providers %>%
     left_join(managers) %>% 
-    mutate(MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES_2016,0), 
+    mutate(MANAGERS_SQ = round(MANAGERS^2,1),
+      MANAGEMENT_SPEND_SQ = round(MANAGEMENT_SPEND^2,0),
+      MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES_2016,0), 
            MAN_FTE_PER_1000_FCE = round(MANAGERS*1000/TOTAL_EPISODES_2016,2),
            MANAGERS_PERCENT = round((MANAGERS/ALL_STAFF)*100,2),
            QUALITY_WEIGHTED_FTE = round(MAN_FTE_PER_1000_FCE*MANAGEMENT_QUALITY/100,2),
@@ -308,7 +311,9 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            MAN_SPEND_PER_1000_FCE,
            QUALITY_WEIGHTED_FTE,
            QUALITY_WEIGHTED_SPEND,
-           MANAGER_CLINICIAN_RATIO)  
+           MANAGER_CLINICIAN_RATIO,
+           MANAGERS_SQ,
+           MANAGEMENT_SPEND_SQ)  
   return(results)
 }
 
