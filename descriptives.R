@@ -108,8 +108,7 @@ providers = tbl(con, "provider") %>%
   left_join(tbl(con, "cqc_rating") %>% filter(POPULATION=="Overall" & QUESTION=="Overall") %>% select(ORG_CODE,RATING_SCORE)) %>%
   left_join(tbl(con, "cqc_rating") %>% filter(POPULATION=="Overall" & QUESTION=="Well-led") %>% select(ORG_CODE,RATING_SCORE_LEADERSHIP=RATING_SCORE)) %>%
   left_join(tbl(con, "nhs_ss_management_score") %>% filter(YEAR==2017 & QUESTION=="overall") %>% mutate(MANAGEMENT_QUALITY=round(((VALUE-1)/4)*100,1)) %>% select(ORG_CODE, MANAGEMENT_QUALITY)) %>%
-  left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2016) %>% select(ORG_CODE, TOTAL_EPISODES_2016 = TOTAL_EPISODES,FEMALE_ADMISSIONS,"0-14","15-29","30-44","45-59","60-74","75-89","90+")) %>%
-  left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2017) %>% select(ORG_CODE, TOTAL_EPISODES_2017 = TOTAL_EPISODES)) %>%
+  left_join(tbl(con, "inpatient_data") %>% filter(YEAR==2017) %>% select(ORG_CODE, TOTAL_EPISODES_2017 = TOTAL_EPISODES,FEMALE_ADMISSIONS,"0-14","15-29","30-44","45-59","60-74","75-89","90+")) %>%
   left_join(tbl(con, "shmi") %>% filter(YEAR==2017) %>% select(ORG_CODE, SHMI)) %>%
   left_join(tbl(con, "stability") %>% filter(YEAR==2017 & STABILITY>0) %>% select(ORG_CODE, STABILITY)) %>%
   left_join(tbl(con, "hee_region")) %>%
@@ -119,7 +118,7 @@ providers = tbl(con, "provider") %>%
   mutate(RATING = factor(RATING_SCORE,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
   mutate(RATING_LEADERSHIP = factor(RATING_SCORE_LEADERSHIP,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
   mutate(ACUTE_DTOC=round(ACUTE_DTOC,1),NON_ACUTE_DTOC=round(NON_ACUTE_DTOC,1),TOTAL_DTOC=round(TOTAL_DTOC,1)) %>%
-  mutate(FEMALE_ADMISSIONS=round(FEMALE_ADMISSIONS/TOTAL_EPISODES_2016,2)*100,
+  mutate(FEMALE_ADMISSIONS=round(FEMALE_ADMISSIONS/TOTAL_EPISODES_2017,2)*100,
          all_age = `0-14`+`15-29`+`30-44`+`45-59`+`60-74`+`75-89`+`90+`,
          AGE_0_14=round(`0-14`/all_age,2)*100,
          AGE_15_29=round(`15-29`/all_age,2)*100,
@@ -246,9 +245,10 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
   results = providers %>%
     left_join(managers) %>% 
     mutate(MANAGERS_SQ = round(MANAGERS^2,1),
-      MANAGEMENT_SPEND_SQ = round(MANAGEMENT_SPEND^2,0),
-      MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES_2016,0), 
-           MAN_FTE_PER_1000_FCE = round(MANAGERS*1000/TOTAL_EPISODES_2016,2),
+           MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES_2017,0), 
+           MAN_FTE_PER_1000_FCE = round(MANAGERS*1000/TOTAL_EPISODES_2017,2),
+           MANAGEMENT_SPEND_SQ = round((MANAGEMENT_SPEND^2)/100000,0),
+           MANAGEMENT_SPEND = round((MANAGEMENT_SPEND)/100000,0),
            MANAGERS_PERCENT = round((MANAGERS/ALL_STAFF)*100,2),
            QUALITY_WEIGHTED_FTE = round(MAN_FTE_PER_1000_FCE*MANAGEMENT_QUALITY/100,2),
            QUALITY_WEIGHTED_SPEND = round(MAN_SPEND_PER_1000_FCE*MANAGEMENT_QUALITY/100,0),
@@ -264,7 +264,7 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            SPECIALIST,
            HEE_REGION=HEE_REGION_NAME,
            OPERATING_COST=OP_COST,
-           ADMISSIONS=TOTAL_EPISODES_2016,
+           ADMISSIONS=TOTAL_EPISODES_2017,
            FEMALE_ADMISSIONS,
            AGE_0_14,
            AGE_15_29,

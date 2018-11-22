@@ -28,7 +28,7 @@ fte_per_ten_mil,MAN_FTE_PER_TEN_MIL_OC,Managers (FTE per £10 million operating 
 fte_fce,MAN_FTE_PER_1000_FCE,Managers (FTE per 1000 admissions)
 fte,MANAGERS,Managers (FTE)
 spend_fce,MAN_SPEND_PER_1000_FCE,Management spend (£ per 1000 admissions)
-spend,MANAGEMENT_SPEND,Management spend (£)
+spend,MANAGEMENT_SPEND,Management spend (per £100k)
 fte_clin_ratio,MANAGER_CLINICIAN_RATIO,Manager to clinical staff ratio
 fin_pos_perc,NET_FINANCIAL_POSITION_PERCENT,Net financial position (% of operating cost)
 fin_pos,NET_FINANCIAL_POSITION,Net financial position (£)
@@ -48,7 +48,7 @@ specialist,SPECIALIST,Specialist status
 stability,STABILITY,Stability index excluding doctors in training (%)
 shmi,SHMI,Summary Hospital-level Mortality Indicator
 total_dtoc,TOTAL_DTOC,Total delayed transfers of care
-fce,ADMISSIONS,Total inpatient admissions (2016/17)
+fce,ADMISSIONS,Total inpatient admissions (2017/18)
 op_cost,OPERATING_COST,Total Operating Cost (£)
 fte_sq,MANAGERS_SQ,Managers (FTE) squared
-spend_sq,MANAGEMENT_SPEND_SQ,Management spend (£) squared
+spend_sq,MANAGEMENT_SPEND_SQ,Management spend squared (per £100k)
