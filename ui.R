@@ -13,12 +13,14 @@ shinyUI(
   navbarPage(theme = "sandstone.css",
 	"Management and Hospital Performance",
 	
-  
+
 	##### descriptives UI panel ####
 	
 	tabPanel(
 	  "Descriptives",
 	  sidebarPanel(
+
+	    
 	    selectInput("x_var", 
 	                "Input variable to plot on x-axis:",
 	                all_vars, 
@@ -153,6 +155,22 @@ tabPanel("Managment Definition",
   ),
 
   # end raw data UI panel
+tabPanel("Ranking Table", 
+         sidebarPanel(
+           h4("Rank acute NHS Trusts"),
+           
+           selectInput("rank_var", 
+                       "Rank by:",
+                       all_vars, 
+                       selected="ae")
+          ),
+          mainPanel(
+            div(dataTableOutput("ranking_table"), style = "font-size:70%")
+          )
+  ),
+  ##### ranking data UI panel ####
+
+  # end ranking panel
 
   ##### regression UI panel ####
 
@@ -161,12 +179,12 @@ tabPanel("Managment Definition",
              selectInput("dependent_vars", 
                          "Dependent variables in the regression:",
                          all_vars, 
-                         selected=c("fce","fin_pos","stability","ae","rtt","shmi"),
+                         selected=c("fce","fin_pos","ae","rtt","shmi"),
                          multiple=TRUE),
              selectInput("independent_vars", 
                          "Explanatory and control variables in regression:",
                           c("Case-mix adjust for age and sex" = "casemix",all_vars), 
-                         selected=c("spend","spend_sq","nhs_ss","consultants","op_cost","casemix"),
+                         selected=c("fte","nhs_ss","consultants","op_cost","casemix"),
                          multiple=TRUE),
              
              checkboxInput("mean_centre", label="Mean centre covariates", value=FALSE),
@@ -203,7 +221,12 @@ tabPanel("Managment Definition",
           <p>
           </dl>"))
            
-         )
+         ),
   # end notes UI panel
+  selectInput("year",
+            "Input data year",
+            list("2017/18"="2017",
+                 "2016/17"="2016"),
+            selected="2016")
   )
 )

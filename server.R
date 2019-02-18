@@ -16,7 +16,8 @@ shinyServer(function(input, output, session) {
       afc_pay, 
       managers, 
       input$staff_group, 
-      input$pay_grade)
+      input$pay_grade,
+      input$year)
   })
 
   ##### outputs on descriptives tab ####  
@@ -35,7 +36,7 @@ shinyServer(function(input, output, session) {
   
   output$manager_counts = renderDataTable({
     withProgress(message = 'Loading manager summary counts data table',{
-      table = manager_counts(managers)[["counts"]]
+      table = manager_counts(managers, input$year)[["counts"]]
       datatable(table,
                 style = 'bootstrap',
                 rownames = FALSE,
@@ -46,7 +47,7 @@ shinyServer(function(input, output, session) {
 
   output$manager_percentages = renderDataTable({
     withProgress(message = 'Loading manager summary percentages data table',{
-      table = manager_counts(managers)[["percentages"]]
+      table = manager_counts(managers, input$year)[["percentages"]]
       datatable(table,
                 style = 'bootstrap',
                 rownames = FALSE,
@@ -54,6 +55,20 @@ shinyServer(function(input, output, session) {
                 options = list(pageLength = 8, autoWidth = TRUE, dom='ftrpi'))
     })
   })
+  
+  ##### outputs on ranking data tab ####
+  
+  output$ranking_table = renderDataTable({
+    withProgress(message = 'Loading ranking data table',{
+      table = create_ranking_table(providerData(), variable_definitions, input$rank_var)
+      datatable(table,
+                style = 'bootstrap',
+                rownames = FALSE,
+                colnames = gsub("_"," ",colnames(table)),
+                options = list(pageLength = 10, autoWidth = TRUE, dom='ftrpi'))
+    })
+  })
+  
   
   ##### outputs on raw data tab ####
   
@@ -124,7 +139,7 @@ shinyServer(function(input, output, session) {
 	})
 	
 	output$download_raw_data <- downloadHandler(
-	  filename = "raw_data.csv",
+	  filename = paste0("raw_data_",input$year,".csv"),
 	  content = function(file) {
 	    results = providerData()
 	    write_csv(results,file)
@@ -140,7 +155,7 @@ shinyServer(function(input, output, session) {
 	})
 	
 	output$download_regression <- downloadHandler(
-	  filename = "regression_results.txt",
+	  filename = paste0("regression_results_",input$year,".txt"),
 	  content = function(file) {
 	    results = run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, input$regression_output_type)
 	    cat(results,file=file)

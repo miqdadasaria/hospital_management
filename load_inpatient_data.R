@@ -16,16 +16,17 @@ cqc_rating = read_csv("CQC_ratings.csv")
 cqc_rating_lookup = read_csv("CQC_ratings_lookup.csv")
 nhs_ss = read_csv("NHS_SS_management.csv")
 nhs_ss_questions = read_csv("NHS_SS_questions.csv")
-ae_target = read_csv("AE_target_Q42017.csv")
+ae_target = read_csv("AE.csv")
 dtoc = read_csv("DTOC_august_2018.csv")
-rtt = read_csv("RTT-March-2018-full-extract.csv")
+rtt = read_csv("RTT.csv")
 financial_position = read_csv("financials_1617.csv")
 shmi = read_csv("shmi.csv")
 stability = read_csv("stability.csv")
 
 # calculate total score per question by provider
 # and convert data to long 'tidy' format
-nhs_ss = gather(nhs_ss,key="QUESTION", value="VALUE", -c(1:2)) %>% 
+nhs_ss = nhs_ss %>%
+  gather(key="QUESTION", value="VALUE", -c(1:2)) %>% 
   separate(QUESTION, c("QUESTION","SCORE")) %>%
   spread(SCORE,VALUE) %>%
   mutate(TOTAL_SCORE=(SD*1+D*2+NAND*3+A*4+SA*5)/100) %>%
