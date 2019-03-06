@@ -406,13 +406,17 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
     plot = plot + facet_wrap(f$variable)
   }
   
-  if(grepl("fin_pos", y_var)){
-    plot = plot + geom_hline(yintercept=0, linetype="dashed", colour="darkgrey", size=0.5)
-  }
-  
   if(grepl("shmi", y_var)){
     plot = plot + geom_hline(yintercept=1, linetype="dashed", colour="darkgrey", size=0.5)
-  }
+  } else if(min(graph_data[y$variable],na.rm=TRUE)<0 & max(graph_data[y$variable],na.rm=TRUE)>0){
+    plot = plot + geom_hline(yintercept=0, linetype="dashed", colour="darkgrey", size=0.5)
+  } 
+  
+  if(grepl("shmi", x_var)){
+    plot = plot + geom_vline(xintercept=1, linetype="dashed", colour="darkgrey", size=0.5)
+  } else if(min(graph_data[x$variable],na.rm=TRUE)<0 & max(graph_data[x$variable],na.rm=TRUE)>0){
+    plot = plot + geom_vline(xintercept=0, linetype="dashed", colour="darkgrey", size=0.5)
+  } 
   
   plot = plot + theme_bw() + theme(panel.grid.major = element_blank(), 
                                    panel.grid.minor = element_blank(), 
