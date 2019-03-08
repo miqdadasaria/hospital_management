@@ -69,6 +69,15 @@ shinyServer(function(input, output, session) {
     })
   })
   
+  output$download_ranked_data <- downloadHandler(
+    filename = function() {
+      paste0("ranked_data_",input$rank_var,"_",input$year,".csv")},
+    content = function(file) {
+      print(input$rank_var)
+      table = create_ranking_table(providerData(), variable_definitions, input$rank_var)
+      write_csv(table,file)
+    }
+  )
   
   ##### outputs on raw data tab ####
   
@@ -139,12 +148,14 @@ shinyServer(function(input, output, session) {
 	})
 	
 	output$download_raw_data <- downloadHandler(
-	  filename = paste0("raw_data_",input$year,".csv"),
+	  filename = function() {
+	    paste0("raw_data_",input$year,".csv")},
 	  content = function(file) {
 	    results = providerData()
 	    write_csv(results,file)
 	  }
 	)
+	
 	
 	##### outputs on regressions tab ####
 	
@@ -155,7 +166,8 @@ shinyServer(function(input, output, session) {
 	})
 	
 	output$download_regression <- downloadHandler(
-	  filename = paste0("regression_results_",input$year,".txt"),
+	  filename = function() {
+	    paste0("regression_results_",input$year,".txt")},
 	  content = function(file) {
 	    results = run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, input$regression_output_type)
 	    cat(results,file=file)

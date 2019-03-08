@@ -155,21 +155,21 @@ tabPanel("Managment Definition",
   ),
 
   # end raw data UI panel
+
+  ##### ranking data UI panel ####
 tabPanel("Ranking Table", 
          sidebarPanel(
            h4("Rank acute NHS Trusts"),
            
            selectInput("rank_var", 
                        "Rank by:",
-                       all_vars, 
-                       selected="ae")
-          ),
-          mainPanel(
-            div(dataTableOutput("ranking_table"), style = "font-size:70%")
-          )
-  ),
-  ##### ranking data UI panel ####
-
+                       all_vars),
+           downloadButton("download_ranked_data", "Download Ranked Dataset in CSV format")
+         ),
+         mainPanel(
+           div(dataTableOutput("ranking_table"), style = "font-size:70%")
+         )
+),
   # end ranking panel
 
   ##### regression UI panel ####
