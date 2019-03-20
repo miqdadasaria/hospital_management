@@ -113,12 +113,12 @@ providers = tbl(con, "rtt_target") %>% select(ORG_CODE,YEAR,RTT_SCORE) %>%
   left_join(tbl(con, "nhs_ss_management_score") %>% filter(QUESTION=="overall") %>% mutate(MANAGEMENT_QUALITY=round(((VALUE-1)/4)*100,1)) %>% select(ORG_CODE,YEAR,MANAGEMENT_QUALITY)) %>%
   left_join(tbl(con, "inpatient_data") %>% select(ORG_CODE,YEAR,TOTAL_EPISODES,FEMALE_ADMISSIONS,"0-14","15-29","30-44","45-59","60-74","75-89","90+")) %>%
   left_join(tbl(con, "shmi") %>% select(ORG_CODE,YEAR,SHMI)) %>%
-  left_join(tbl(con, "stability") %>% filter(STABILITY>0) %>% select(ORG_CODE,YEAR,STABILITY)) %>%
   left_join(tbl(con, "provider")) %>%
   left_join(tbl(con, "hee_region")) %>%
   collect() %>%
   filter(ORG_TYPE == "Acute") %>%
   left_join(staff) %>%
+  mutate(OP_COST = OP_COST*-1) %>%
   mutate(AE_SCORE=round(AE_SCORE*100,1), RTT_SCORE=round(RTT_SCORE*100,1)) %>%
   mutate(RATING = factor(RATING_SCORE,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
   mutate(RATING_LEADERSHIP = factor(RATING_SCORE_LEADERSHIP,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
@@ -282,7 +282,6 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            CQC_WELL_LED_RATING=RATING_LEADERSHIP,
            NET_FINANCIAL_POSITION=FINANCIAL_POSITION,
            NET_FINANCIAL_POSITION_PERCENT=FIN_POS_PERC,
-           STABILITY,
            RTT_SCORE,
            AE_SCORE,
            SHMI,
@@ -317,9 +316,15 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            MANAGERS_SQ,
            MANAGEMENT_SPEND_SQ)
   
-  changes = calculate_changes_over_time(results,2016,2017)
+  changes_17 = calculate_changes_over_time(results,2016,2017)
+  changes_16 = calculate_changes_over_time(results,2015,2016)
+  changes_15 = calculate_changes_over_time(results,2014,2015)
+  changes_14 = calculate_changes_over_time(results,2013,2014)
   results = results %>% filter(YEAR==year)
-  results = left_join(results,changes)
+  results = left_join(results,changes_14) %>% 
+    left_join(changes_15) %>% 
+    left_join(changes_16) %>% 
+    left_join(changes_17)
   
   return(results)
 }
@@ -367,8 +372,12 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
     f = get_variable(facet_var, variables)
   }
   
-  graph_data = acute_providers %>% 
-    filter(MAN_FTE_PER_1000_FCE<trim)
+  if(any(!is.na(acute_providers$MAN_FTE_PER_1000_FCE))){
+    graph_data = acute_providers %>% 
+      filter(MAN_FTE_PER_1000_FCE<trim)
+  } else {
+    graph_data = acute_providers
+  }
   
   if(!specialist){
     graph_data = graph_data %>% filter(SPECIALIST=="Non-specialist")

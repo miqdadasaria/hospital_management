@@ -17,11 +17,9 @@ cqc_rating_lookup = read_csv("CQC_ratings_lookup.csv")
 nhs_ss = read_csv("NHS_SS_management.csv")
 nhs_ss_questions = read_csv("NHS_SS_questions.csv")
 ae_target = read_csv("AE.csv")
-dtoc = read_csv("DTOC_august_2018.csv")
 rtt = read_csv("RTT.csv")
-financial_position = read_csv("financials_1617.csv")
+financial_position = read_csv("financial_positions.csv")
 shmi = read_csv("shmi.csv")
-stability = read_csv("stability.csv")
 
 # calculate total score per question by provider
 # and convert data to long 'tidy' format
@@ -36,7 +34,7 @@ nhs_ss = nhs_ss %>%
 # of total scores across each question
 nhs_ss = nhs_ss %>% filter(SCORE=="TOTAL_SCORE") %>% 
   group_by(ORG_CODE,YEAR) %>%
-  summarise(TOTAL_SCORE=mean(VALUE)) %>%
+  summarise(TOTAL_SCORE=mean(VALUE, na.rm=TRUE)) %>%
   gather(SCORE, VALUE, -c(1:2)) %>%
   mutate(QUESTION="overall") %>%
   ungroup() %>%
@@ -59,11 +57,9 @@ dbWriteTable(conn = db, name = "cqc_rating_lookup", cqc_rating_lookup, overwrite
 dbWriteTable(conn = db, name = "nhs_ss_management_score", nhs_ss, overwrite=TRUE)
 dbWriteTable(conn = db, name = "nhs_ss_questions", nhs_ss_questions, overwrite=TRUE)
 dbWriteTable(conn = db, name = "ae_target", ae_target, overwrite=TRUE)
-dbWriteTable(conn = db, name = "dtoc", dtoc, overwrite=TRUE)
 dbWriteTable(conn = db, name = "rtt_target", rtt, overwrite=TRUE)
 dbWriteTable(conn = db, name = "financial_position", financial_position, overwrite=TRUE)
 dbWriteTable(conn = db, name = "shmi", shmi, overwrite=TRUE)
-dbWriteTable(conn = db, name = "stability", stability, overwrite=TRUE)
 
 dbDisconnect(db)
 
