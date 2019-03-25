@@ -234,7 +234,7 @@ RC9 ,Luton and Dunstable University Hospital NHS Foundation Trust ,Acute,YDF22,F
 RCB ,York Teaching Hospital NHS Foundation Trust ,Acute,YDF23,FALSE
 RCD ,Harrogate and District NHS Foundation Trust ,Acute,YDF23,FALSE
 RCF ,Airedale NHS Foundation Trust ,Acute,YDF23,FALSE
-RCU ,Sheffield Children's NHS Foundation Trust ,Acute,YDF23,FALSE
+RCU ,Sheffield Children's NHS Foundation Trust ,Acute,YDF23,TRUE
 RCX ,Queen Elizabeth Hospital King's Lynn NHS Foundation Trust ,Acute,YDF22,FALSE
 RD1 ,Royal United Hospitals Bath NHS Foundation Trust ,Acute,YDF33,FALSE
 RD3 ,Poole Hospital NHS Foundation Trust ,Acute,YDF24,FALSE

@@ -1,4 +1,5 @@
 library("tidyverse")
+library("lubridate")
 
 working_dir = getwd()
 setwd("data/csv")
@@ -20,6 +21,12 @@ ae_target = read_csv("AE.csv")
 rtt = read_csv("RTT.csv")
 financial_position = read_csv("financial_positions.csv")
 shmi = read_csv("shmi.csv")
+
+
+# extract financial years from CQC scores
+cqc_rating = cqc_rating %>% mutate(DATE = dmy(DATE),
+                      YEAR = year(DATE %m-% months(3)),
+                      DATE = as.character(DATE))
 
 # calculate total score per question by provider
 # and convert data to long 'tidy' format
