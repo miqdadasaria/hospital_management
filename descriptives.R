@@ -12,12 +12,10 @@ non_medics = tbl(con, "non_medical_staff") %>%
   inner_join(tbl(con, "main_staff_group")) %>%
   inner_join(tbl(con, "staff_group_1"))  %>% 
   inner_join(tbl(con, "staff_group_2")) %>%
-  filter(YEAR<2018) %>% 
   select(YEAR, ORG_CODE, MAIN_STAFF_GROUP_NAME, STAFF_GROUP_1_NAME, STAFF_GROUP_2_NAME, AREA, LEVEL, AFC_BAND, FTE) %>%
   collect()
 
 medics = tbl(con, "medical_staff") %>% 
-  filter(YEAR<2018) %>% 
   collect()
 
 nurses = non_medics %>% 
@@ -113,6 +111,7 @@ providers = tbl(con, "rtt_target") %>% select(ORG_CODE,YEAR,RTT_SCORE) %>%
   left_join(tbl(con, "nhs_ss_management_score") %>% filter(QUESTION=="overall") %>% mutate(MANAGEMENT_QUALITY=round(((VALUE-1)/4)*100,1)) %>% select(ORG_CODE,YEAR,MANAGEMENT_QUALITY)) %>%
   left_join(tbl(con, "inpatient_data") %>% select(ORG_CODE,YEAR,TOTAL_EPISODES,FEMALE_ADMISSIONS,"0-14","15-29","30-44","45-59","60-74","75-89","90+")) %>%
   left_join(tbl(con, "shmi") %>% select(ORG_CODE,YEAR,SHMI)) %>%
+  left_join(tbl(con, "beds") %>% select(ORG_CODE,YEAR,BEDS,BEDS_OCCUPIED_PERCENT)) %>%
   left_join(tbl(con, "provider")) %>%
   left_join(tbl(con, "hee_region")) %>%
   collect() %>%
@@ -260,7 +259,8 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            HEE_REGION_NAME = gsub("Health Education ","",HEE_REGION_NAME),
            ORG_NAME = gsub("NHS Trust","",ORG_NAME),
            ORG_NAME = gsub("NHS Foundation Trust","",ORG_NAME),
-           MAN_FTE_PER_TEN_MIL_OC = round((MANAGERS*10000000)/OP_COST,2),
+           MAN_FTE_PER_TEN_MIL_OC = round((MANAGERS*10000000)/(OP_COST*1000),2),
+           MAN_FTE_PER_10_BED = round((MANAGERS*10)/BEDS,2),
            SPECIALIST = factor(SPECIALIST, levels=c(0,1), labels=c("Non-specialist","Specialist")),
            MANAGER_CLINICIAN_RATIO=round(MANAGERS/CLINICAL_STAFF,2)) %>%
     select(ORG_CODE,
@@ -269,6 +269,8 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            SPECIALIST,
            HEE_REGION=HEE_REGION_NAME,
            OPERATING_COST=OP_COST,
+           BEDS,
+           BEDS_OCCUPIED_PERCENT,
            ADMISSIONS=TOTAL_EPISODES,
            FEMALE_ADMISSIONS,
            AGE_0_14,
@@ -309,6 +311,7 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            MANAGEMENT_SPEND,
            MAN_FTE_PER_TEN_MIL_OC,
            MAN_FTE_PER_1000_FCE,
+           MAN_FTE_PER_10_BED,
            MAN_SPEND_PER_1000_FCE,
            QUALITY_WEIGHTED_FTE,
            QUALITY_WEIGHTED_SPEND,
@@ -360,8 +363,9 @@ calculate_changes_over_time = function(providers,t1,t2){
     return(change_vars)
 }
 
+
 ##### scatter plots and histigrams for UI ####
-scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim, specialist, trend_line, facet_var, log_x_var, log_y_var){
+scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim, specialist, trend_line, facet_var, log_x_var, log_y_var, year){
   
   x = get_variable(x_var, variables)
   y = get_variable(y_var, variables)
@@ -392,6 +396,11 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
     graph_data[y$variable] = log(graph_data[y$variable])
     y$label = paste("log ", y$label)
   }
+  
+  rows = graph_data %>% 
+    select(y$variable, x$variable) %>% 
+    filter(!(is.na(.[[1]]) | is.na(.[[2]]))) %>% 
+    summarise(n())
   
   plot = ggplot(data=graph_data, aes_string(x=x$variable, y=y$variable, label="ORG_NAME")) +
     ylab(y$label) +
@@ -427,6 +436,8 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
     plot = plot + geom_vline(xintercept=0, linetype="dashed", colour="darkgrey", size=0.5)
   } 
   
+  plot = plot + ggtitle(paste0("Based on data from the ",rows," NHS trusts with data available on both variables in ",year))
+  
   plot = plot + theme_bw() + theme(panel.grid.major = element_blank(), 
                                    panel.grid.minor = element_blank(), 
                                    plot.title = element_blank(),
@@ -447,6 +458,7 @@ create_ranking_table = function(providers, variables, rank_var){
            ORG_CODE,
            ORG_NAME,
            x,
+           BEDS, 
            ALL_STAFF,
            MANAGERS,
            MANAGERS_PERCENT,
@@ -457,7 +469,7 @@ create_ranking_table = function(providers, variables, rank_var){
   return(ranked_providers)
 }
 
-histogram_plot = function(providers, variables, x_var, specialist){
+histogram_plot = function(providers, variables, x_var, specialist, year){
   
   x = get_variable(x_var, variables)
   
@@ -477,6 +489,9 @@ histogram_plot = function(providers, variables, x_var, specialist){
           plot.margin = unit(c(1, 1, 1, 1), "lines"),
           legend.position="none",
           text=element_text(family = "Roboto", colour = "#3e3f3a"))
+ 
+  plot = plot + ggtitle(paste0("Based on data from the ",sum(!is.na(graph_data[x$variable]))," NHS trusts with data available for ",year))
+  
   plotly = ggplotly(plot)
   return(plotly)
 }
@@ -505,11 +520,15 @@ manager_counts = function(managers, year){
 }
 
 ##### run regressions ####
-run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions, output){
+run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions, output, specialist){
 
   independent_vars_string = vector(mode="character")
   independent_vars_labels = vector(mode="character")
   dependent_vars_labels = vector(mode="character")
+  
+  if(!specialist){
+    acute_providers = acute_providers %>% filter(SPECIALIST=="Non-specialist")
+  }
   
   if("casemix" %in% independent_vars){
     independent_vars = c(independent_vars[-which(independent_vars %in% "casemix")],"female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
