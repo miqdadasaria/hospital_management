@@ -43,6 +43,8 @@ shinyUI(
 	    
 	    checkboxInput("trend_line", label="Show linear trend line on the plot", value=TRUE),
 
+	    checkboxInput("outliers", label="Include outlier trusts", value=TRUE),
+
 	    checkboxInput("log_x_var", label="Log the x-axis variable", value=FALSE),
 
 	    checkboxInput("log_y_var", label="Log the y-axis variable", value=FALSE),
@@ -57,7 +59,7 @@ shinyUI(
 	    
 	    sliderInput("trim", 
 	                "Plot trusts with upto managers per 1000 inpatient admissions", 
-	                min=0, max=30, value=4),
+	                min=0, max=50, value=40),
 	    tags$div(
 	      HTML("<small><small><img src='lse_logo.svg' alt='London School of Economics and Political Science' width=50%/>
          <p>This site was produced by <a href='https://github.com/miqdadasaria/'>Miqdad Asaria</a> 
@@ -180,12 +182,12 @@ tabPanel("Ranking Table",
              selectInput("dependent_vars", 
                          "Dependent variables in the regression:",
                          all_vars, 
-                         selected=c("fce","fin_pos","ae","rtt","shmi"),
+                         selected=c("fce_per_non_ae_consultant","fin_pos","ae","rtt","shmi"),
                          multiple=TRUE),
              selectInput("independent_vars", 
                          "Explanatory and control variables in regression:",
                           c("Case-mix adjust for age and sex" = "casemix",all_vars), 
-                         selected=c("fte","nhs_ss","beds","consultants","op_cost","casemix"),
+                         selected=c("fte", "fte_sq","consultants","nhs_ss","beds","op_cost","fce","casemix"),
                          multiple=TRUE),
              
              checkboxInput("specialist_reg", label="Include specialist trusts", value=FALSE),
@@ -229,10 +231,7 @@ tabPanel("Ranking Table",
             "Input data year",
             list("2018/19"="2018",
                  "2017/18"="2017",
-                 "2016/17"="2016",
-                 "2015/16"="2015",
-                 "2014/15"="2014",
-                 "2013/14"="2013"),
+                 "2016/17"="2016"),
             selected="2017")
   )
 )

@@ -14,7 +14,8 @@ shinyServer(function(input, output, session) {
     attach_management_measure(
       providers, 
       afc_pay, 
-      managers, 
+      managers,
+      input$outliers,
       input$staff_group, 
       input$pay_grade,
       input$year)

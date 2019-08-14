@@ -22,45 +22,58 @@ nurses = non_medics %>%
   filter(grepl("nurse",STAFF_GROUP_2_NAME,ignore.case=TRUE) &
            !grepl("manager",LEVEL,ignore.case=TRUE)) %>%
   group_by(ORG_CODE, YEAR) %>%
-  summarise(NURSES=round(sum(FTE),1))
+  summarise(NURSES=round(sum(FTE),1)) %>%
+  ungroup()
 
 other_clinical = non_medics %>% 
   filter(!grepl("nurse",STAFF_GROUP_2_NAME,ignore.case=TRUE) &
            grepl("Professionally qualified clinical staff",MAIN_STAFF_GROUP_NAME,ignore.case=TRUE) &
            !grepl("manager",LEVEL,ignore.case=TRUE)) %>%
   group_by(ORG_CODE, YEAR) %>%
-  summarise(OTHER_CLINICAL_STAFF=round(sum(FTE),1))
+  summarise(OTHER_CLINICAL_STAFF=round(sum(FTE),1)) %>%
+  ungroup()
 
 others = non_medics %>%
   filter(!grepl("Professionally qualified clinical staff",MAIN_STAFF_GROUP_NAME,ignore.case=TRUE) &
            !grepl("manager",LEVEL,ignore.case=TRUE)) %>%
   group_by(ORG_CODE, YEAR) %>%
-  summarise(OTHER_STAFF=round(sum(FTE),1))
+  summarise(OTHER_STAFF=round(sum(FTE),1)) %>%
+  ungroup()
 
 consultants = medics %>%
   filter(grepl("consultant",GRADE,ignore.case=TRUE)) %>%
   group_by(ORG_CODE, YEAR) %>%
-  summarise(CONSULTANTS=round(sum(FTE),1))
+  summarise(CONSULTANTS=round(sum(FTE),1)) %>%
+  ungroup()
 
 cardiologists = medics %>%
   filter(grepl("consultant",GRADE,ignore.case=TRUE) & grepl("cardiology",SPECIALTY,ignore.case=TRUE)) %>%
   group_by(ORG_CODE, YEAR) %>%
-  summarise(CARDIOLOGISTS=round(sum(FTE),1))
+  summarise(CARDIOLOGISTS=round(sum(FTE),1)) %>%
+  ungroup()
 
 ae_docs = medics %>%
   filter(grepl("consultant",GRADE,ignore.case=TRUE) & grepl("emergency medicine",SPECIALTY,ignore.case=TRUE)) %>%
   group_by(ORG_CODE, YEAR) %>%
-  summarise(EMERGENCY_MEDICS=round(sum(FTE),1))
+  summarise(EMERGENCY_MEDICS=round(sum(FTE),1)) %>%
+  ungroup()
+
+non_ae_docs = medics %>%
+  filter(grepl("consultant",GRADE,ignore.case=TRUE) & !grepl("emergency medicine",SPECIALTY,ignore.case=TRUE)) %>%
+  group_by(ORG_CODE, YEAR) %>%
+  summarise(NON_EMERGENCY_MEDICS=round(sum(FTE),1)) %>%
+  ungroup()
 
 orthopods = medics %>%
   filter(grepl("consultant",GRADE,ignore.case=TRUE) & grepl("orthopaedic",SPECIALTY,ignore.case=TRUE)) %>%
   group_by(ORG_CODE, YEAR) %>%
-  summarise(ORTHOPAEDIC_SURGEONS=round(sum(FTE),1))
-
+  summarise(ORTHOPAEDIC_SURGEONS=round(sum(FTE),1)) %>%
+  ungroup()
 
 doctors = medics %>%
   group_by(ORG_CODE, YEAR) %>%
-  summarise(DOCTORS=round(sum(FTE),1))
+  summarise(DOCTORS=round(sum(FTE),1)) %>%
+  ungroup()
 
 all_staff = non_medics %>% 
   group_by(ORG_CODE, YEAR) %>% 
@@ -69,15 +82,18 @@ all_staff = non_medics %>%
                group_by(ORG_CODE, YEAR) %>% 
                summarise(M_FTE=sum(FTE)) ) %>%
   mutate(ALL_STAFF = round(NM_FTE + M_FTE,1)) %>%
-  select(YEAR, ORG_CODE, ALL_STAFF)
+  select(YEAR, ORG_CODE, ALL_STAFF) %>%
+  ungroup()
 
 
 junior_doctors = medics %>%
   filter(!grepl("consultant",GRADE,ignore.case=TRUE)) %>%
   group_by(ORG_CODE, YEAR) %>%
-  summarise(JUNIOR_DOCTORS=round(sum(FTE),1))
+  summarise(JUNIOR_DOCTORS=round(sum(FTE),1)) %>%
+  ungroup()
 
 staff = others %>%
+  left_join(all_staff) %>%
   left_join(nurses) %>%
   left_join(junior_doctors) %>%
   left_join(consultants) %>%
@@ -86,7 +102,7 @@ staff = others %>%
   left_join(cardiologists) %>%
   left_join(orthopods) %>%
   left_join(ae_docs) %>%
-  left_join(all_staff) %>%
+  left_join(non_ae_docs) %>%
   mutate(CLINICAL_STAFF=DOCTORS+NURSES+OTHER_CLINICAL_STAFF, 
          CLINICAL_STAFF_PERCENT=round(100*CLINICAL_STAFF/ALL_STAFF,1),
          JUNIOR_DOCTORS_PERCENT=round(100*JUNIOR_DOCTORS/ALL_STAFF,1),
@@ -100,24 +116,27 @@ staff = others %>%
 
 afc_pay = tbl(con, "pay_scale") %>% 
   collect() %>%
-  bind_rows(data_frame(YEAR=2017,AFC_BAND=c("Very Senior Manager","Non AfC Grade"),BOTTOM=142500,AVERAGE=142500,TOP=142500)) 
+  bind_rows(tibble(YEAR=2017,AFC_BAND=c("Very Senior Manager","Non AfC Grade"),BOTTOM=142500,AVERAGE=142500,TOP=142500)) 
 
 ##### construct provider level dataset #### 
-providers = tbl(con, "rtt_target") %>% select(ORG_CODE,YEAR,RTT_SCORE) %>%
-  left_join(tbl(con, "financial_position") %>% select(ORG_CODE,YEAR,OP_COST,FINANCIAL_POSITION)) %>%
-  left_join(tbl(con, "ae_target") %>% select(ORG_CODE,YEAR,AE_SCORE)) %>%
+providers = staff %>% filter(YEAR < 2019) %>%
+  left_join(
+  tbl(con, "provider") %>% 
+  left_join(tbl(con, "hee_region")) %>%
   left_join(tbl(con, "cqc_rating") %>% filter(POPULATION=="Overall" & QUESTION=="Overall") %>% select(ORG_CODE,RATING_SCORE)) %>%
   left_join(tbl(con, "cqc_rating") %>% filter(POPULATION=="Overall" & QUESTION=="Well-led") %>% select(ORG_CODE,RATING_SCORE_LEADERSHIP=RATING_SCORE)) %>%
-  left_join(tbl(con, "nhs_ss_management_score") %>% filter(QUESTION=="overall") %>% mutate(MANAGEMENT_QUALITY=round(((VALUE-1)/4)*100,1)) %>% select(ORG_CODE,YEAR,MANAGEMENT_QUALITY)) %>%
+  collect()) %>% 
+  filter(ORG_TYPE == "Acute") %>%
+  left_join(
+  tbl(con, "nhs_ss_management_score") %>% filter(QUESTION=="overall") %>% mutate(MANAGEMENT_QUALITY=round(((VALUE-1)/4)*100,1)) %>% select(ORG_CODE,YEAR,MANAGEMENT_QUALITY) %>%
+  left_join(tbl(con, "financial_position") %>% select(ORG_CODE,YEAR,OP_COST,FINANCIAL_POSITION)) %>%
+  left_join(tbl(con, "rtt_target") %>% select(ORG_CODE,YEAR,RTT_SCORE)) %>%
+  left_join(tbl(con, "ae_target") %>% select(ORG_CODE,YEAR,AE_SCORE)) %>%
   left_join(tbl(con, "inpatient_data") %>% select(ORG_CODE,YEAR,TOTAL_EPISODES,FEMALE_ADMISSIONS,"0-14","15-29","30-44","45-59","60-74","75-89","90+")) %>%
   left_join(tbl(con, "shmi") %>% select(ORG_CODE,YEAR,SHMI)) %>%
   left_join(tbl(con, "beds") %>% select(ORG_CODE,YEAR,BEDS,BEDS_OCCUPIED_PERCENT)) %>%
-  left_join(tbl(con, "provider")) %>%
-  left_join(tbl(con, "hee_region")) %>%
-  collect() %>%
-  filter(ORG_TYPE == "Acute") %>%
-  left_join(staff) %>%
-  mutate(OP_COST = OP_COST*-1) %>%
+  collect()) %>%
+  mutate(OP_COST = OP_COST/-1000, FINANCIAL_POSITION = FINANCIAL_POSITION/1000) %>%
   mutate(AE_SCORE=round(AE_SCORE*100,1), RTT_SCORE=round(RTT_SCORE*100,1)) %>%
   mutate(RATING = factor(RATING_SCORE,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
   mutate(RATING_LEADERSHIP = factor(RATING_SCORE_LEADERSHIP,levels=c(0,1,2,3), labels=c("Inadequate","Requires improvement","Good","Outstanding"))) %>%
@@ -154,7 +173,12 @@ get_variable = function(var, definitions){
 }
 
 ##### construct management measure as defined by UI ####
-attach_management_measure = function(providers, afc_pay, managers, selected_staff_group, selected_pay_grade, year){
+attach_management_measure = function(providers, afc_pay, managers, include_outliers, selected_staff_group, selected_pay_grade, year){
+  
+  if(!include_outliers){
+    # RAJ = Southend has a suspiciously low number of managers
+    providers = providers %>% filter(ORG_CODE!="RAJ")
+  }
   
   pay_grade = vector()
   if("afc_2" %in% selected_pay_grade){
@@ -242,7 +266,8 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
     left_join(afc_pay %>% select(AFC_BAND,PAY=TOP)) %>%
     mutate(MANAGEMENT_SPEND=round(FTE*PAY,0)) %>%
     group_by(ORG_CODE, YEAR) %>%
-    summarise(MANAGEMENT_SPEND=sum(MANAGEMENT_SPEND), MANAGERS=round(sum(FTE),1))
+    summarise(MANAGEMENT_SPEND=sum(MANAGEMENT_SPEND), MANAGERS=round(sum(FTE),1)) %>%
+    ungroup()
   
   
   results = providers %>%
@@ -259,10 +284,16 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            HEE_REGION_NAME = gsub("Health Education ","",HEE_REGION_NAME),
            ORG_NAME = gsub("NHS Trust","",ORG_NAME),
            ORG_NAME = gsub("NHS Foundation Trust","",ORG_NAME),
-           MAN_FTE_PER_TEN_MIL_OC = round((MANAGERS*10000000)/(OP_COST*1000),2),
+           MAN_FTE_PER_TEN_MIL_OC = round((MANAGERS)/(OP_COST*0.1),2),
            MAN_FTE_PER_10_BED = round((MANAGERS*10)/BEDS,2),
            SPECIALIST = factor(SPECIALIST, levels=c(0,1), labels=c("Non-specialist","Specialist")),
-           MANAGER_CLINICIAN_RATIO=round(MANAGERS/CLINICAL_STAFF,2)) %>%
+           MANAGER_CLINICIAN_RATIO=round(MANAGERS/CLINICAL_STAFF,2),
+           FCE_PER_MAN = round(TOTAL_EPISODES/MANAGERS,0),
+           OC_MIL_PER_MAN = round((OP_COST)/(MANAGERS),2),
+           STAFF_PER_MAN = round(ALL_STAFF/MANAGERS,2),
+           BEDS_PER_MAN = round(BEDS/MANAGERS,2),
+           FCE_PER_NON_AE_CONSULTANT = (TOTAL_EPISODES/NON_EMERGENCY_MEDICS)
+           ) %>%
     select(ORG_CODE,
            ORG_NAME,
            YEAR,
@@ -292,6 +323,7 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            CONSULTANTS,
            CARDIOLOGISTS,
            EMERGENCY_MEDICS,
+           NON_EMERGENCY_MEDICS,
            ORTHOPAEDIC_SURGEONS,
            DOCTORS,
            NURSES,
@@ -313,21 +345,25 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            MAN_FTE_PER_1000_FCE,
            MAN_FTE_PER_10_BED,
            MAN_SPEND_PER_1000_FCE,
+           FCE_PER_MAN,
+           OC_MIL_PER_MAN,
+           STAFF_PER_MAN,
+           BEDS_PER_MAN,
            QUALITY_WEIGHTED_FTE,
            QUALITY_WEIGHTED_SPEND,
            MANAGER_CLINICIAN_RATIO,
            MANAGERS_SQ,
-           MANAGEMENT_SPEND_SQ)
+           MANAGEMENT_SPEND_SQ,
+           FCE_PER_NON_AE_CONSULTANT)
   
+  changes_18 = calculate_changes_over_time(results,2017,2018)
   changes_17 = calculate_changes_over_time(results,2016,2017)
-  changes_16 = calculate_changes_over_time(results,2015,2016)
-  changes_15 = calculate_changes_over_time(results,2014,2015)
-  changes_14 = calculate_changes_over_time(results,2013,2014)
+  # changes_16 = calculate_changes_over_time(results,2015,2016)
+  # changes_15 = calculate_changes_over_time(results,2014,2015)
+  # changes_14 = calculate_changes_over_time(results,2013,2014)
   results = results %>% filter(YEAR==year)
-  results = left_join(results,changes_14) %>% 
-    left_join(changes_15) %>% 
-    left_join(changes_16) %>% 
-    left_join(changes_17)
+  results = left_join(results,changes_17) %>% 
+    left_join(changes_18)
   
   return(results)
 }
@@ -502,7 +538,8 @@ manager_counts = function(managers, year){
     filter(YEAR==year) %>%
     group_by(STAFF_GROUP,AFC_BAND) %>% 
     summarise(FTE=sum(FTE)) %>% 
-    spread(AFC_BAND, FTE, fill = 0)
+    spread(AFC_BAND, FTE, fill = 0) %>%
+    ungroup
   
   manager_counts = manager_counts %>%
     bind_rows(manager_counts[-1] %>% 
@@ -591,15 +628,17 @@ create_sample_providers_dataset = function(year){
   
   selected_staff_group = c("man_central_functions","man_estates","man_clinical_support","man_scientific","nurse","scientific")
   
-  test_data = attach_management_measure(providers, afc_pay, managers, selected_staff_group, selected_pay_grade, year)
+  test_data = attach_management_measure(providers, afc_pay, managers, FALSE, selected_staff_group, selected_pay_grade, year)
     
    
 }
 
-descriptives = function(providers){
+descriptives = function(providers, year){
+  providers = providers %>% filter(YEAR==year)
+  
   doctors = medics %>% 
     inner_join(providers) %>% 
-    mutate(CONSULTANT=GRADE_SORT_ORDER==1) %>% 
+    mutate(CONSULTANT=GRADE_SORT_ORDER %in% c(1,20)) %>% 
     group_by(CONSULTANT) %>% 
     summarise(FTE=sum(FTE)) %>% 
     spread(CONSULTANT,FTE) %>% 
@@ -630,4 +669,6 @@ descriptives = function(providers){
   all_staff_percentages = all_staff %>% mutate_if(is.numeric,function(x){x*100/sum(all_staff[-c(1,2)])})
   
   staff_summary = all_staff_percentages %>% group_by(MAIN_STAFF_GROUP) %>% summarise(MANAGER=sum(MANAGER),OTHER=sum(OTHER)) %>% mutate(TOTAL = MANAGER+OTHER)
+ 
+  return(staff_summary)
 }
