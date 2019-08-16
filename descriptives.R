@@ -173,12 +173,7 @@ get_variable = function(var, definitions){
 }
 
 ##### construct management measure as defined by UI ####
-attach_management_measure = function(providers, afc_pay, managers, include_outliers, selected_staff_group, selected_pay_grade, year){
-  
-  if(!include_outliers){
-    # RAJ = Southend has a suspiciously low number of managers
-    providers = providers %>% filter(ORG_CODE!="RAJ")
-  }
+attach_management_measure = function(providers, afc_pay, managers, selected_staff_group, selected_pay_grade, year){
   
   pay_grade = vector()
   if("afc_2" %in% selected_pay_grade){
@@ -401,7 +396,15 @@ calculate_changes_over_time = function(providers,t1,t2){
 
 
 ##### scatter plots and histigrams for UI ####
-scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim, specialist, trend_line, facet_var, log_x_var, log_y_var, year){
+scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim, specialist, trend_line, facet_var, log_x_var, log_y_var, year, show_titles, include_outliers){
+  if(!specialist){
+    acute_providers = acute_providers %>% filter(SPECIALIST=="Non-specialist")
+  }
+  
+  if(!include_outliers){
+    # e.g RAJ = Southend has a suspiciously low number of managers
+    acute_providers = acute_providers %>% filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95))
+  }
   
   x = get_variable(x_var, variables)
   y = get_variable(y_var, variables)
@@ -417,10 +420,6 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
       filter(MAN_FTE_PER_1000_FCE<trim)
   } else {
     graph_data = acute_providers
-  }
-  
-  if(!specialist){
-    graph_data = graph_data %>% filter(SPECIALIST=="Non-specialist")
   }
   
   if(log_x_var){
@@ -472,7 +471,9 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
     plot = plot + geom_vline(xintercept=0, linetype="dashed", colour="darkgrey", size=0.5)
   } 
   
-  plot = plot + ggtitle(paste0("Based on data from the ",rows," NHS trusts with data available on both variables in ",year))
+  if(show_titles){
+    plot = plot + ggtitle(paste0("Based on data from the ",rows," NHS trusts with data available on both variables in ",year))
+  }
   
   plot = plot + theme_bw() + theme(panel.grid.major = element_blank(), 
                                    panel.grid.minor = element_blank(), 
@@ -505,14 +506,21 @@ create_ranking_table = function(providers, variables, rank_var){
   return(ranked_providers)
 }
 
-histogram_plot = function(providers, variables, x_var, specialist, year){
+histogram_plot = function(acute_providers, variables, x_var, specialist, year, show_titles, include_outliers){
+  
+  if(!specialist){
+    acute_providers = acute_providers %>% filter(SPECIALIST=="Non-specialist")
+  }
+  
+  if(!include_outliers){
+    # e.g RAJ = Southend has a suspiciously low number of managers
+    acute_providers = acute_providers %>% filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95))
+  }
   
   x = get_variable(x_var, variables)
   
-  graph_data = providers
-  if(!specialist){
-    graph_data = graph_data %>% filter(SPECIALIST=="Non-specialist")
-  }
+  graph_data = acute_providers
+
     
   plot = ggplot(data=graph_data,aes_string(x$variable)) + 
     geom_histogram(fill="#E69F00", colour="black") + 
@@ -526,16 +534,28 @@ histogram_plot = function(providers, variables, x_var, specialist, year){
           legend.position="none",
           text=element_text(family = "Roboto", colour = "#3e3f3a"))
  
-  plot = plot + ggtitle(paste0("Based on data from the ",sum(!is.na(graph_data[x$variable]))," NHS trusts with data available for ",year))
+  if(show_titles){
+    plot = plot + ggtitle(paste0("Based on data from the ",sum(!is.na(graph_data[x$variable]))," NHS trusts with data available for ",year))
+  }
   
   plotly = ggplotly(plot)
   return(plotly)
 }
 
 ##### tables of desriptives on managers ####
-manager_counts = function(managers, year){
-  manager_counts = managers %>% 
+manager_counts = function(managers, acute_providers, specialist, year, include_outliers){
+  if(!specialist){
+    acute_providers = acute_providers %>% filter(SPECIALIST=="Non-specialist")
+  }
+  
+  if(!include_outliers){
+    # e.g RAJ = Southend has a suspiciously low number of managers
+    acute_providers = acute_providers %>% filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95))
+  }
+  
+  manager_counts = managers %>%
     filter(YEAR==year) %>%
+    inner_join(acute_providers %>% select(ORG_CODE,YEAR)) %>%
     group_by(STAFF_GROUP,AFC_BAND) %>% 
     summarise(FTE=sum(FTE)) %>% 
     spread(AFC_BAND, FTE, fill = 0) %>%
@@ -557,14 +577,26 @@ manager_counts = function(managers, year){
 }
 
 ##### run regressions ####
-run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions, output, specialist){
-
+run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions, output, specialist, include_outliers, all_outcomes){
+  
   independent_vars_string = vector(mode="character")
   independent_vars_labels = vector(mode="character")
   dependent_vars_labels = vector(mode="character")
   
   if(!specialist){
     acute_providers = acute_providers %>% filter(SPECIALIST=="Non-specialist")
+  }
+  
+  if(!include_outliers){
+    # e.g RAJ = Southend has a suspiciously low number of managers
+    acute_providers = acute_providers %>% filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95))
+  }
+  
+  if(all_outcomes){
+    for(y_var in dependent_vars){
+      y = get_variable(y_var, variables)
+      acute_providers = acute_providers %>% drop_na(y$variable)
+    }
   }
   
   if("casemix" %in% independent_vars){
@@ -622,22 +654,34 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
 
 ##### misc descriptives for presentations / journal articles ####
 
-create_sample_providers_dataset = function(year){
+create_sample_providers_dataset = function(year, specialist, include_outliers, all_outcomes){
   
   selected_pay_grade = c("afc_7","afc_8a","afc_8b","afc_8c","afc_8d","afc_9","afc_vsm")
   
   selected_staff_group = c("man_central_functions","man_estates","man_clinical_support","man_scientific","nurse","scientific")
   
-  test_data = attach_management_measure(providers, afc_pay, managers, FALSE, selected_staff_group, selected_pay_grade, year)
-    
-   
+  acute_providers = attach_management_measure(providers, afc_pay, managers, selected_staff_group, selected_pay_grade, year)
+  
+  if(!specialist){
+    acute_providers = acute_providers %>% filter(SPECIALIST=="Non-specialist")
+  }
+  
+  if(!include_outliers){
+    # e.g RAJ = Southend has a suspiciously low number of managers
+    acute_providers = acute_providers %>% filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95))
+  }
+  
+  if(all_outcomes){
+    acute_providers = acute_providers %>% drop_na(NET_FINANCIAL_POSITION,RTT_SCORE,AE_SCORE,SHMI,FCE_PER_NON_AE_CONSULTANT) 
+  }
+  
+  return(acute_providers)
 }
 
-descriptives = function(providers, year){
-  providers = providers %>% filter(YEAR==year)
+descriptives = function(acute_providers, percentage){
   
   doctors = medics %>% 
-    inner_join(providers) %>% 
+    inner_join(acute_providers) %>% 
     mutate(CONSULTANT=GRADE_SORT_ORDER %in% c(1,20)) %>% 
     group_by(CONSULTANT) %>% 
     summarise(FTE=sum(FTE)) %>% 
@@ -647,16 +691,16 @@ descriptives = function(providers, year){
     ungroup()
   
   others = non_medics %>%
-    inner_join(providers) %>% 
-    mutate(MANAGER=grepl("manager",LEVEL,ignore.case=TRUE)) %>%
-    mutate(STAFF_GROUP = if_else(grepl("manager",STAFF_GROUP_1_NAME,ignore.case = TRUE),paste("Manager",gsub("00[1234]_","",AREA)),STAFF_GROUP_1_NAME)) %>% 
+    inner_join(acute_providers) %>% 
+    mutate(MANAGER=grepl("manager",LEVEL,ignore.case=TRUE) & AFC_BAND %in% c("Band 7","Band 8a","Band 8b","Band 8c","Band 8d","Band 9","Very Senior Manager")) %>%
+    mutate(STAFF_GROUP = if_else(grepl("manager",STAFF_GROUP_1_NAME,ignore.case = TRUE), paste("Manager",gsub("00[1234]_","",AREA)),STAFF_GROUP_1_NAME)) %>% 
     group_by(MAIN_STAFF_GROUP_NAME, STAFF_GROUP, MANAGER) %>% 
     summarise(FTE=sum(FTE)) %>% 
     spread(MANAGER,FTE,fill=0) %>% 
     select(MAIN_STAFF_GROUP_NAME, STAFF_GROUP, MANAGER=`TRUE`, OTHER=`FALSE`) %>% 
     ungroup()
     
-  all_staff = bind_rows(others, doctors) %>% 
+  staff_summary = bind_rows(others, doctors) %>% 
     mutate(MAIN_STAFF_GROUP=if_else(grepl("Doctor",STAFF_GROUP),
                                     "Doctor",
                                     if_else(grepl("Nurse",STAFF_GROUP),
@@ -666,9 +710,54 @@ descriptives = function(providers, year){
                                                    "Other non-clinical")))) %>%
     select(MAIN_STAFF_GROUP,STAFF_GROUP, MANAGER, OTHER)
   
-  all_staff_percentages = all_staff %>% mutate_if(is.numeric,function(x){x*100/sum(all_staff[-c(1,2)])})
+  if(percentage){
+    staff_summary = staff_summary %>% mutate_if(is.numeric,function(x){x*100/sum(staff_summary[-c(1,2)])})
+  }
   
-  staff_summary = all_staff_percentages %>% group_by(MAIN_STAFF_GROUP) %>% summarise(MANAGER=sum(MANAGER),OTHER=sum(OTHER)) %>% mutate(TOTAL = MANAGER+OTHER)
+  staff_summary = staff_summary %>% group_by(MAIN_STAFF_GROUP) %>% summarise(MANAGER=sum(MANAGER),OTHER=sum(OTHER)) %>% mutate(TOTAL = MANAGER+OTHER)
  
   return(staff_summary)
 }
+
+create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=FALSE, all_outcomes=TRUE){
+  acute_providers = create_sample_providers_dataset(year, specialist, include_outliers, all_outcomes)
+  
+  staff_total = descriptives(acute_providers, FALSE) %>% select(TOTAL) %>% sum()
+  
+  manager_total = descriptives(acute_providers, FALSE) %>% filter(MAIN_STAFF_GROUP!="Doctor") %>% select(MANAGER) %>% sum()
+  
+  manager_percent = (manager_total/staff_total) * 100
+  
+  staff_breakdown = descriptives(acute_providers, TRUE)
+  
+  manager_percent_check = staff_breakdown %>% filter(MAIN_STAFF_GROUP != "Doctor") %>% select(MANAGER) %>% sum()
+  
+  manager_percent == manager_percent_check
+  
+  managers_by_grade = manager_counts(managers, acute_providers, specialist, year, TRUE)
+  
+  manager_total_check = managers_by_grade[["counts"]] %>% filter(STAFF_GROUP=="Total") %>% select("Band 7","Band 8a","Band 8b","Band 8c","Band 8d","Band 9","Very Senior Manager") %>% sum()
+  
+  round(manager_total) == round(manager_total_check)
+  
+  graph_data = acute_providers %>% 
+    select(MANAGERS,MANAGEMENT_SPEND,MANAGERS_PERCENT,NHS_SS) %>% 
+    gather() 
+  graph_data$key = factor(graph_data$key,c("MANAGERS","MANAGEMENT_SPEND","MANAGERS_PERCENT","NHS_SS"),c("Managers (FTE)","Management spend (per £100k)","Managers (% of all staff)","NHS staff survey consolidated management score (%)"))
+  managers_plot = ggplot(data=graph_data,aes(x=value)) + 
+    geom_histogram(fill="#E69F00", colour="black") + 
+    ylab("Count of acute NHS trusts") +
+    facet_wrap(key ~ ., scales="free") +
+    theme_bw() + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(), 
+          plot.title = element_blank(),
+          plot.margin = unit(c(1, 1, 1, 1), "lines"),
+          legend.position="none",
+          text=element_text(family = "Roboto", colour = "#3e3f3a"))
+  
+}
+
+
+
+

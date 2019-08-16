@@ -15,7 +15,6 @@ shinyServer(function(input, output, session) {
       providers, 
       afc_pay, 
       managers,
-      input$outliers,
       input$staff_group, 
       input$pay_grade,
       input$year)
@@ -24,20 +23,20 @@ shinyServer(function(input, output, session) {
   ##### outputs on descriptives tab ####  
   output$scatter_plot = renderPlotly({
     withProgress(message = paste0('Updating trust scatter plot'),{
-      scatter_plot(providerData(), variable_definitions, input$x_var, input$y_var, input$size_var, input$trim, input$specialist, input$trend_line, input$facet_var, input$log_x_var, input$log_y_var, input$year)
+      scatter_plot(providerData(), variable_definitions, input$x_var, input$y_var, input$size_var, input$trim, input$specialist, input$trend_line, input$facet_var, input$log_x_var, input$log_y_var, input$year, input$show_titles, input$outliers)
     })
   })
   
   ##### outputs on management definitions tab ####
   output$manager_plot = renderPlotly({
     withProgress(message = paste0('Updating managers plot'),{
-      histogram_plot(providerData(), variable_definitions, input$x_var_hist_man, input$specialist_hist_man, input$year)
+      histogram_plot(providerData(), variable_definitions, input$x_var_hist_man, input$specialist_hist_man, input$year, input$show_titles_hist, input$outliers_man)
     })
   })
   
   output$manager_counts = renderDataTable({
     withProgress(message = 'Loading manager summary counts data table',{
-      table = manager_counts(managers, input$year)[["counts"]]
+      table = manager_counts(managers, providerData(), input$specialist_hist_man, input$year, input$outliers_man)[["counts"]]
       datatable(table,
                 style = 'bootstrap',
                 rownames = FALSE,
@@ -48,7 +47,7 @@ shinyServer(function(input, output, session) {
 
   output$manager_percentages = renderDataTable({
     withProgress(message = 'Loading manager summary percentages data table',{
-      table = manager_counts(managers, input$year)[["percentages"]]
+      table = manager_counts(managers, providerData(), input$specialist_hist_man, input$year, input$outliers_man)[["percentages"]]
       datatable(table,
                 style = 'bootstrap',
                 rownames = FALSE,
@@ -144,7 +143,7 @@ shinyServer(function(input, output, session) {
 	
 	output$histogram = renderPlotly({
 	  withProgress(message = paste0('Updating variable distribution plot'),{
-	    histogram_plot(providerData(), variable_definitions, input$x_var_hist, input$specialist_hist, input$year)
+	    histogram_plot(providerData(), variable_definitions, input$x_var_hist, input$specialist_hist, input$year, input$show_titles_hist, input$outliers_hist)
 	  })
 	})
 	
@@ -162,7 +161,7 @@ shinyServer(function(input, output, session) {
 	
 	output$regression_results = renderText({
 	  withProgress(message = paste0('Calculating regression results'),{
-	    run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, "html", input$specialist_reg)
+	    run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, "html", input$specialist_reg, input$outliers_reg, input$all_outcomes_reg)
 	  })
 	})
 	
@@ -170,7 +169,7 @@ shinyServer(function(input, output, session) {
 	  filename = function() {
 	    paste0("regression_results_",input$year,".txt")},
 	  content = function(file) {
-	    results = run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, input$regression_output_type, input$specialist_reg)
+	    results = run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, input$regression_output_type, input$specialist_reg, input$outliers_reg, input$all_outcomes_reg)
 	    cat(results,file=file)
 	  }
 	)

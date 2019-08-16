@@ -43,11 +43,13 @@ shinyUI(
 	    
 	    checkboxInput("trend_line", label="Show linear trend line on the plot", value=TRUE),
 
-	    checkboxInput("outliers", label="Include outlier trusts", value=TRUE),
+	    checkboxInput("outliers", label="Include top and bottom 5% of trusts (management %)", value=FALSE),
 
 	    checkboxInput("log_x_var", label="Log the x-axis variable", value=FALSE),
 
 	    checkboxInput("log_y_var", label="Log the y-axis variable", value=FALSE),
+
+	    checkboxInput("show_titles", label="Show chart title", value=FALSE),
 	    
 	    selectInput("facet_var", 
 	                "Split plots by:",
@@ -115,6 +117,7 @@ tabPanel("Managment Definition",
                           "As percentage of all staff" = "man_percent",
                           "Unadjusted" = "fte"), 
                      selected="man_percent"),
+                     checkboxInput("outliers_man", label="Include top and bottom 5% of trusts (management %)", value=FALSE),
                      checkboxInput("specialist_hist_man", label="Include specialist hospitals", value=FALSE)
          ),
          mainPanel(
@@ -146,7 +149,9 @@ tabPanel("Managment Definition",
                                               "Variable to plot distribution of:",
                                               all_vars, 
                                               selected="ae"),
+                                  checkboxInput("outliers_hist", label="Include top and bottom 5% of trusts (management %)", value=FALSE),
                                   checkboxInput("specialist_hist", label="Include specialist hospitals", value=FALSE),
+                                  checkboxInput("show_titles_hist", label="Show chart title", value=FALSE),
                                   downloadButton("download_raw_data", "Download Full Dataset in CSV format")
                                 ),
                                 mainPanel(
@@ -190,8 +195,10 @@ tabPanel("Ranking Table",
                          selected=c("fte", "fte_sq","consultants","nhs_ss","beds","op_cost","fce","casemix"),
                          multiple=TRUE),
              
+             checkboxInput("all_outcomes_reg", label="Restrict to trusts that have data on all outcomes", value=TRUE),
              checkboxInput("specialist_reg", label="Include specialist trusts", value=FALSE),
-             checkboxInput("mean_centre", label="Mean centre covariates", value=FALSE),
+             checkboxInput("outliers_reg", label="Include top and bottom 5% of trusts (management %)", value=FALSE),
+             checkboxInput("mean_centre", label="Mean centre covariates", value=TRUE),
              checkboxInput("log_dep_vars", label="Log dependent variables", value=FALSE),
              checkboxInput("log_indep_vars", label="Log independent variables", value=FALSE),
              checkboxInput("interactions", label="Include interaction terms", value=FALSE),
