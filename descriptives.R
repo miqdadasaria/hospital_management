@@ -168,7 +168,7 @@ all_vars=as.list(variable_definitions$code)
 names(all_vars)=variable_definitions$label
 
 get_variable = function(var, definitions){
-  v = definitions %>% filter(code==var) %>% select(variable, label)
+  v = definitions %>% filter(code %in% var) %>% select(variable, label)
   return(v)
 }
 
@@ -740,14 +740,18 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
   
   round(manager_total) == round(manager_total_check)
   
-  graph_data = acute_providers %>% 
-    select(MANAGERS,MANAGEMENT_SPEND,MANAGERS_PERCENT,NHS_SS) %>% 
+  # histograms of key management input variables
+  management_code = c("fte", "spend", "man_percent", "nhs_ss")
+  management_variables = get_variable(management_code, variable_definitions) %>% arrange(variable)
+  graph_data_1 = acute_providers %>% 
+    select(management_variables$variable) %>% 
     gather() 
-  graph_data$key = factor(graph_data$key,c("MANAGERS","MANAGEMENT_SPEND","MANAGERS_PERCENT","NHS_SS"),c("Managers (FTE)","Management spend (per £100k)","Managers (% of all staff)","NHS staff survey consolidated management score (%)"))
-  managers_plot = ggplot(data=graph_data,aes(x=value)) + 
+  graph_data_1$key = factor(graph_data_1$key,management_variables$variable,management_variables$label)
+  managers_plot = ggplot(data=graph_data_1,aes(x=value)) + 
     geom_histogram(fill="#E69F00", colour="black") + 
     ylab("Count of acute NHS trusts") +
-    facet_wrap(key ~ ., scales="free") +
+    xlab("") +
+    facet_wrap(key ~ ., scales="free", labeller = labeller(key = label_wrap_gen(30))) +
     theme_bw() + 
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(), 
@@ -755,6 +759,128 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
           plot.margin = unit(c(1, 1, 1, 1), "lines"),
           legend.position="none",
           text=element_text(family = "Roboto", colour = "#3e3f3a"))
+  
+  ggsave("figures/manager_numbers.png", managers_plot, width=16, height=15, units="cm", dpi="print")
+  
+  # scatter plots of management adjusted by size
+  management_code_2 = c("fce_k_per_man","oc_mil_per_man","beds_per_man", "man_percent")
+  management_variables_2 = get_variable(management_code_2, variable_definitions) %>% arrange(variable)
+  graph_data_2 = acute_providers %>% 
+    select(management_variables_2$variable) %>% 
+    gather("key", "value", -MANAGERS_PERCENT) 
+  graph_data_2$key = factor(graph_data_2$key,management_variables_2$variable,management_variables_2$label)
+  
+  manager_scatter_plots = ggplot(data=graph_data_2, aes_string(x="MANAGERS_PERCENT", y="value")) +
+    xlab("Managers (% of all staff)") + 
+    ylab("") +
+    geom_point(colour="#E69F00") +
+    geom_smooth(method = "lm", colour="darkred", linetype="dashed", size=0.8, se=FALSE) + 
+    facet_wrap(.~key, scales = "free", labeller = labeller(key = label_wrap_gen(30))) + 
+    theme_bw() + 
+    theme(panel.grid.major = element_blank(), 
+                                   panel.grid.minor = element_blank(), 
+                                   plot.title = element_blank(),
+                                   plot.margin = unit(c(1, 1, 1, 1), "lines"),
+                                   legend.position="none",
+                                   text=element_text(family = "Roboto", colour = "#3e3f3a"))
+  
+  ggsave("figures/manager_scatter.png", manager_scatter_plots, width=16, height=10, units="cm", dpi="print")
+  
+  
+  # histograms of outcome variables
+  outcomes_code = c("fce_per_non_ae_consultant","fin_pos","ae","rtt","shmi")
+  outcomes_variables = get_variable(outcomes_code, variable_definitions) %>% arrange(variable)
+  graph_data_3 = acute_providers %>% 
+    select(outcomes_variables$variable) %>% 
+    gather() 
+  graph_data_3$key = factor(graph_data_3$key,outcomes_variables$variable,outcomes_variables$label)
+  outcomes_plot = ggplot(data=graph_data_3,aes(x=value)) + 
+    geom_histogram(fill="#E69F00", colour="black") + 
+    ylab("Count of acute NHS trusts") +
+    xlab("") +
+    facet_wrap(key ~ ., scales="free", labeller = labeller(key = label_wrap_gen(30))) +
+    theme_bw() + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(), 
+          plot.title = element_blank(),
+          plot.margin = unit(c(1, 1, 1, 1), "lines"),
+          legend.position="none",
+          text=element_text(family = "Roboto", colour = "#3e3f3a"))
+  
+  ggsave("figures/outcomes.png", outcomes_plot, width=20, height=15, units="cm", dpi="print")
+  
+  
+  independent_vars_string = vector(mode="character")
+  independent_vars_labels = vector(mode="character")
+  dependent_vars_labels = vector(mode="character")
+  independent_vars = c("fte", "fte_sq","consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
+  for(x_var in independent_vars){
+    x = get_variable(x_var, variable_definitions)
+    indep_var = x$variable
+    indep_var_label = x$label
+    independent_vars_string = c(independent_vars_string, indep_var)
+    independent_vars_labels = c(independent_vars_labels, indep_var_label)
+  }
+  
+  formula_independents = paste(independent_vars_string, collapse=" + ")
+  
+  independent_vars = acute_providers %>% select(independent_vars_string)
+  independent_vars = independent_vars %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
+  
+  dependent_vars = c("fce_per_non_ae_consultant","fin_pos","ae","rtt","shmi")
+  regressions = list()
+  for(y_var in dependent_vars){
+    y = get_variable(y_var, variable_definitions)
+    dep_var = y$variable
+    dep_var_label = y$label
+    dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
+    reg_formula = as.formula(paste(dep_var,formula_independents,sep=" ~ "))
+    regressions[[y$variable]] = lm(reg_formula, data=bind_cols(independent_vars,acute_providers%>%select(y$variable)))
+  }
+  
+  regression_results = paste(capture.output(stargazer(regressions, 
+                                           covariate.labels=independent_vars_labels,
+                                           dep.var.labels=dependent_vars_labels,
+                                           type="latex")), collapse="\n") 
+  sink("figures/regression_results.tex")
+  regression_results
+  sink()
+  
+  independent_vars_string = vector(mode="character")
+  independent_vars_labels = vector(mode="character")
+  dependent_vars_labels = vector(mode="character")
+  independent_vars = c("spend", "spend_sq","consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
+  for(x_var in independent_vars){
+    x = get_variable(x_var, variable_definitions)
+    indep_var = x$variable
+    indep_var_label = x$label
+    independent_vars_string = c(independent_vars_string, indep_var)
+    independent_vars_labels = c(independent_vars_labels, indep_var_label)
+  }
+  
+  formula_independents = paste(independent_vars_string, collapse=" + ")
+  
+  independent_vars = acute_providers %>% select(independent_vars_string)
+  independent_vars = independent_vars %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
+  
+  regressions = list()
+  for(y_var in dependent_vars){
+    y = get_variable(y_var, variable_definitions)
+    dep_var = y$variable
+    dep_var_label = y$label
+    dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
+    reg_formula = as.formula(paste(dep_var,formula_independents,sep=" ~ "))
+    regressions[[y$variable]] = lm(reg_formula, data=bind_cols(independent_vars,acute_providers%>%select(y$variable)))
+  }
+  
+  regression_results_spend = paste(capture.output(stargazer(regressions, 
+                                                      covariate.labels=independent_vars_labels,
+                                                      dep.var.labels=dependent_vars_labels,
+                                                      type="latex")), collapse="\n") 
+  
+  sink("figures/regression_results_spend.tex")
+  regression_results_spend
+  sink()
   
 }
 

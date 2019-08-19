@@ -216,7 +216,7 @@ plot_all_nhs = plot_management_timeseries(data=all_england, esr_2016_2017_2018, 
 plot_acute_trusts = plot_management_timeseries(data=acute_england, esr_2016_2017_2018_acute, title = "Total managers across acute NHS trusts only in England") 
 
 
-ggsave("all_nhs_manager.png", plot_all_nhs, width=14, height=10, units="in", dpi="print")
+ggsave("figures/all_nhs_manager.png", plot_all_nhs, width=14, height=10, units="in", dpi="print")
 
-ggsave("acute_nhs_manager.png",plot_acute_trusts, width=14, height=10, units="in", dpi="print")
+ggsave("figures/acute_nhs_manager.png",plot_acute_trusts, width=14, height=10, units="in", dpi="print")
 

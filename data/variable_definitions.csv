@@ -89,6 +89,8 @@ change_17_fce,CHANGE_2016_2017_ADMISSIONS,Change 16/17 to 17/18 in Total inpatie
 change_17_op_cost,CHANGE_2016_2017_OPERATING_COST,Change 16/17 to 17/18 in Total Operating Cost (£ million)
 change_17_fte_sq,CHANGE_2016_2017_MANAGERS_SQ,Change 16/17 to 17/18 in Managers (FTE) squared
 change_17_spend_sq,CHANGE_2016_2017_MANAGEMENT_SPEND_SQ,Change 16/17 to 17/18 in Management spend squared (per £100k)
+change_17_non_ae_doc,CHANGE_2016_2017_NON_EMERGENCY_MEDICS,Change 16/17 to 17/18 in Consultants (FTE excluding A&E)
+change_17_fce_per_non_ae_consultant,CHANGE_2016_2017_FCE_PER_NON_AE_CONSULTANT,Change 16/17 to 17/18 in Inpatient admissions per consultant (excluding A&E)
 change_18_17_ae,CHANGE_2017_2018_AE_SCORE,Change 17/18 to 18/19 A&E 4 hour wait target met (%)
 change_18_17_ae_doc,CHANGE_2017_2018_EMERGENCY_MEDICS,Change 17/18 to 18/19 in A&E consultants (FTE)
 change_18_17_all_clinical_percent,CHANGE_2017_2018_CLINICAL_STAFF_PERCENT,Change 17/18 to 18/19 in All clinical staff (% of all staff)
@@ -127,6 +129,8 @@ change_18_fce,CHANGE_2017_2018_ADMISSIONS,Change 17/18 to 18/19 in Total inpatie
 change_18_op_cost,CHANGE_2017_2018_OPERATING_COST,Change 17/18 to 18/19 in Total Operating Cost (£ million)
 change_18_fte_sq,CHANGE_2017_2018_MANAGERS_SQ,Change 17/18 to 18/19 in Managers (FTE) squared
 change_18_spend_sq,CHANGE_2017_2018_MANAGEMENT_SPEND_SQ,Change 17/18 to 18/19 in Management spend squared (per £100k)
+change_18_non_ae_doc,CHANGE_2017_2018_NON_EMERGENCY_MEDICS,Change 17/18 to 18/19 in Consultants (FTE excluding A&E)
+change_18_fce_per_non_ae_consultant,CHANGE_2017_2018_FCE_PER_NON_AE_CONSULTANT,Change 17/18 to 18/19 in Inpatient admissions per consultant (excluding A&E)
 fce_k_per_man,FCE_PER_MAN,Average inpatient admissions per manager
 oc_mil_per_man,OC_MIL_PER_MAN,Average operating cost per manager (£ million)
 staff_per_man,STAFF_PER_MAN,Average staff per manager
