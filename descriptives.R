@@ -719,6 +719,43 @@ descriptives = function(acute_providers, percentage){
   return(staff_summary)
 }
 
+simple_regression = function(dependent_vars, independent_vars, output_filename){
+  
+  independent_vars_string = vector(mode="character")
+  independent_vars_labels = vector(mode="character")
+  dependent_vars_labels = vector(mode="character")
+   for(x_var in independent_vars){
+    x = get_variable(x_var, variable_definitions)
+    indep_var = x$variable
+    indep_var_label = x$label
+    independent_vars_string = c(independent_vars_string, indep_var)
+    independent_vars_labels = c(independent_vars_labels, indep_var_label)
+  }
+  
+  formula_independents = paste(independent_vars_string, collapse=" + ")
+  
+  independent_vars = acute_providers %>% select(independent_vars_string)
+  independent_vars = independent_vars %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
+  
+  regressions = list()
+  for(y_var in dependent_vars){
+    y = get_variable(y_var, variable_definitions)
+    dep_var = y$variable
+    dep_var_label = y$label
+    dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
+    reg_formula = as.formula(paste(dep_var,formula_independents,sep=" ~ "))
+    regressions[[y$variable]] = lm(reg_formula, data=bind_cols(independent_vars,acute_providers%>%select(y$variable)))
+  }
+  
+  regression_results = paste(capture.output(stargazer(regressions, 
+                                                      covariate.labels=independent_vars_labels,
+                                                      dep.var.labels=dependent_vars_labels,
+                                                      type="latex")), collapse="\n") 
+  sink(file=paste0("figures/",output_filename))
+  cat(regression_results)
+  sink()
+}
+
 create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=FALSE, all_outcomes=TRUE){
   acute_providers = create_sample_providers_dataset(year, specialist, include_outliers, all_outcomes)
   
@@ -810,77 +847,24 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
   ggsave("figures/outcomes.png", outcomes_plot, width=20, height=15, units="cm", dpi="print")
   
   
-  independent_vars_string = vector(mode="character")
-  independent_vars_labels = vector(mode="character")
-  dependent_vars_labels = vector(mode="character")
-  independent_vars = c("fte", "fte_sq","consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
-  for(x_var in independent_vars){
-    x = get_variable(x_var, variable_definitions)
-    indep_var = x$variable
-    indep_var_label = x$label
-    independent_vars_string = c(independent_vars_string, indep_var)
-    independent_vars_labels = c(independent_vars_labels, indep_var_label)
-  }
+  dependent_vars_levels = c("fce_per_non_ae_consultant","fin_pos","ae","rtt","shmi")
   
-  formula_independents = paste(independent_vars_string, collapse=" + ")
+  independent_vars_fte_levels = c("fte", "fte_sq","consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
   
-  independent_vars = acute_providers %>% select(independent_vars_string)
-  independent_vars = independent_vars %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
+  independent_vars_spend_levels = c("spend", "spend_sq","consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
+
+  independent_vars_fte_changes = c("fte", "fte_sq", "fte", "consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
   
-  dependent_vars = c("fce_per_non_ae_consultant","fin_pos","ae","rtt","shmi")
-  regressions = list()
-  for(y_var in dependent_vars){
-    y = get_variable(y_var, variable_definitions)
-    dep_var = y$variable
-    dep_var_label = y$label
-    dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
-    reg_formula = as.formula(paste(dep_var,formula_independents,sep=" ~ "))
-    regressions[[y$variable]] = lm(reg_formula, data=bind_cols(independent_vars,acute_providers%>%select(y$variable)))
-  }
+  dependent_vars_changes = c("fce_per_non_ae_consultant","fin_pos","ae","rtt","shmi")
   
-  regression_results = paste(capture.output(stargazer(regressions, 
-                                           covariate.labels=independent_vars_labels,
-                                           dep.var.labels=dependent_vars_labels,
-                                           type="latex")), collapse="\n") 
-  sink("figures/regression_results.tex")
-  regression_results
-  sink()
+
+  simple_regression(dependent_vars = dependent_vars_levels, independent_vars = independent_vars_fte_levels, output_filename = "regression_results_fte_levels.tex")
+
+  simple_regression(dependent_vars = dependent_vars_levels, independent_vars = independent_vars_spend_levels, output_filename = "regression_results_spend_levels.tex")
+
+  simple_regression(dependent_vars = dependent_vars_levels, independent_vars = independent_vars_fte_changes, output_filename = "regression_results_fte_changes_levels.tex")
   
-  independent_vars_string = vector(mode="character")
-  independent_vars_labels = vector(mode="character")
-  dependent_vars_labels = vector(mode="character")
-  independent_vars = c("spend", "spend_sq","consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
-  for(x_var in independent_vars){
-    x = get_variable(x_var, variable_definitions)
-    indep_var = x$variable
-    indep_var_label = x$label
-    independent_vars_string = c(independent_vars_string, indep_var)
-    independent_vars_labels = c(independent_vars_labels, indep_var_label)
-  }
-  
-  formula_independents = paste(independent_vars_string, collapse=" + ")
-  
-  independent_vars = acute_providers %>% select(independent_vars_string)
-  independent_vars = independent_vars %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
-  
-  regressions = list()
-  for(y_var in dependent_vars){
-    y = get_variable(y_var, variable_definitions)
-    dep_var = y$variable
-    dep_var_label = y$label
-    dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
-    reg_formula = as.formula(paste(dep_var,formula_independents,sep=" ~ "))
-    regressions[[y$variable]] = lm(reg_formula, data=bind_cols(independent_vars,acute_providers%>%select(y$variable)))
-  }
-  
-  regression_results_spend = paste(capture.output(stargazer(regressions, 
-                                                      covariate.labels=independent_vars_labels,
-                                                      dep.var.labels=dependent_vars_labels,
-                                                      type="latex")), collapse="\n") 
-  
-  sink("figures/regression_results_spend.tex")
-  regression_results_spend
-  sink()
+  simple_regression(dependent_vars = dependent_vars_changes, independent_vars = independent_vars_fte_changes, output_filename = "regression_results_fte_changes_changes.tex")
   
 }
 
