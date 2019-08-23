@@ -3,6 +3,7 @@ library("RSQLite")
 library("dbplyr")
 library("plotly")
 library("stargazer")
+library("assertthat")
 
 db_file = "data/NHS_management.sqlite3"
 con = dbConnect(SQLite(), dbname=db_file)
@@ -654,9 +655,13 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
 
 ##### misc descriptives for presentations / journal articles ####
 
-create_sample_providers_dataset = function(year, specialist, include_outliers, all_outcomes){
+create_sample_providers_dataset = function(year, specialist, include_outliers, all_outcomes, all_pay_grades=FALSE){
   
-  selected_pay_grade = c("afc_7","afc_8a","afc_8b","afc_8c","afc_8d","afc_9","afc_vsm")
+  if(all_pay_grades){
+    selected_pay_grade = c("afc_nafc","afc_2","afc_3","afc_4","afc_5","afc_6","afc_7","afc_8a","afc_8b","afc_8c","afc_8d","afc_9","afc_vsm")
+  } else {
+    selected_pay_grade = c("afc_7","afc_8a","afc_8b","afc_8c","afc_8d","afc_9","afc_vsm")
+  }
   
   selected_staff_group = c("man_central_functions","man_estates","man_clinical_support","man_scientific","nurse","scientific")
   
@@ -692,7 +697,8 @@ descriptives = function(acute_providers, percentage){
   
   others = non_medics %>%
     inner_join(acute_providers) %>% 
-    mutate(MANAGER=grepl("manager",LEVEL,ignore.case=TRUE) & AFC_BAND %in% c("Band 7","Band 8a","Band 8b","Band 8c","Band 8d","Band 9","Very Senior Manager")) %>%
+   # mutate(MANAGER=grepl("manager",LEVEL,ignore.case=TRUE) & AFC_BAND %in% c("Band 7","Band 8a","Band 8b","Band 8c","Band 8d","Band 9","Very Senior Manager")) %>%
+    mutate(MANAGER=grepl("manager",LEVEL,ignore.case=TRUE) ) %>%
     mutate(STAFF_GROUP = if_else(grepl("manager",STAFF_GROUP_1_NAME,ignore.case = TRUE), paste("Manager",gsub("00[1234]_","",AREA)),STAFF_GROUP_1_NAME)) %>% 
     group_by(MAIN_STAFF_GROUP_NAME, STAFF_GROUP, MANAGER) %>% 
     summarise(FTE=sum(FTE)) %>% 
@@ -716,6 +722,7 @@ descriptives = function(acute_providers, percentage){
   
   staff_summary = staff_summary %>% group_by(MAIN_STAFF_GROUP) %>% summarise(MANAGER=sum(MANAGER),OTHER=sum(OTHER)) %>% mutate(TOTAL = MANAGER+OTHER)
  
+  staff_summary = rbind(staff_summary, data.frame(MAIN_STAFF_GROUP="Total",t(colSums(staff_summary[,-1]))))
   return(staff_summary)
 }
 
@@ -756,129 +763,140 @@ simple_regression = function(acute_providers, dependent_vars, independent_vars, 
   sink()
 }
 
-appendix_regression = function(acute_providers, dependent_vars, independent_vars_1, independent_vars_2, independent_vars_3, independent_vars_4, output_filename){
+appendix_regression = function(acute_providers, dependent_vars, independent_vars_fte, independent_vars_spend, independent_vars_changes, output_filename){
   
-  independent_vars_string_1 = vector(mode="character")
-  independent_vars_labels_1 = vector(mode="character")
-  for(x_var in independent_vars_1){
+  independent_vars_string_fte = vector(mode="character")
+  independent_vars_labels_fte = vector(mode="character")
+  for(x_var in independent_vars_fte){
     x = get_variable(x_var, variable_definitions)
     indep_var = x$variable
     indep_var_label = x$label
-    independent_vars_string_1 = c(independent_vars_string_1, indep_var)
-    independent_vars_labels_1 = c(independent_vars_labels_1, indep_var_label)
+    independent_vars_string_fte = c(independent_vars_string_fte, indep_var)
+    independent_vars_labels_fte = c(independent_vars_labels_fte, indep_var_label)
   }
   
-  formula_independents_1 = paste(independent_vars_string_1, collapse=" + ")
+  formula_independents_fte = paste(independent_vars_string_fte, collapse=" + ")
   
-  independent_vars_1 = acute_providers %>% select(independent_vars_string_1)
-  independent_vars_1 = independent_vars_1 %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
+  independent_vars_fte = acute_providers %>% select(independent_vars_string_fte)
+  independent_vars_fte = independent_vars_fte %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
   
-  independent_vars_string_2 = vector(mode="character")
-  independent_vars_labels_2 = vector(mode="character")
-  for(x_var in independent_vars_2){
+  independent_vars_string_spend = vector(mode="character")
+  independent_vars_labels_spend = vector(mode="character")
+  for(x_var in independent_vars_spend){
     x = get_variable(x_var, variable_definitions)
     indep_var = x$variable
     indep_var_label = x$label
-    independent_vars_string_2 = c(independent_vars_string_2, indep_var)
-    independent_vars_labels_2 = c(independent_vars_labels_2, indep_var_label)
+    independent_vars_string_spend = c(independent_vars_string_spend, indep_var)
+    independent_vars_labels_spend = c(independent_vars_labels_spend, indep_var_label)
   }
   
-  formula_independents_2 = paste(independent_vars_string_2, collapse=" + ")
+  formula_independents_spend = paste(independent_vars_string_spend, collapse=" + ")
   
-  independent_vars_2 = acute_providers %>% select(independent_vars_string_2)
-  independent_vars_2 = independent_vars_2 %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
+  independent_vars_spend = acute_providers %>% select(independent_vars_string_spend)
+  independent_vars_spend = independent_vars_spend %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
   
-  independent_vars_string_3 = vector(mode="character")
-  independent_vars_labels_3 = vector(mode="character")
-  for(x_var in independent_vars_3){
+  independent_vars_string_changes = vector(mode="character")
+  independent_vars_labels_changes = vector(mode="character")
+  for(x_var in independent_vars_changes){
     x = get_variable(x_var, variable_definitions)
     indep_var = x$variable
     indep_var_label = x$label
-    independent_vars_string_3 = c(independent_vars_string_3, indep_var)
-    independent_vars_labels_3 = c(independent_vars_labels_3, indep_var_label)
+    independent_vars_string_changes = c(independent_vars_string_changes, indep_var)
+    independent_vars_labels_changes = c(independent_vars_labels_changes, indep_var_label)
   }
   
-  formula_independents_3 = paste(independent_vars_string_3, collapse=" + ")
+  formula_independents_changes = paste(independent_vars_string_changes, collapse=" + ")
   
-  independent_vars_3 = acute_providers %>% select(independent_vars_string_3)
-  independent_vars_3 = independent_vars_3 %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
-  
-  independent_vars_string_4 = vector(mode="character")
-  independent_vars_labels_4 = vector(mode="character")
-  for(x_var in independent_vars_4){
-    x = get_variable(x_var, variable_definitions)
-    indep_var = x$variable
-    indep_var_label = x$label
-    independent_vars_string_4 = c(independent_vars_string_4, indep_var)
-    independent_vars_labels_4 = c(independent_vars_labels_4, indep_var_label)
-  }
-  
-  formula_independents_4 = paste(independent_vars_string_4, collapse=" + ")
-  
-  independent_vars_4 = acute_providers %>% select(independent_vars_string_4)
-  independent_vars_4 = independent_vars_4 %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
-  
-  independent_vars_labels = c(independent_vars_labels_4[1:2],independent_vars_labels_2[1:2],independent_vars_labels_4[3:length(independent_vars_4)])
+  independent_vars_changes = acute_providers %>% select(independent_vars_string_changes)
+  independent_vars_changes = independent_vars_changes %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
+
+  independent_vars_labels = c(independent_vars_labels_fte[1:2],independent_vars_labels_spend[1:2],independent_vars_labels_changes[3:length(independent_vars_changes)])
   dependent_vars_labels = vector(mode="character")
   regressions = list()
- 
+    # fte levels regression
     y = get_variable(dependent_vars[1], variable_definitions)
     dep_var = y$variable
     dep_var_label = y$label
     dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
-    reg_formula = as.formula(paste(dep_var,formula_independents_1,sep=" ~ "))
-    regressions[[1]] = lm(reg_formula, data=bind_cols(independent_vars_1,acute_providers%>%select(y$variable)))
+    reg_formula = as.formula(paste(dep_var,formula_independents_fte,sep=" ~ "))
+    regressions[[1]] = lm(reg_formula, data=bind_cols(independent_vars_fte,acute_providers%>%select(y$variable)))
   
+    # spend levels regression
+    reg_formula = as.formula(paste(dep_var,formula_independents_spend,sep=" ~ "))
+    regressions[[2]] = lm(reg_formula, data=bind_cols(independent_vars_spend,acute_providers%>%select(y$variable)))
+    
+    # change fte on level regression
+    reg_formula = as.formula(paste(dep_var,formula_independents_changes,sep=" ~ "))
+    regressions[[3]] = lm(reg_formula, data=bind_cols(independent_vars_changes,acute_providers%>%select(y$variable)))
+   
+    # change fte on change level same year regression
     y = get_variable(dependent_vars[2], variable_definitions)
     dep_var = y$variable
     dep_var_label = y$label
     dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
-    reg_formula = as.formula(paste(dep_var,formula_independents_2,sep=" ~ "))
-    regressions[[2]] = lm(reg_formula, data=bind_cols(independent_vars_2,acute_providers%>%select(y$variable)))
-    
-    y = get_variable(dependent_vars[3], variable_definitions)
-    dep_var = y$variable
-    dep_var_label = y$label
-    dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
-    reg_formula = as.formula(paste(dep_var,formula_independents_3,sep=" ~ "))
-    regressions[[3]] = lm(reg_formula, data=bind_cols(independent_vars_3,acute_providers%>%select(y$variable)))
-   
-    y = get_variable(dependent_vars[4], variable_definitions)
-    dep_var = y$variable
-    dep_var_label = y$label
-    dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
-    reg_formula = as.formula(paste(dep_var,formula_independents_4,sep=" ~ "))
-    regressions[[4]] = lm(reg_formula, data=bind_cols(independent_vars_4,acute_providers%>%select(y$variable)))
+    reg_formula = as.formula(paste(dep_var,formula_independents_changes,sep=" ~ "))
+    regressions[[4]] = lm(reg_formula, data=bind_cols(independent_vars_changes,acute_providers%>%select(y$variable)))
+ 
+    # data only currently available for rtt and shmi
+    if(dependent_vars[3] %in% c("change_18_rtt","change_18_shmi")){
+      # change fte on change level following year regression
+      y = get_variable(dependent_vars[3], variable_definitions)
+      dep_var = y$variable
+      dep_var_label = y$label
+      dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
+      reg_formula = as.formula(paste(dep_var,formula_independents_changes,sep=" ~ "))
+      regressions[[5]] = lm(reg_formula, data=bind_cols(independent_vars_changes,acute_providers%>%select(y$variable)))
+    }
     
   regression_results = paste(capture.output(stargazer(regressions, 
                                                       covariate.labels=independent_vars_labels,
-                                                      dep.var.labels=dependent_vars_labels[c(1,4)],
+                                                      dep.var.labels=dependent_vars_labels,
                                                       type="latex")), collapse="\n") 
   sink(file=paste0("figures/",output_filename))
   cat(regression_results)
   sink()
 }
 
-create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=FALSE, all_outcomes=TRUE){
-  acute_providers = create_sample_providers_dataset(year, specialist, include_outliers, all_outcomes)
+create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=FALSE, all_outcomes=TRUE, all_paygrades=FALSE, file_prefix="basecase"){
+  acute_providers = create_sample_providers_dataset(year, specialist, include_outliers, all_outcomes, all_paygrades)
   
-  staff_total = descriptives(acute_providers, FALSE) %>% select(TOTAL) %>% sum()
+  staff_breakdown_numbers = descriptives(acute_providers, FALSE)
   
-  manager_total = descriptives(acute_providers, FALSE) %>% filter(MAIN_STAFF_GROUP!="Doctor") %>% select(MANAGER) %>% sum()
+  write_csv(staff_breakdown_numbers,paste0("figures/",file_prefix,"_staff_breakdown_numbers.csv"))
+  
+  staff_total =  staff_breakdown_numbers %>% filter(MAIN_STAFF_GROUP!="Total") %>% select(TOTAL) %>% sum()
+  
+  manager_total = staff_breakdown_numbers %>% filter(!(MAIN_STAFF_GROUP %in% c("Doctor","Total"))) %>% select(MANAGER) %>% sum()
   
   manager_percent = (manager_total/staff_total) * 100
   
   staff_breakdown = descriptives(acute_providers, TRUE)
   
-  manager_percent_check = staff_breakdown %>% filter(MAIN_STAFF_GROUP != "Doctor") %>% select(MANAGER) %>% sum()
+  write_csv(staff_breakdown,paste0("figures/",file_prefix,"_staff_breakdown_percentage.csv"))
   
-  manager_percent == manager_percent_check
+  manager_percent_check = staff_breakdown %>% filter(!(MAIN_STAFF_GROUP %in% c("Doctor","Total"))) %>% select(MANAGER) %>% sum()
+  
+  assert_that(manager_percent == manager_percent_check)
+  
+  print(paste0("Number of managers: ",manager_total," out of: ",staff_total," staff overall (",round(manager_percent,2),"%)"))
   
   managers_by_grade = manager_counts(managers, acute_providers, specialist, year, TRUE)
   
+  write_csv(managers_by_grade$counts,paste0("figures/",file_prefix,"_staff_breakdown_by_grade_numbers.csv"))
+  
+  write_csv(managers_by_grade$percentages,paste0("figures/",file_prefix,"_staff_breakdown_by_grade_percentages.csv"))
+  
   manager_total_check = managers_by_grade[["counts"]] %>% filter(STAFF_GROUP=="Total") %>% select("Band 7","Band 8a","Band 8b","Band 8c","Band 8d","Band 9","Very Senior Manager") %>% sum()
   
-  round(manager_total) == round(manager_total_check)
+  if(all_paygrades!=TRUE){
+    assert_that(round(manager_total) != round(manager_total_check))
+  }
+  
+  print(paste0("Number of managers at specified pay grades: ",manager_total_check," (",round(100*manager_total_check/staff_total,2),"%)"))
+  
+  manager_total_check = managers_by_grade[["counts"]] %>% filter(STAFF_GROUP=="Total") %>%  select(Total)
+  
+  assert_that(abs(manager_total-manager_total_check)<1)
   
   # histograms of key management input variables
   management_code = c("fte", "spend", "man_percent", "nhs_ss")
@@ -900,7 +918,7 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
           legend.position="none",
           text=element_text(family = "Roboto", colour = "#3e3f3a"))
   
-  ggsave("figures/manager_numbers.png", managers_plot, width=16, height=15, units="cm", dpi="print")
+  ggsave(paste0("figures/",file_prefix,"_manager_numbers.png"), managers_plot, width=16, height=15, units="cm", dpi="print")
   
   # scatter plots of management adjusted by size
   management_code_2 = c("fce_k_per_man","oc_mil_per_man","beds_per_man", "man_percent")
@@ -924,7 +942,7 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
                                    legend.position="none",
                                    text=element_text(family = "Roboto", colour = "#3e3f3a"))
   
-  ggsave("figures/manager_scatter.png", manager_scatter_plots, width=16, height=10, units="cm", dpi="print")
+  ggsave(paste0("figures/",file_prefix,"_manager_scatter.png"), manager_scatter_plots, width=16, height=10, units="cm", dpi="print")
   
   
   # histograms of outcome variables
@@ -947,7 +965,7 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
           legend.position="none",
           text=element_text(family = "Roboto", colour = "#3e3f3a"))
   
-  ggsave("figures/outcomes.png", outcomes_plot, width=20, height=15, units="cm", dpi="print")
+  ggsave(paste0("figures/",file_prefix,"_outcomes.png"), outcomes_plot, width=20, height=15, units="cm", dpi="print")
   
   
   dependent_vars_levels = c("fce_per_non_ae_consultant","fin_pos","ae","rtt","shmi")
@@ -961,67 +979,76 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
   dependent_vars_changes = c("change_17_fce_per_non_ae_consultant","change_17_fin_pos","change_17_ae","change_17_rtt","change_17_shmi")
   
 
-  simple_regression(acute_providers, dependent_vars = dependent_vars_levels, independent_vars = independent_vars_fte_levels, output_filename = "regression_results_fte_levels.tex")
+  simple_regression(acute_providers, dependent_vars = dependent_vars_levels, independent_vars = independent_vars_fte_levels, output_filename = paste0(file_prefix,"_regression_results_fte_levels.tex"))
 
-  simple_regression(acute_providers, dependent_vars = dependent_vars_levels, independent_vars = independent_vars_spend_levels, output_filename = "regression_results_spend_levels.tex")
+  simple_regression(acute_providers, dependent_vars = dependent_vars_levels, independent_vars = independent_vars_spend_levels, output_filename = paste0(file_prefix,"_regression_results_spend_levels.tex"))
 
-  simple_regression(acute_providers, dependent_vars = dependent_vars_levels, independent_vars = independent_vars_fte_changes, output_filename = "regression_results_fte_changes_levels.tex")
+  simple_regression(acute_providers, dependent_vars = dependent_vars_levels, independent_vars = independent_vars_fte_changes, output_filename = paste0(file_prefix,"_regression_results_fte_changes_levels.tex"))
   
-  simple_regression(acute_providers, dependent_vars = dependent_vars_changes, independent_vars = independent_vars_fte_changes, output_filename = "regression_results_fte_changes_changes.tex")
+  simple_regression(acute_providers, dependent_vars = dependent_vars_changes, independent_vars = independent_vars_fte_changes, output_filename = paste0(file_prefix,"_regression_results_fte_changes_changes.tex"))
   
-  acute_providers = create_sample_providers_dataset(year, TRUE, TRUE, FALSE)
+  acute_providers = create_sample_providers_dataset(year, TRUE, TRUE, FALSE, all_paygrades)
   
-  dependent_vars_fce = c("fce_per_non_ae_consultant","fce_per_non_ae_consultant","fce_per_non_ae_consultant","change_17_fce_per_non_ae_consultant")
+  dependent_vars_fce = c("fce_per_non_ae_consultant","change_17_fce_per_non_ae_consultant","change_18_fce_per_non_ae_consultant")
   
   appendix_regression(acute_providers, 
                       dependent_vars = dependent_vars_fce, 
-                      independent_vars_1 = independent_vars_fte_levels, 
-                      independent_vars_2 = independent_vars_spend_levels, 
-                      independent_vars_3 = independent_vars_fte_changes, 
-                      independent_vars_4 = independent_vars_fte_changes, 
-                      output_filename = "appendix_fce_regression.tex")
+                      independent_vars_fte = independent_vars_fte_levels, 
+                      independent_vars_spend = independent_vars_spend_levels, 
+                      independent_vars_changes = independent_vars_fte_changes, 
+                      output_filename = paste0(file_prefix,"_appendix_fce_regression.tex"))
   
-  dependent_vars_ae = c("ae","ae","ae","change_17_ae")
+  dependent_vars_ae = c("ae","change_17_ae","change_18_ae")
   
   appendix_regression(acute_providers, 
                       dependent_vars = dependent_vars_ae, 
-                      independent_vars_1 = independent_vars_fte_levels, 
-                      independent_vars_2 = independent_vars_spend_levels, 
-                      independent_vars_3 = independent_vars_fte_changes, 
-                      independent_vars_4 = independent_vars_fte_changes, 
-                      output_filename = "appendix_ae_regression.tex")
+                      independent_vars_fte = independent_vars_fte_levels, 
+                      independent_vars_spend = independent_vars_spend_levels, 
+                      independent_vars_changes = independent_vars_fte_changes, 
+                      output_filename = paste0(file_prefix,"_appendix_ae_regression.tex"))
   
-  dependent_vars_rtt = c("rtt","rtt","rtt","change_17_rtt")
+  dependent_vars_rtt = c("rtt","change_17_rtt","change_18_rtt")
   
   appendix_regression(acute_providers, 
                       dependent_vars = dependent_vars_rtt, 
-                      independent_vars_1 = independent_vars_fte_levels, 
-                      independent_vars_2 = independent_vars_spend_levels, 
-                      independent_vars_3 = independent_vars_fte_changes, 
-                      independent_vars_4 = independent_vars_fte_changes, 
-                      output_filename = "appendix_rtt_regression.tex")
+                      independent_vars_fte = independent_vars_fte_levels, 
+                      independent_vars_spend = independent_vars_spend_levels, 
+                      independent_vars_changes = independent_vars_fte_changes, 
+                      output_filename = paste0(file_prefix,"_appendix_rtt_regression.tex"))
   
-  dependent_vars_fin_pos = c("fin_pos","fin_pos","fin_pos","change_17_fin_pos")
+  dependent_vars_fin_pos = c("fin_pos","change_17_fin_pos","change_18_fin_pos")
   
   appendix_regression(acute_providers, 
                       dependent_vars = dependent_vars_fin_pos, 
-                      independent_vars_1 = independent_vars_fte_levels, 
-                      independent_vars_2 = independent_vars_spend_levels, 
-                      independent_vars_3 = independent_vars_fte_changes, 
-                      independent_vars_4 = independent_vars_fte_changes, 
-                      output_filename = "appendix_fin_pos_regression.tex")
+                      independent_vars_fte = independent_vars_fte_levels, 
+                      independent_vars_spend = independent_vars_spend_levels, 
+                      independent_vars_changes = independent_vars_fte_changes, 
+                      output_filename = paste0(file_prefix,"_appendix_fin_pos_regression.tex"))
   
-  dependent_vars_shmi = c("shmi","shmi","shmi","change_17_shmi")
+  dependent_vars_shmi = c("shmi","change_17_shmi","change_18_shmi")
   
   appendix_regression(acute_providers, 
                       dependent_vars = dependent_vars_shmi, 
-                      independent_vars_1 = independent_vars_fte_levels, 
-                      independent_vars_2 = independent_vars_spend_levels, 
-                      independent_vars_3 = independent_vars_fte_changes, 
-                      independent_vars_4 = independent_vars_fte_changes, 
-                      output_filename = "appendix_shmi_regression.tex")
+                      independent_vars_fte = independent_vars_fte_levels, 
+                      independent_vars_spend = independent_vars_spend_levels, 
+                      independent_vars_changes = independent_vars_fte_changes, 
+                      output_filename = paste0(file_prefix,"_appendix_shmi_regression.tex"))
 }
 
 
+produce_figures_for_paper = function(figure_year=2017){
+  
+  # basecase exclude specialist trusts and outliers 
+  # restrict to managers on AFC 7 and above  
+  # only include trusts that have data on all outcomes
+  create_summary_tables(year=figure_year)
 
+  # results for appendix include all trusts and managers
+  create_summary_tables(year=figure_year,
+                      specialist=TRUE,
+                      all_outcomes=FALSE,
+                      all_paygrades=TRUE,
+                      include_outliers=TRUE,
+                      file_prefix="allmanagers")
+}
 
