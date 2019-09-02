@@ -137,3 +137,8 @@ staff_per_man,STAFF_PER_MAN,Average staff per manager
 beds_per_man,BEDS_PER_MAN,Average beds per manager
 fce_per_non_ae_consultant,FCE_PER_NON_AE_CONSULTANT,Inpatient admissions per consultant (excluding A&E)
 non_ae_doc,NON_EMERGENCY_MEDICS,Consultants (FTE excluding A&E)
+year,YEAR,Financial Year 2017/18
+org_code,ORG_CODE,Organisation Code
+simple_fte,SIMPLE_MANAGERS_FTE,Managers (FTE - basic definition)
+simple_consultants,SIMPLE_CONSULTANTS_FTE,Consultants (FTE - basic definition)
+simple_fte_sq,SIMPLE_MANAGERS_FTE_SQ,Managers (FTE basic definition) squared

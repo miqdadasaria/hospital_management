@@ -22,6 +22,9 @@ rtt = read_csv("RTT.csv")
 financial_position = read_csv("financial_positions.csv")
 shmi = read_csv("shmi.csv")
 beds = read_csv("beds.csv")
+managers_simple = read_csv("managers_simple_def.csv")
+consultants_simple = read_csv("consultants_simple_def.csv")
+esr_simple = inner_join(managers_simple, consultants_simple) %>% inner_join(provider %>% filter(ORG_TYPE=="Acute") %>% select(ORG_CODE))
 
 # extract financial years from CQC scores
 cqc_rating = cqc_rating %>% mutate(DATE = dmy(DATE),
@@ -68,6 +71,7 @@ dbWriteTable(conn = db, name = "rtt_target", rtt, overwrite=TRUE)
 dbWriteTable(conn = db, name = "financial_position", financial_position, overwrite=TRUE)
 dbWriteTable(conn = db, name = "shmi", shmi, overwrite=TRUE)
 dbWriteTable(conn = db, name = "beds", beds, overwrite=TRUE)
+dbWriteTable(conn = db, name = "esr_simple", esr_simple, overwrite=TRUE)
 
 dbDisconnect(db)
 

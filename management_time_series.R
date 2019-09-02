@@ -35,7 +35,7 @@ esr_2016_2017_2018 =
   filter(STAFF_GROUP %in% c("Managers","Senior managers")) %>%
   group_by(DATE) %>% 
   summarise(FTE = sum(FTE)) %>%
-  mutate(STAFF_GROUP = "Total managers") ,
+  mutate(STAFF_GROUP = "Manager Total") ,
   medics %>% 
   group_by(DATE) %>% 
   summarise(FTE = sum(FTE)) %>%
@@ -75,7 +75,7 @@ esr_2016_2017_2018_acute =
       filter(STAFF_GROUP %in% c("Managers","Senior managers")) %>%
       group_by(DATE) %>% 
       summarise(FTE = sum(FTE)) %>%
-      mutate(STAFF_GROUP = "Total managers"),
+      mutate(STAFF_GROUP = "Manager Total"),
     medics %>% 
       inner_join(acute_trusts) %>%
       group_by(DATE) %>% 
@@ -177,7 +177,7 @@ plot_management_timeseries = function(data, esr_data, title){
     filter(STAFF_GROUP %in% c("Manager", "Senior manager")) %>%
     group_by(DATE) %>%
     summarise(FTE = sum(FTE)) %>%
-    mutate(STAFF_GROUP="Total manager") %>%
+    mutate(STAFF_GROUP="Manager Total") %>%
     ungroup() %>%
     select(DATE, STAFF_GROUP, FTE),
     data %>%
@@ -189,13 +189,13 @@ plot_management_timeseries = function(data, esr_data, title){
     select(DATE, STAFF_GROUP, FTE),
     esr_data) %>% 
     spread(STAFF_GROUP, FTE) %>%
-    mutate(`Manager %` = 100*`Total manager`/(`NonMed Total`+`Med Total`)) %>%
+    mutate(`Manager %` = 100*`Manager Total`/(`NonMed Total`+`Med Total`)) %>%
     gather(key=STAFF_GROUP, value=FTE, -DATE) %>%
-    mutate(DATE = dmy(DATE), STAFF_GROUP = factor(STAFF_GROUP, levels = c("Manager","Senior manager","Total manager", "NonMed Total", "Consultant", "Med Total", "All Staff Total", "Manager %"))) %>%
+    mutate(DATE = dmy(DATE), STAFF_GROUP = factor(STAFF_GROUP, levels = c("Manager","Senior manager","Manager Total", "NonMed Total", "Consultant", "Med Total", "All Staff Total", "Manager %"))) %>%
     arrange(DATE)
 
 
-  plot = ggplot(data=graph_data,aes(x=DATE, y=FTE)) + 
+  plot = ggplot(data=graph_data %>% filter(STAFF_GROUP %in% c("Manager Total","All Staff Total","Manager %")),aes(x=DATE, y=FTE)) + 
     geom_line() +
     geom_point(colour="darkred") +
     geom_vline(xintercept=dmy("01/09/2015"), linetype="dashed", colour="darkgrey") +
@@ -213,10 +213,10 @@ plot_management_timeseries = function(data, esr_data, title){
 
 plot_all_nhs = plot_management_timeseries(data=all_england, esr_2016_2017_2018, title = "Total managers across acute NHS trusts only in England") 
 
-plot_acute_trusts = plot_management_timeseries(data=acute_england, esr_2016_2017_2018_acute, title = "Total managers across acute NHS trusts only in England") 
+plot_acute_trusts = plot_management_timeseries(data=acute_england, esr_2016_2017_2018_acute, title = "")#Total managers across acute NHS trusts only in England") 
 
 
-ggsave("figures/all_nhs_manager.png", plot_all_nhs, width=14, height=10, units="in", dpi="print")
+#ggsave("figures/all_nhs_manager.png", plot_all_nhs, width=14, height=10, units="in", dpi="print")
 
 ggsave("figures/acute_nhs_manager.png",plot_acute_trusts, width=14, height=10, units="in", dpi="print")
 
