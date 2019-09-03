@@ -652,7 +652,7 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
     formula_independents = paste(independent_vars_string, collapse=" + ")
   }
   
-  independent_vars = acute_providers %>% select(c(YEAR,ORG_CODE,gsub("log\\(|)","",independent_vars_string)))
+  independent_vars = acute_providers %>% select(c("YEAR","ORG_CODE",gsub("log\\(|)","",independent_vars_string)))
   independent_vars = independent_vars %>% mutate(YEAR = as_factor(YEAR), ORG_CODE = as_factor(ORG_CODE))
   if(mean_centre){
     independent_vars = independent_vars %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
@@ -1146,13 +1146,8 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
   
   dependent_vars = c("fce_per_non_ae_consultant","fin_pos","ae","rtt","shmi")
   
-  dependent_vars_log = c("fce_per_non_ae_consultant","ae","rtt","shmi")
-  
   independent_vars =c("consultants","nhs_ss","beds","op_cost","fce","casemix")
-  
-  independent_vars_fte = c("fte", "fte_sq", independent_vars)
-  
-  independent_vars_spend = c("spend", "spend_sq",independent_vars)
+
 
   acute_providers_2016 = create_sample_providers_dataset(2016, FALSE, FALSE, TRUE, FALSE)
   acute_providers_2017 = create_sample_providers_dataset(2017, FALSE, FALSE, TRUE, FALSE)
@@ -1178,7 +1173,7 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
   
   regression_results_fte_logs = run_regression(acute_providers_paper, 
                                                  variable_definitions, 
-                                                 dependent_vars_log, 
+                                                 dependent_vars, 
                                                  c("fte", independent_vars), 
                                                  mean_centre=FALSE, 
                                                  log_dep_vars=TRUE, 
@@ -1212,7 +1207,7 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
   
   regression_results_spend_logs = run_regression(acute_providers_paper, 
                                                variable_definitions, 
-                                               dependent_vars_log, 
+                                               dependent_vars, 
                                                c("spend", independent_vars), 
                                                mean_centre=FALSE, 
                                                log_dep_vars=TRUE, 
