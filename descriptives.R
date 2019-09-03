@@ -653,7 +653,6 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   }
   
   independent_vars = acute_providers %>% select(c("YEAR","ORG_CODE",gsub("log\\(|)","",independent_vars_string)))
-  independent_vars = independent_vars %>% mutate(YEAR = as_factor(YEAR), ORG_CODE = as_factor(ORG_CODE))
   if(mean_centre){
     independent_vars = independent_vars %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
   }
