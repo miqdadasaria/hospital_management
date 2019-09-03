@@ -161,7 +161,7 @@ shinyServer(function(input, output, session) {
 	
 	output$regression_results = renderText({
 	  withProgress(message = paste0('Calculating regression results'),{
-	    run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, "html", input$specialist_reg, input$outliers_reg, input$all_outcomes_reg)
+	    run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, "html", input$specialist_reg, input$outliers_reg, input$all_outcomes_reg, (input$fixed_effects & input$year=="pooled"))
 	  })
 	})
 	
@@ -169,7 +169,7 @@ shinyServer(function(input, output, session) {
 	  filename = function() {
 	    paste0("regression_results_",input$year,".txt")},
 	  content = function(file) {
-	    results = run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, input$regression_output_type, input$specialist_reg, input$outliers_reg, input$all_outcomes_reg)
+	    results = run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, input$regression_output_type, input$specialist_reg, input$outliers_reg, input$all_outcomes_reg, (input$fixed_effects & input$year=="pooled"))
 	    cat(results,file=file)
 	  }
 	)

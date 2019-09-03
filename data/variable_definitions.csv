@@ -10,7 +10,6 @@ beds,BEDS,Beds (total number)
 beds_occupied,BEDS_OCCUPIED_PERCENT,Beds occupied (%)
 cardiologists,CARDIOLOGISTS,Cardiology consultants (FTE)
 consultants_percent,CONSULTANTS_PERCENT,Consultants (% of all staff)
-consultants,CONSULTANTS,Consultants (FTE)
 cqc_rating,CQC_RATING,CQC Overall Rating
 cqc_well_led_rating,CQC_WELL_LED_RATING,CQC Well Led Rating
 female,FEMALE_ADMISSIONS,Female share of inpatient admissions (%)
@@ -140,5 +139,5 @@ non_ae_doc,NON_EMERGENCY_MEDICS,Consultants (FTE excluding A&E)
 year,YEAR,Financial Year 2017/18
 org_code,ORG_CODE,Organisation Code
 simple_fte,SIMPLE_MANAGERS_FTE,Managers (FTE - basic definition)
-simple_consultants,SIMPLE_CONSULTANTS_FTE,Consultants (FTE - basic definition)
+consultants,SIMPLE_CONSULTANTS_FTE,Consultants (FTE)
 simple_fte_sq,SIMPLE_MANAGERS_FTE_SQ,Managers (FTE basic definition) squared

@@ -122,9 +122,10 @@ afc_pay = tbl(con, "pay_scale") %>%
   bind_rows(tibble(YEAR=2017,AFC_BAND=c("Very Senior Manager","Non AfC Grade"),BOTTOM=142500,AVERAGE=142500,TOP=142500)) 
 
 ##### construct provider level dataset #### 
-providers =  tbl(con, "esr_simple") %>% select(ORG_CODE,YEAR,SIMPLE_MANAGERS_FTE,SIMPLE_CONSULTANTS_FTE) %>%
+providers =  tbl(con, "esr_simple") %>% select(ORG_CODE,YEAR,SIMPLE_MANAGERS_FTE,SIMPLE_CONSULTANTS_FTE,SIMPLE_ALL_STAFF_FTE) %>%
   collect() %>%
   left_join(staff %>% filter(YEAR < 2019)) %>%
+  mutate(ALL_STAFF=if_else(is.na(ALL_STAFF),SIMPLE_ALL_STAFF_FTE,ALL_STAFF)) %>%
   left_join(
   tbl(con, "provider") %>% 
   left_join(tbl(con, "hee_region")) %>%
@@ -275,24 +276,24 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
     mutate(MANAGERS_SQ = round(MANAGERS^2,1),
            SIMPLE_MANAGERS_FTE_SQ = round(SIMPLE_MANAGERS_FTE^2,1),
            MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES,0), 
-           MAN_FTE_PER_1000_FCE = round(MANAGERS*1000/TOTAL_EPISODES,2),
+           MAN_FTE_PER_1000_FCE = if_else(is.na(MANAGERS),round(SIMPLE_MANAGERS_FTE*1000/TOTAL_EPISODES,2),round(MANAGERS*1000/TOTAL_EPISODES,2)),
            MANAGEMENT_SPEND_SQ = round((MANAGEMENT_SPEND^2)/100000,2),
            MANAGEMENT_SPEND = round((MANAGEMENT_SPEND)/100000,2),
-           MANAGERS_PERCENT = round((MANAGERS/ALL_STAFF)*100,2),
+           MANAGERS_PERCENT = if_else(is.na(MANAGERS),round((SIMPLE_MANAGERS_FTE/ALL_STAFF)*100,2),round((MANAGERS/ALL_STAFF)*100,2)),
            QUALITY_WEIGHTED_FTE = round(MAN_FTE_PER_1000_FCE*MANAGEMENT_QUALITY/100,2),
            QUALITY_WEIGHTED_SPEND = round(MAN_SPEND_PER_1000_FCE*MANAGEMENT_QUALITY/100,0),
            FIN_POS_PERC = round((FINANCIAL_POSITION/OP_COST)*100,2),
            HEE_REGION_NAME = gsub("Health Education ","",HEE_REGION_NAME),
            ORG_NAME = gsub("NHS Trust","",ORG_NAME),
            ORG_NAME = gsub("NHS Foundation Trust","",ORG_NAME),
-           MAN_FTE_PER_TEN_MIL_OC = round((MANAGERS)/(OP_COST*0.1),2),
-           MAN_FTE_PER_10_BED = round((MANAGERS*10)/BEDS,2),
+           MAN_FTE_PER_TEN_MIL_OC = if_else(is.na(MANAGERS),round((SIMPLE_MANAGERS_FTE)/(OP_COST*0.1),2),round((MANAGERS)/(OP_COST*0.1),2)),
+           MAN_FTE_PER_10_BED = if_else(is.na(MANAGERS),round((SIMPLE_MANAGERS_FTE*10)/BEDS,2),round((MANAGERS*10)/BEDS,2)),
            SPECIALIST = factor(SPECIALIST, levels=c(0,1), labels=c("Non-specialist","Specialist")),
            MANAGER_CLINICIAN_RATIO=round(MANAGERS/CLINICAL_STAFF,2),
-           FCE_PER_MAN = round(TOTAL_EPISODES/MANAGERS,0),
-           OC_MIL_PER_MAN = round((OP_COST)/(MANAGERS),2),
-           STAFF_PER_MAN = round(ALL_STAFF/MANAGERS,2),
-           BEDS_PER_MAN = round(BEDS/MANAGERS,2),
+           FCE_PER_MAN = if_else(is.na(MANAGERS),round(TOTAL_EPISODES/SIMPLE_MANAGERS_FTE,0),round(TOTAL_EPISODES/MANAGERS,0)),
+           OC_MIL_PER_MAN = if_else(is.na(MANAGERS),round((OP_COST)/(SIMPLE_MANAGERS_FTE),2),round((OP_COST)/(MANAGERS),2)),
+           STAFF_PER_MAN = if_else(is.na(MANAGERS),round(ALL_STAFF/SIMPLE_MANAGERS_FTE,2),round(ALL_STAFF/MANAGERS,2)),
+           BEDS_PER_MAN = if_else(is.na(MANAGERS),round(BEDS/SIMPLE_MANAGERS_FTE,2),round(BEDS/MANAGERS,2)),
            FCE_PER_NON_AE_CONSULTANT = (TOTAL_EPISODES/NON_EMERGENCY_MEDICS)
            ) %>%
     select(ORG_CODE,
@@ -365,7 +366,9 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
   # changes_16 = calculate_changes_over_time(results,2015,2016)
   # changes_15 = calculate_changes_over_time(results,2014,2015)
   # changes_14 = calculate_changes_over_time(results,2013,2014)
-  results = results %>% filter(YEAR==year)
+  if(year!="pooled"){
+    results = results %>% filter(YEAR==year)
+  }
   results = left_join(results,changes_17) %>% 
     left_join(changes_18)
   
@@ -412,7 +415,11 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
   
   if(!include_outliers){
     # e.g RAJ = Southend has a suspiciously low number of managers
-    acute_providers = acute_providers %>% filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95))
+    acute_providers = acute_providers %>% 
+      filter(!is.na(MANAGERS_PERCENT)) %>%
+      group_by(YEAR) %>%
+      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95)) %>%
+      ungroup()
   }
   
   x = get_variable(x_var, variables)
@@ -523,7 +530,11 @@ histogram_plot = function(acute_providers, variables, x_var, specialist, year, s
   
   if(!include_outliers){
     # e.g RAJ = Southend has a suspiciously low number of managers
-    acute_providers = acute_providers %>% filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95))
+    acute_providers = acute_providers %>% 
+      filter(!is.na(MANAGERS_PERCENT)) %>%
+      group_by(YEAR) %>%
+      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95)) %>%
+      ungroup()
   }
   
   x = get_variable(x_var, variables)
@@ -559,7 +570,11 @@ manager_counts = function(managers, acute_providers, specialist, year, include_o
   
   if(!include_outliers){
     # e.g RAJ = Southend has a suspiciously low number of managers
-    acute_providers = acute_providers %>% filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95))
+    acute_providers = acute_providers %>% 
+      filter(!is.na(MANAGERS_PERCENT)) %>%
+      group_by(YEAR) %>%
+      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95)) %>%
+      ungroup()
   }
   
   manager_counts = managers %>%
@@ -586,7 +601,7 @@ manager_counts = function(managers, acute_providers, specialist, year, include_o
 }
 
 ##### run regressions ####
-run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions, output, specialist, include_outliers, all_outcomes, panel=FALSE){
+run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions, output, specialist, include_outliers, all_outcomes, fixed_effects=FALSE){
   
   independent_vars_string = vector(mode="character")
   independent_vars_labels = vector(mode="character")
@@ -598,7 +613,11 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   
   if(!include_outliers){
     # e.g RAJ = Southend has a suspiciously low number of managers
-    acute_providers = acute_providers %>% filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95))
+    acute_providers = acute_providers %>% 
+      filter(!is.na(MANAGERS_PERCENT)) %>%
+      group_by(YEAR) %>%
+      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95)) %>%
+      ungroup()
   }
   
   if(all_outcomes){
@@ -614,7 +633,7 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   
   for(x_var in independent_vars){
     x = get_variable(x_var, variables)
-    if(log_indep_vars & acute_providers %>% select(x$variable) %>% summarise_all(is.numeric) & x_var %in% c("fte", "fte_sq","nhs_ss","simple_fte","simple_fte_sq","simple_consultants","consultants","nurses","spend","spend_sq")){
+    if(log_indep_vars & acute_providers %>% select(x$variable) %>% summarise_all(is.numeric) & x_var %in% c("fte", "fte_sq","nhs_ss","simple_fte","simple_fte_sq","consultants","nurses","spend","spend_sq")){
       indep_var = paste0("log(",x$variable,")")
       indep_var_label = paste0("log ", x$label)
       # remove zeros as upsets log
@@ -654,9 +673,9 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
     }
     dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
     reg_formula = as.formula(paste(dep_var,formula_independents,sep=" ~ "))
-    #print(reg_formula)
-    if(panel){
-      panel_data = pdata.frame(bind_cols(independent_vars,acute_providers%>%select(y$variable)), index=c("ORG_CODE","YEAR"), drop.index=TRUE, row.names=TRUE)
+    panel_data = pdata.frame(bind_cols(independent_vars,acute_providers%>%select(y$variable)), index=c("ORG_CODE","YEAR"), drop.index=TRUE, row.names=TRUE)
+    panel_data = make.pbalanced(panel_data,"shared.individuals")
+    if(fixed_effects){
       fe_model = plm(reg_formula, 
                      data = panel_data,
                      model = "within", 
@@ -669,7 +688,7 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
         print(paste0("Error calculating clustered standard errors for: ", y$label, " using default stadard errors"))
       }
     } else {
-        lm_model = lm(reg_formula, data=bind_cols(independent_vars,acute_providers%>%select(y$variable)))
+        lm_model = lm(reg_formula, data=panel_data)
         regressions[[y$variable]] = lm_model
         vcov = vcov(lm_model)
     }
@@ -695,7 +714,7 @@ make_regression_formula = function(dependent_var, independent_vars, logged, lagg
   independent_vars_labels = vector(mode="character")
   for(x_var in independent_vars){
     x = get_variable(x_var, variable_definitions)
-    if(logged & x_var %in% c("fte", "fte_sq","nhs_ss","simple_fte","simple_fte_sq","simple_consultants","spend","spend_sq")){
+    if(logged & x_var %in% c("fte", "fte_sq","nhs_ss","simple_fte","simple_fte_sq","consultants","spend","spend_sq")){
       indep_var = paste0("log(",x$variable,")")
       indep_var_label = paste0("log ", latexTranslate(x$label))
     } else {
@@ -742,7 +761,7 @@ make_regression_formula = function(dependent_var, independent_vars, logged, lagg
 
 appendix_regression = function(acute_providers, independent_var, dependent_var, logged, output_filename){
   
-  independent_vars_basic = c("simple_consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
+  independent_vars_basic = c("consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
   
   if(logged){
     if(independent_var=="fte"){
@@ -928,7 +947,7 @@ appendix_regression = function(acute_providers, independent_var, dependent_var, 
                                                       model.names = TRUE,
                                                       model.numbers = TRUE,
                                                       type="latex")), collapse="\n") 
-  sink(file=paste0("figures/",output_filename))
+  sink(file=paste0("tables/",output_filename))
   cat(regression_results)
   sink()
 }
@@ -953,7 +972,11 @@ create_sample_providers_dataset = function(year, specialist, include_outliers, a
   
   if(!include_outliers){
     # e.g RAJ = Southend has a suspiciously low number of managers
-    acute_providers = acute_providers %>% filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95))
+    acute_providers = acute_providers %>% 
+      filter(!is.na(MANAGERS_PERCENT)) %>%
+      group_by(YEAR) %>%
+      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95)) %>%
+      ungroup()
   }
   
   if(all_outcomes){
@@ -1125,7 +1148,7 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
   
   dependent_vars_log = c("fce_per_non_ae_consultant","ae","rtt","shmi")
   
-  independent_vars =c("simple_consultants","nhs_ss","beds","op_cost","fce","casemix")
+  independent_vars =c("consultants","nhs_ss","beds","op_cost","fce","casemix")
   
   independent_vars_fte = c("fte", "fte_sq", independent_vars)
   
@@ -1148,8 +1171,8 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
                  specialist=FALSE, 
                  include_outliers=TRUE, 
                  all_outcomes=TRUE, 
-                 panel=TRUE)
-  sink(file="figures/basecase_fte_regressions.tex")
+                 fixed_effects=TRUE)
+  sink(file="tables/basecase_fte_regressions.tex")
   cat(regression_results_fte_levels)
   sink()
   
@@ -1165,8 +1188,8 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
                                                  specialist=FALSE, 
                                                  include_outliers=TRUE, 
                                                  all_outcomes=TRUE, 
-                                                 panel=TRUE)
-  sink(file="figures/basecase_fte_log_regressions.tex")
+                                                 fixed_effects=TRUE)
+  sink(file="tables/basecase_fte_log_regressions.tex")
   cat(regression_results_fte_logs)
   sink()
   
@@ -1182,8 +1205,8 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
                                                  specialist=FALSE, 
                                                  include_outliers=TRUE, 
                                                  all_outcomes=TRUE, 
-                                                 panel=TRUE)
-  sink(file="figures/basecase_spend_regressions.tex")
+                                                 fixed_effects=TRUE)
+  sink(file="tables/basecase_spend_regressions.tex")
   cat(regression_results_spend_levels)
   sink()
   
@@ -1199,8 +1222,8 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
                                                specialist=FALSE, 
                                                include_outliers=TRUE, 
                                                all_outcomes=TRUE, 
-                                               panel=TRUE)
-  sink(file="figures/basecase_spend_log_regressions.tex")
+                                               fixed_effects=TRUE)
+  sink(file="tables/basecase_spend_log_regressions.tex")
   cat(regression_results_spend_logs)
   sink()
   #############################################################
