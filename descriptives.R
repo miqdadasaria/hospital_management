@@ -1028,12 +1028,12 @@ descriptives = function(acute_providers, percentage){
   return(staff_summary)
 }
 
-create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=FALSE, all_outcomes=TRUE, all_paygrades=FALSE, file_prefix="basecase"){
+create_summary_tables = function(year, specialist, include_outliers, all_outcomes, all_paygrades, file_prefix){
   acute_providers = create_sample_providers_dataset(year, specialist, include_outliers, all_outcomes, all_paygrades)
   
   staff_breakdown_numbers = descriptives(acute_providers, FALSE)
   
-  write_csv(staff_breakdown_numbers,paste0("figures/",file_prefix,"_staff_breakdown_numbers.csv"))
+  write_csv(staff_breakdown_numbers,paste0("figures/",file_prefix,"_staff_breakdown_numbers_",year,".csv"))
   
   staff_total =  staff_breakdown_numbers %>% filter(MAIN_STAFF_GROUP!="Total") %>% select(TOTAL) %>% sum()
   
@@ -1043,19 +1043,19 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
   
   staff_breakdown = descriptives(acute_providers, TRUE)
   
-  write_csv(staff_breakdown,paste0("figures/",file_prefix,"_staff_breakdown_percentage.csv"))
+  write_csv(staff_breakdown,paste0("figures/",file_prefix,"_staff_breakdown_percentage_",year,".csv"))
   
   manager_percent_check = staff_breakdown %>% filter(!(MAIN_STAFF_GROUP %in% c("Doctor","Total"))) %>% select(MANAGER) %>% sum()
   
-  assert_that(manager_percent == manager_percent_check)
+  assert_that(abs(manager_percent-manager_percent_check)<0.001)
   
   print(paste0("Number of managers: ",manager_total," out of: ",staff_total," staff overall (",round(manager_percent,2),"%)"))
   
   managers_by_grade = manager_counts(managers, acute_providers, specialist, year, TRUE)
   
-  write_csv(managers_by_grade$counts,paste0("figures/",file_prefix,"_staff_breakdown_by_grade_numbers.csv"))
+  write_csv(managers_by_grade$counts,paste0("figures/",file_prefix,"_staff_breakdown_by_grade_numbers_",year,".csv"))
   
-  write_csv(managers_by_grade$percentages,paste0("figures/",file_prefix,"_staff_breakdown_by_grade_percentages.csv"))
+  write_csv(managers_by_grade$percentages,paste0("figures/",file_prefix,"_staff_breakdown_by_grade_percentages_",year,".csv"))
   
   manager_total_check = managers_by_grade[["counts"]] %>% filter(STAFF_GROUP=="Total") %>% select("Band 7","Band 8a","Band 8b","Band 8c","Band 8d","Band 9","Very Senior Manager") %>% sum()
   
@@ -1089,32 +1089,29 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
           legend.position="none",
           text=element_text(family = "Roboto", colour = "#3e3f3a"))
   
-  ggsave(paste0("figures/",file_prefix,"_manager_numbers.png"), managers_plot, width=16, height=15, units="cm", dpi="print")
+  ggsave(paste0("figures/",file_prefix,"_manager_numbers_",year,".png"), managers_plot, width=16, height=15, units="cm", dpi="print")
   
-  # scatter plots of management adjusted by size
-  management_code_2 = c("fce_k_per_man","oc_mil_per_man","beds_per_man", "man_percent")
-  management_variables_2 = get_variable(management_code_2, variable_definitions) %>% arrange(variable)
+  # histograms of control variables
+  control_code = c("beds","op_cost","fce")
+  control_variables = get_variable(control_code, variable_definitions) %>% arrange(variable)
   graph_data_2 = acute_providers %>% 
-    select(management_variables_2$variable) %>% 
-    gather("key", "value", -MANAGERS_PERCENT) 
-  graph_data_2$key = factor(graph_data_2$key,management_variables_2$variable,management_variables_2$label)
-  
-  manager_scatter_plots = ggplot(data=graph_data_2, aes_string(x="MANAGERS_PERCENT", y="value")) +
-    xlab("Managers (% of all staff)") + 
-    ylab("") +
-    geom_point(colour="#E69F00") +
-    geom_smooth(method = "lm", colour="darkred", linetype="dashed", size=0.8, se=FALSE) + 
-    facet_wrap(.~key, scales = "free", labeller = labeller(key = label_wrap_gen(30))) + 
+    select(control_variables$variable) %>% 
+    gather() 
+  graph_data_2$key = factor(graph_data_2$key,control_variables$variable,control_variables$label)
+  control_plot = ggplot(data=graph_data_2,aes(x=value)) + 
+    geom_histogram(fill="#E69F00", colour="black") + 
+    ylab("Count of acute NHS trusts") +
+    xlab("") +
+    facet_wrap(key ~ ., scales="free", labeller = labeller(key = label_wrap_gen(30))) +
     theme_bw() + 
     theme(panel.grid.major = element_blank(), 
-                                   panel.grid.minor = element_blank(), 
-                                   plot.title = element_blank(),
-                                   plot.margin = unit(c(1, 1, 1, 1), "lines"),
-                                   legend.position="none",
-                                   text=element_text(family = "Roboto", colour = "#3e3f3a"))
+          panel.grid.minor = element_blank(), 
+          plot.title = element_blank(),
+          plot.margin = unit(c(1, 1, 1, 1), "lines"),
+          legend.position="none",
+          text=element_text(family = "Roboto", colour = "#3e3f3a"))
   
-  ggsave(paste0("figures/",file_prefix,"_manager_scatter.png"), manager_scatter_plots, width=16, height=10, units="cm", dpi="print")
-  
+  ggsave(paste0("figures/",file_prefix,"_controls_",year,".png"), control_plot, width=24, height=7, units="cm", dpi="print")
   
   # histograms of outcome variables
   outcomes_code = c("fce_per_non_ae_consultant","fin_pos","ae","rtt","shmi")
@@ -1136,8 +1133,58 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
           legend.position="none",
           text=element_text(family = "Roboto", colour = "#3e3f3a"))
   
-  ggsave(paste0("figures/",file_prefix,"_outcomes.png"), outcomes_plot, width=20, height=15, units="cm", dpi="print")
+  ggsave(paste0("figures/",file_prefix,"_outcomes_",year,".png"), outcomes_plot, width=20, height=15, units="cm", dpi="print")
   
+  # combined inputs, controls, outcomes plot
+  graph_data_4 = bind_rows(graph_data_1,graph_data_2,graph_data_3)
+  graph_data_4$key = factor(graph_data_4$key,
+                            c(management_variables$label,control_variables$label,outcomes_variables$label),
+                            c(management_variables$label,control_variables$label,outcomes_variables$label))
+  combined_variables_plot = ggplot(data=graph_data_4,aes(x=value)) + 
+    geom_histogram(fill="#E69F00", colour="black") + 
+    ylab("Count of acute NHS trusts") +
+    xlab("") +
+    facet_wrap(key ~ ., scales="free", ncol=3, labeller = labeller(key = label_wrap_gen(36))) +
+    theme_bw() + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(), 
+          plot.title = element_blank(),
+          plot.margin = unit(c(1, 1, 1, 1), "lines"),
+          legend.position="none",
+          text=element_text(family = "Roboto", colour = "#3e3f3a"))
+  
+  ggsave(paste0("figures/",file_prefix,"_combined_variables_",year,".png"), combined_variables_plot, width=20, height=30, units="cm", dpi="print")
+  
+  
+  # scatter plots of management adjusted by size
+  management_code_2 = c("fce_k_per_man","oc_mil_per_man","beds_per_man", "staff_per_man", "man_percent")
+  management_variables_2 = get_variable(management_code_2, variable_definitions) %>% arrange(variable)
+  graph_data_5 = acute_providers %>% 
+    select(management_variables_2$variable) %>% 
+    gather("key", "value", -MANAGERS_PERCENT) 
+  graph_data_5$key = factor(graph_data_5$key,management_variables_2$variable,management_variables_2$label)
+  
+  manager_scatter_plots = ggplot(data=graph_data_5, aes_string(x="MANAGERS_PERCENT", y="value")) +
+    xlab("Managers (% of all staff)") + 
+    ylab("") +
+    geom_point(colour="#E69F00") +
+    geom_smooth(method = "lm", colour="darkred", linetype="dashed", size=0.8, se=FALSE) + 
+    facet_wrap(.~key, scales = "free", nrow = 1, labeller = labeller(key = label_wrap_gen(30))) + 
+    theme_bw() + 
+    theme(panel.grid.major = element_blank(), 
+                                   panel.grid.minor = element_blank(), 
+                                   plot.title = element_blank(),
+                                   plot.margin = unit(c(1, 1, 1, 1), "lines"),
+                                   legend.position="none",
+                                   text=element_text(family = "Roboto", colour = "#3e3f3a"))
+  
+  ggsave(paste0("figures/",file_prefix,"_manager_scatter_",year,".png"), manager_scatter_plots, width=24, height=10, units="cm", dpi="print")
+  
+  
+ 
+}
+
+regressions_for_publication = function(){
   #############################################################
   # run regressions for paper on selected subset of dataset 
   # fixed effects with restricted management definition
@@ -1258,12 +1305,17 @@ create_summary_tables = function(year=2017, specialist=FALSE, include_outliers=F
 }
 
 
-produce_figures_for_paper = function(figure_year=2017){
+produce_figures_and_tables_for_paper = function(figure_year=2017){
   
   # basecase exclude specialist trusts and outliers 
   # restrict to managers on AFC 7 and above  
   # only include trusts that have data on all outcomes
-  create_summary_tables(year=figure_year)
+  create_summary_tables(year=figure_year,
+                        specialist=FALSE,
+                        all_outcomes=TRUE,
+                        all_paygrades=FALSE,
+                        include_outliers=FALSE,
+                        file_prefix="basecase")
 
   # results for appendix include all trusts and managers
   create_summary_tables(year=figure_year,
@@ -1272,4 +1324,7 @@ produce_figures_for_paper = function(figure_year=2017){
                       all_paygrades=TRUE,
                       include_outliers=TRUE,
                       file_prefix="allmanagers")
+ 
+  # produce regressions for paper and appendix
+  #regressions_for_publication()
 }
