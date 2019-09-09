@@ -1181,7 +1181,30 @@ create_summary_tables = function(year, specialist, include_outliers, all_outcome
   ggsave(paste0("figures/",file_prefix,"_manager_scatter_",year,".png"), manager_scatter_plots, width=24, height=10, units="cm", dpi="print")
   
   
- 
+  management_code_3 = c("fce_k_per_man","oc_mil_per_man","beds_per_man", "staff_per_man", "fte")
+  management_variables_3= get_variable(management_code_3, variable_definitions) %>% arrange(variable)
+  graph_data_6 = acute_providers %>% 
+    select(management_variables_3$variable) %>% 
+    gather("key", "value", -MANAGERS) 
+  graph_data_6$key = factor(graph_data_6$key,management_variables_3$variable,management_variables_3$label)
+  
+  manager_scatter_plots_fte = ggplot(data=graph_data_6, aes_string(x="MANAGERS", y="value")) +
+    xlab("Managers (FTE)") + 
+    ylab("") +
+    geom_point(colour="#E69F00") +
+    geom_smooth(method = "lm", colour="darkred", linetype="dashed", size=0.8, se=FALSE) + 
+    facet_wrap(.~key, scales = "free", nrow = 1, labeller = labeller(key = label_wrap_gen(30))) + 
+    theme_bw() + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(), 
+          plot.title = element_blank(),
+          plot.margin = unit(c(1, 1, 1, 1), "lines"),
+          legend.position="none",
+          text=element_text(family = "Roboto", colour = "#3e3f3a"))
+  
+  ggsave(paste0("figures/",file_prefix,"_manager_scatter_fte_",year,".png"), manager_scatter_plots_fte, width=24, height=10, units="cm", dpi="print")
+  
+  
 }
 
 regressions_for_publication = function(){
