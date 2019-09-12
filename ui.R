@@ -56,12 +56,10 @@ shinyUI(
 	                list("CQC overall rating" = "cqc_rating",
 	                     "CQC well-led rating" = "cqc_well_led_rating",
 	                     "HEE Region" = "hee_region", 
+	                     "Financial Year" = "year",
 	                     "None" = "none"), 
 	                selected="none"),
 	    
-	    sliderInput("trim", 
-	                "Plot trusts with upto managers per 1000 inpatient admissions", 
-	                min=0, max=50, value=40),
 	    tags$div(
 	      HTML("<small><small><img src='lse_logo.svg' alt='London School of Economics and Political Science' width=50%/>
          <p>This site was produced by <a href='https://github.com/miqdadasaria/'>Miqdad Asaria</a> 
@@ -192,7 +190,7 @@ tabPanel("Ranking Table",
              selectInput("independent_vars", 
                          "Explanatory and control variables in regression:",
                           c("Case-mix adjust for age and sex" = "casemix",all_vars), 
-                         selected=c("fte", "fte_sq","consultants","nhs_ss","beds","op_cost","fce","casemix"),
+                         selected=c("fte", "fte_sq","consultants","consultants_sq","nhs_ss","nhs_ss_sq","beds","beds_sq","op_cost","fce","casemix"),
                          multiple=TRUE),
              
              checkboxInput("all_outcomes_reg", label="Restrict to trusts that have data on all outcomes", value=TRUE),
@@ -203,6 +201,7 @@ tabPanel("Ranking Table",
              checkboxInput("log_dep_vars", label="Log dependent variables", value=FALSE),
              checkboxInput("log_indep_vars", label="Log independent variables", value=FALSE),
              checkboxInput("interactions", label="Include interaction terms", value=FALSE),
+             checkboxInput("labels_reg", label="Label covariates", value=TRUE),
              selectInput("regression_output_type", "Choose a download format:",
                          list("LaTeX" = "latex",
                               "Text" = "text",
@@ -243,7 +242,7 @@ tabPanel("Ranking Table",
                  "2015/16"="2015",
                  "2014/15"="2014",
                  "2013/14"="2013",
-                 "2012/13"="2013",
+                 "2012/13"="2012",
                  "pooled across all years"="pooled"),
             selected="2017")
   )

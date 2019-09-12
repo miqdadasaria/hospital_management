@@ -124,7 +124,7 @@ afc_pay = tbl(con, "pay_scale") %>%
 ##### construct provider level dataset #### 
 providers =  tbl(con, "esr_simple") %>% select(ORG_CODE,YEAR,SIMPLE_MANAGERS_FTE,SIMPLE_CONSULTANTS_FTE,SIMPLE_ALL_STAFF_FTE) %>%
   collect() %>%
-  left_join(staff %>% filter(YEAR < 2019)) %>%
+  left_join(staff) %>% filter(YEAR > 2011 & YEAR < 2019) %>%
   mutate(ALL_STAFF=if_else(is.na(ALL_STAFF),SIMPLE_ALL_STAFF_FTE,ALL_STAFF)) %>%
   left_join(
   tbl(con, "provider") %>% 
@@ -274,12 +274,16 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
   results = providers %>%
     left_join(managers) %>% 
     mutate(MANAGERS_SQ = round(MANAGERS^2,1),
+           BEDS_SQ = round(BEDS^2,1),
+           CONSULTANTS_SQ = round(SIMPLE_CONSULTANTS_FTE^2,1),
+           MANAGEMENT_QUALITY_SQ = round(MANAGEMENT_QUALITY^2,1),
            SIMPLE_MANAGERS_FTE_SQ = round(SIMPLE_MANAGERS_FTE^2,1),
            MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES,0), 
            MAN_FTE_PER_1000_FCE = if_else(is.na(MANAGERS),round(SIMPLE_MANAGERS_FTE*1000/TOTAL_EPISODES,2),round(MANAGERS*1000/TOTAL_EPISODES,2)),
-           MANAGEMENT_SPEND_SQ = round((MANAGEMENT_SPEND^2)/100000,2),
-           MANAGEMENT_SPEND = round((MANAGEMENT_SPEND)/100000,2),
+           MANAGEMENT_SPEND_SQ = round((MANAGEMENT_SPEND^2)/1000000,2),
+           MANAGEMENT_SPEND = round((MANAGEMENT_SPEND)/1000000,2),
            MANAGERS_PERCENT = if_else(is.na(MANAGERS),round((SIMPLE_MANAGERS_FTE/ALL_STAFF)*100,2),round((MANAGERS/ALL_STAFF)*100,2)),
+           CONSULTANTS_PERCENT = if_else(is.na(CONSULTANTS_PERCENT),round((SIMPLE_CONSULTANTS_FTE/ALL_STAFF)*100,2),CONSULTANTS_PERCENT),
            QUALITY_WEIGHTED_FTE = round(MAN_FTE_PER_1000_FCE*MANAGEMENT_QUALITY/100,2),
            QUALITY_WEIGHTED_SPEND = round(MAN_SPEND_PER_1000_FCE*MANAGEMENT_QUALITY/100,0),
            FIN_POS_PERC = round((FINANCIAL_POSITION/OP_COST)*100,2),
@@ -294,7 +298,9 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            OC_MIL_PER_MAN = if_else(is.na(MANAGERS),round((OP_COST)/(SIMPLE_MANAGERS_FTE),2),round((OP_COST)/(MANAGERS),2)),
            STAFF_PER_MAN = if_else(is.na(MANAGERS),round(ALL_STAFF/SIMPLE_MANAGERS_FTE,2),round(ALL_STAFF/MANAGERS,2)),
            BEDS_PER_MAN = if_else(is.na(MANAGERS),round(BEDS/SIMPLE_MANAGERS_FTE,2),round(BEDS/MANAGERS,2)),
-           FCE_PER_NON_AE_CONSULTANT = (TOTAL_EPISODES/NON_EMERGENCY_MEDICS)
+           FCE_PER_NON_AE_CONSULTANT = (TOTAL_EPISODES/NON_EMERGENCY_MEDICS),
+           YEAR = as.factor(YEAR),
+           ORG_CODE = as.factor(ORG_CODE)
            ) %>%
     select(ORG_CODE,
            ORG_NAME,
@@ -359,7 +365,10 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            FCE_PER_NON_AE_CONSULTANT,
            SIMPLE_MANAGERS_FTE,
            SIMPLE_MANAGERS_FTE_SQ,
-           SIMPLE_CONSULTANTS_FTE)
+           SIMPLE_CONSULTANTS_FTE,
+           CONSULTANTS_SQ,
+           BEDS_SQ,
+           NHS_SS_SQ=MANAGEMENT_QUALITY_SQ)
   
   changes_18 = calculate_changes_over_time(results,2017,2018)
   changes_17 = calculate_changes_over_time(results,2016,2017)
@@ -408,7 +417,7 @@ calculate_changes_over_time = function(providers,t1,t2){
 
 
 ##### scatter plots and histigrams for UI ####
-scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim, specialist, trend_line, facet_var, log_x_var, log_y_var, year, show_titles, include_outliers){
+scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, specialist, trend_line, facet_var, log_x_var, log_y_var, year, show_titles, include_outliers){
   if(!specialist){
     acute_providers = acute_providers %>% filter(SPECIALIST=="Non-specialist")
   }
@@ -431,29 +440,22 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
     f = get_variable(facet_var, variables)
   }
   
-  if(any(!is.na(acute_providers$MAN_FTE_PER_1000_FCE))){
-    graph_data = acute_providers %>% 
-      filter(MAN_FTE_PER_1000_FCE<trim)
-  } else {
-    graph_data = acute_providers
-  }
-  
   if(log_x_var){
-    graph_data[x$variable] = log(graph_data[x$variable])
+    acute_providers[x$variable] = log(acute_providers[x$variable])
     x$label = paste("log ", x$label)
   }
 
   if(log_y_var){
-    graph_data[y$variable] = log(graph_data[y$variable])
+    acute_providers[y$variable] = log(acute_providers[y$variable])
     y$label = paste("log ", y$label)
   }
   
-  rows = graph_data %>% 
+  rows = acute_providers %>% 
     select(y$variable, x$variable) %>% 
     filter(!(is.na(.[[1]]) | is.na(.[[2]]))) %>% 
     summarise(n())
   
-  plot = ggplot(data=graph_data, aes_string(x=x$variable, y=y$variable, label="ORG_NAME")) +
+  plot = ggplot(data=acute_providers, aes_string(x=x$variable, y=y$variable, label="ORG_NAME")) +
     ylab(y$label) +
     xlab(x$label)
   
@@ -477,13 +479,13 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, trim
   
   if(grepl("shmi", y_var)){
     plot = plot + geom_hline(yintercept=1, linetype="dashed", colour="darkgrey", size=0.5)
-  } else if(min(graph_data[y$variable],na.rm=TRUE)<0 & max(graph_data[y$variable],na.rm=TRUE)>0){
+  } else if(min(acute_providers[y$variable],na.rm=TRUE)<0 & max(acute_providers[y$variable],na.rm=TRUE)>0){
     plot = plot + geom_hline(yintercept=0, linetype="dashed", colour="darkgrey", size=0.5)
   } 
   
   if(grepl("shmi", x_var)){
     plot = plot + geom_vline(xintercept=1, linetype="dashed", colour="darkgrey", size=0.5)
-  } else if(min(graph_data[x$variable],na.rm=TRUE)<0 & max(graph_data[x$variable],na.rm=TRUE)>0){
+  } else if(min(acute_providers[x$variable],na.rm=TRUE)<0 & max(acute_providers[x$variable],na.rm=TRUE)>0){
     plot = plot + geom_vline(xintercept=0, linetype="dashed", colour="darkgrey", size=0.5)
   } 
   
@@ -601,11 +603,12 @@ manager_counts = function(managers, acute_providers, specialist, year, include_o
 }
 
 ##### run regressions ####
-run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions, output, specialist, include_outliers, all_outcomes, fixed_effects=FALSE){
+run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions, output, specialist, include_outliers, all_outcomes, fixed_effects, year, labels){
   
   independent_vars_string = vector(mode="character")
   independent_vars_labels = vector(mode="character")
   dependent_vars_labels = vector(mode="character")
+  year_labels = vector(mode="character")
   
   if(!specialist){
     acute_providers = acute_providers %>% filter(SPECIALIST=="Non-specialist")
@@ -633,7 +636,7 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
   
   for(x_var in independent_vars){
     x = get_variable(x_var, variables)
-    if(log_indep_vars & acute_providers %>% select(x$variable) %>% summarise_all(is.numeric) & x_var %in% c("fte", "fte_sq","nhs_ss","simple_fte","simple_fte_sq","consultants","nurses","spend","spend_sq")){
+    if(log_indep_vars & acute_providers %>% select(x$variable) %>% summarise_all(is.numeric) & x_var %in% c("fte","nhs_ss","simple_fte","consultants","nurses","spend","beds")){
       indep_var = paste0("log(",x$variable,")")
       indep_var_label = paste0("log ", x$label)
       # remove zeros as upsets log
@@ -641,7 +644,10 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
     } else {
       indep_var = x$variable
       indep_var_label = x$label
-    }    
+    }
+
+    if(x_var=="year" & (year!="pooled" | fixed_effects)) next()
+
     independent_vars_string = c(independent_vars_string, indep_var)
     independent_vars_labels = c(independent_vars_labels, indep_var_label)
   }
@@ -652,9 +658,9 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
     formula_independents = paste(independent_vars_string, collapse=" + ")
   }
   
-  independent_vars = acute_providers %>% select(c("YEAR","ORG_CODE",gsub("log\\(|)","",independent_vars_string)))
+  independent_vars_data = acute_providers %>% select(c("YEAR","ORG_CODE",gsub("log\\(|)","",independent_vars_string)))
   if(mean_centre){
-    independent_vars = independent_vars %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
+    independent_vars_data = independent_vars_data %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
   }
   regressions = list()
   regression_se = list()
@@ -672,7 +678,7 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
     }
     dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
     reg_formula = as.formula(paste(dep_var,formula_independents,sep=" ~ "))
-    panel_data = pdata.frame(bind_cols(independent_vars,acute_providers%>%select(y$variable)), index=c("ORG_CODE","YEAR"), drop.index=TRUE, row.names=TRUE)
+    panel_data = pdata.frame(bind_cols(independent_vars_data,acute_providers%>%select(y$variable)), index=c("ORG_CODE","YEAR"), drop.index=FALSE, row.names=TRUE)
     panel_data = make.pbalanced(panel_data,"shared.individuals")
     if(fixed_effects){
       fe_model = plm(reg_formula, 
@@ -690,8 +696,24 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
         lm_model = lm(reg_formula, data=panel_data)
         regressions[[y$variable]] = lm_model
         vcov = vcov(lm_model)
+        if("year" %in% independent_vars){
+          if(panel_data %>% select(YEAR) %>% n_distinct() > 1){
+            year_labels = union(year_labels, unique(lm_model$model$YEAR))
+          }
+        }
     }
     regression_se[[y$variable]] = sqrt(diag(vcov))
+  }
+  
+  if("Financial Year" %in% independent_vars_labels){
+    year_pos = which("Financial Year" == independent_vars_labels)[[1]]
+    n = length(independent_vars_labels)
+    years = paste("Financial Year", sort(year_labels))[-1]
+    if(n>year_pos){
+      independent_vars_labels = c(independent_vars_labels[0:(year_pos-1)],years,independent_vars_labels[(year_pos+1):n])
+    } else {
+      independent_vars_labels = c(independent_vars_labels[0:(year_pos-1)],years)
+    }
   }
   
   if (output=="latex") {
@@ -700,6 +722,10 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
     
   }
   
+  if(!labels){
+    independent_vars_labels = NULL
+  }
+    
   results = paste(capture.output(stargazer(regressions, 
                                            covariate.labels=independent_vars_labels,
                                            dep.var.labels=dependent_vars_labels,
@@ -713,7 +739,7 @@ make_regression_formula = function(dependent_var, independent_vars, logged, lagg
   independent_vars_labels = vector(mode="character")
   for(x_var in independent_vars){
     x = get_variable(x_var, variable_definitions)
-    if(logged & x_var %in% c("fte", "fte_sq","nhs_ss","simple_fte","simple_fte_sq","consultants","spend","spend_sq")){
+    if(logged & x_var %in% c("fte","nhs_ss","simple_fte","consultants","beds","spend")){
       indep_var = paste0("log(",x$variable,")")
       indep_var_label = paste0("log ", latexTranslate(x$label))
     } else {
@@ -764,17 +790,17 @@ appendix_regression = function(acute_providers, independent_var, dependent_var, 
   
   if(logged){
     if(independent_var=="fte"){
-      covars = c(independent_var, paste0("simple_",independent_var), independent_vars_basic, "specialist",rep("year",5))
+      covars = c(independent_var, paste0("simple_",independent_var), independent_vars_basic, "specialist",rep("year",6))
     } else {
-      covars = c(independent_var, independent_vars_basic, "specialist","year")
+      covars = c(independent_var, independent_vars_basic, "specialist",rep("year",2))
     }
     independent_vars_basic_simple = c(paste0("simple_",independent_var), independent_vars_basic)
     independent_vars_basic = c(independent_var, independent_vars_basic)
   } else {
     if(independent_var=="fte"){
-      covars = c(independent_var, paste0(independent_var,"_sq"), paste0("simple_",independent_var), paste0("simple_",independent_var,"_sq"), independent_vars_basic, "specialist",rep("year",5))
+      covars = c(independent_var, paste0(independent_var,"_sq"), paste0("simple_",independent_var), paste0("simple_",independent_var,"_sq"), independent_vars_basic, "specialist",rep("year",6))
     } else {
-      covars = c(independent_var, paste0(independent_var,"_sq"), independent_vars_basic, "specialist","year")
+      covars = c(independent_var, paste0(independent_var,"_sq"), independent_vars_basic, "specialist",rep("year",2))
     }
     independent_vars_basic_simple = c(paste0("simple_",independent_var), paste0("simple_",independent_var,"_sq"), independent_vars_basic)
     independent_vars_basic = c(independent_var, paste0(independent_var,"_sq"), independent_vars_basic)
@@ -807,29 +833,23 @@ appendix_regression = function(acute_providers, independent_var, dependent_var, 
   vcov = regressions[[2]]$vcov
   se_clustered[[2]] = sqrt(diag(vcov))
   
-  # model 3 - 16/17 - 17/18 pooled with year dummies
-  independent_vars = c(independent_vars_basic, "specialist","year")
+  # model 3 - 18/19 cross section
+  independent_vars = c(independent_vars_basic, "specialist")
   model_3_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=FALSE)
   regressions[[3]] = plm(model_3_formula$formula, 
-                         data = acute_providers,
+                         data = acute_providers %>% filter(YEAR=="2018"),
                          index=c("ORG_CODE","YEAR"),
                          model = "pooling")
-  
-  vcov = try(vcovHC(regressions[[3]], type="sss", cluster="group"), TRUE)
-  if(grepl("Error", vcov[1])){
-    vcov = regressions[[3]]$vcov
-    print(paste0("Error calculating clustered standard errors for: model 3 using default stadard errors"))
-  }
+  vcov = regressions[[1]]$vcov
   se_clustered[[3]] = sqrt(diag(vcov))
   
-  # model 4 - 16/17 - 17-18 fixed effects twoway
-  independent_vars = independent_vars_basic
+  # model 3 - 16/17 - 18/19 pooled with year dummies
+  independent_vars = c(independent_vars_basic, "specialist","year")
   model_4_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=FALSE)
   regressions[[4]] = plm(model_4_formula$formula, 
                          data = acute_providers,
                          index=c("ORG_CODE","YEAR"),
-                         model = "within", 
-                         effect = "twoways")
+                         model = "pooling")
   
   vcov = try(vcovHC(regressions[[4]], type="sss", cluster="group"), TRUE)
   if(grepl("Error", vcov[1])){
@@ -838,13 +858,15 @@ appendix_regression = function(acute_providers, independent_var, dependent_var, 
   }
   se_clustered[[4]] = sqrt(diag(vcov))
   
-  # model 5 - 16/17 - 17/18 pooled with lagged dep variable
-  independent_vars = c(independent_vars_basic, "specialist")
-  model_5_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=TRUE)
+  
+  # model 5 - 16/17 - 18/19 fixed effects twoway
+  independent_vars = independent_vars_basic
+  model_5_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=FALSE)
   regressions[[5]] = plm(model_5_formula$formula, 
                          data = acute_providers,
                          index=c("ORG_CODE","YEAR"),
-                         model = "pooling")
+                         model = "within", 
+                         effect = "twoways")
   
   vcov = try(vcovHC(regressions[[5]], type="sss", cluster="group"), TRUE)
   if(grepl("Error", vcov[1])){
@@ -853,30 +875,30 @@ appendix_regression = function(acute_providers, independent_var, dependent_var, 
   }
   se_clustered[[5]] = sqrt(diag(vcov))
   
+  # model 6 - 16/17 - 18/19 pooled with lagged dep variable
+  independent_vars = c(independent_vars_basic, "specialist")
+  model_6_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=TRUE)
+  regressions[[6]] = plm(model_6_formula$formula, 
+                         data = acute_providers,
+                         index=c("ORG_CODE","YEAR"),
+                         model = "pooling")
+  
+  vcov = try(vcovHC(regressions[[6]], type="sss", cluster="group"), TRUE)
+  if(grepl("Error", vcov[1])){
+    vcov = regressions[[6]]$vcov
+    print(paste0("Error calculating clustered standard errors for: model 6 using default stadard errors"))
+  }
+  se_clustered[[6]] = sqrt(diag(vcov))
+  
   if(independent_var=="fte"){
-    # model 6 - 16/17 - 17-18 random effects individual
+    # model 7 - 16/17 - 18/79 random effects individual
     independent_vars = c(independent_vars_basic, "specialist")
-    model_6_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=FALSE)
-    regressions[[6]] = plm(model_6_formula$formula, 
-                           data = acute_providers,
-                           index=c("ORG_CODE","YEAR"),
-                           model = "random", 
-                           effect = "individual")
-    vcov = try(vcovHC(regressions[[6]], type="sss", cluster="group"), TRUE)
-    if(grepl("Error", vcov[1])){
-      vcov = regressions[[6]]$vcov
-      print(paste0("Error calculating clustered standard errors for: model 6 using default stadard errors"))
-    }
-    se_clustered[[6]] = sqrt(diag(vcov))
-    
-    # model 7 - 12/13 - 17/18  pooled simple management def
-    independent_vars = c(independent_vars_basic_simple, "specialist","year")
     model_7_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=FALSE)
     regressions[[7]] = plm(model_7_formula$formula, 
                            data = acute_providers,
                            index=c("ORG_CODE","YEAR"),
-                           model = "pooling")
-    
+                           model = "random", 
+                           effect = "individual")
     vcov = try(vcovHC(regressions[[7]], type="sss", cluster="group"), TRUE)
     if(grepl("Error", vcov[1])){
       vcov = regressions[[7]]$vcov
@@ -884,14 +906,13 @@ appendix_regression = function(acute_providers, independent_var, dependent_var, 
     }
     se_clustered[[7]] = sqrt(diag(vcov))
     
-    # model 8 - 12/13 - 17/18 fixed effects simple management def
-    independent_vars = independent_vars_basic_simple
+    # model 8 - 12/13 - 18/19  pooled simple management def
+    independent_vars = c(independent_vars_basic_simple, "specialist","year")
     model_8_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=FALSE)
     regressions[[8]] = plm(model_8_formula$formula, 
                            data = acute_providers,
                            index=c("ORG_CODE","YEAR"),
-                           model = "within", 
-                           effect = "twoways")
+                           model = "pooling")
     
     vcov = try(vcovHC(regressions[[8]], type="sss", cluster="group"), TRUE)
     if(grepl("Error", vcov[1])){
@@ -900,13 +921,14 @@ appendix_regression = function(acute_providers, independent_var, dependent_var, 
     }
     se_clustered[[8]] = sqrt(diag(vcov))
     
-    # model 9 - 12/13 - 17/18 pooled simple management with lagged dep variable
-    independent_vars = c(independent_vars_basic_simple, "specialist")
-    model_9_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=TRUE)
+    # model 9 - 12/13 - 18/19 fixed effects simple management def
+    independent_vars = independent_vars_basic_simple
+    model_9_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=FALSE)
     regressions[[9]] = plm(model_9_formula$formula, 
                            data = acute_providers,
                            index=c("ORG_CODE","YEAR"),
-                           model = "pooling")
+                           model = "within", 
+                           effect = "twoways")
     
     vcov = try(vcovHC(regressions[[9]], type="sss", cluster="group"), TRUE)
     if(grepl("Error", vcov[1])){
@@ -915,27 +937,42 @@ appendix_regression = function(acute_providers, independent_var, dependent_var, 
     }
     se_clustered[[9]] = sqrt(diag(vcov))
     
-    # model 10 - 12/13 - 17/18 random effects simple management def
-    independent_vars = independent_vars_basic_simple
-    model_10_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=FALSE)
+    # model 10 - 12/13 - 18/19 pooled simple management with lagged dep variable
+    independent_vars = c(independent_vars_basic_simple, "specialist")
+    model_10_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=TRUE)
     regressions[[10]] = plm(model_10_formula$formula, 
-                            data = acute_providers,
-                            index=c("ORG_CODE","YEAR"),
-                            model = "random", 
-                            effect = "individual")
+                           data = acute_providers,
+                           index=c("ORG_CODE","YEAR"),
+                           model = "pooling")
+    
     vcov = try(vcovHC(regressions[[10]], type="sss", cluster="group"), TRUE)
     if(grepl("Error", vcov[1])){
       vcov = regressions[[10]]$vcov
       print(paste0("Error calculating clustered standard errors for: model 10 using default stadard errors"))
     }
     se_clustered[[10]] = sqrt(diag(vcov))
+    
+    # model 11 - 12/13 - 18/19 random effects simple management def
+    independent_vars = independent_vars_basic_simple
+    model_11_formula = make_regression_formula(dependent_var, independent_vars, logged, lagged=FALSE)
+    regressions[[11]] = plm(model_11_formula$formula, 
+                            data = acute_providers,
+                            index=c("ORG_CODE","YEAR"),
+                            model = "random", 
+                            effect = "individual")
+    vcov = try(vcovHC(regressions[[11]], type="sss", cluster="group"), TRUE)
+    if(grepl("Error", vcov[1])){
+      vcov = regressions[[11]]$vcov
+      print(paste0("Error calculating clustered standard errors for: model 11 using default stadard errors"))
+    }
+    se_clustered[[11]] = sqrt(diag(vcov))
   }
   
   #independent_vars_labels = c(independent_vars_labels_fte[1:2],independent_vars_labels_spend[1:2],independent_vars_labels_changes[3:length(independent_vars_changes)])
   if(independent_var=="fte"){
-    dependent_vars_labels = rep(model_1_formula$depvar_label,10)
+    dependent_vars_labels = rep(model_1_formula$depvar_label,11)
   } else {
-    dependent_vars_labels = rep(model_1_formula$depvar_label,5)
+    dependent_vars_labels = rep(model_1_formula$depvar_label,6)
   }
   
   independent_vars_labels = make_regression_formula(dependent_var, covars, logged, lagged = TRUE)$covar_labels
@@ -1217,11 +1254,7 @@ regressions_for_publication = function(){
   
   independent_vars =c("consultants","nhs_ss","beds","op_cost","fce","casemix")
 
-
-  acute_providers_2016 = create_sample_providers_dataset(2016, FALSE, FALSE, TRUE, FALSE)
-  acute_providers_2017 = create_sample_providers_dataset(2017, FALSE, FALSE, TRUE, FALSE)
-  acute_providers_paper = bind_rows(acute_providers_2016 %>% filter(ORG_CODE %in% acute_providers_2017$ORG_CODE), 
-                                       acute_providers_2017)
+  acute_providers_paper = create_sample_providers_dataset("pooled", FALSE, FALSE, TRUE, FALSE)
   
   regression_results_fte_levels = run_regression(acute_providers_paper, 
                  variable_definitions, 
@@ -1235,7 +1268,9 @@ regressions_for_publication = function(){
                  specialist=FALSE, 
                  include_outliers=TRUE, 
                  all_outcomes=TRUE, 
-                 fixed_effects=TRUE)
+                 fixed_effects=TRUE,
+                 year="pooled",
+                 labels=TRUE)
   sink(file="tables/basecase_fte_regressions.tex")
   cat(regression_results_fte_levels)
   sink()
@@ -1252,7 +1287,9 @@ regressions_for_publication = function(){
                                                  specialist=FALSE, 
                                                  include_outliers=TRUE, 
                                                  all_outcomes=TRUE, 
-                                                 fixed_effects=TRUE)
+                                                 fixed_effects=TRUE,
+                                                 year="pooled",
+                                                 labels=TRUE)
   sink(file="tables/basecase_fte_log_regressions.tex")
   cat(regression_results_fte_logs)
   sink()
@@ -1269,7 +1306,9 @@ regressions_for_publication = function(){
                                                  specialist=FALSE, 
                                                  include_outliers=TRUE, 
                                                  all_outcomes=TRUE, 
-                                                 fixed_effects=TRUE)
+                                                 fixed_effects=TRUE,
+                                                 year="pooled",
+                                                 labels=TRUE)
   sink(file="tables/basecase_spend_regressions.tex")
   cat(regression_results_spend_levels)
   sink()
@@ -1295,20 +1334,8 @@ regressions_for_publication = function(){
   # models with unrestricted management definition + simple def
   #############################################################
   
-  acute_providers_2012 = create_sample_providers_dataset(2012, TRUE, TRUE, FALSE, TRUE)
-  acute_providers_2013 = create_sample_providers_dataset(2013, TRUE, TRUE, FALSE, TRUE)
-  acute_providers_2014 = create_sample_providers_dataset(2014, TRUE, TRUE, FALSE, TRUE)
-  acute_providers_2015 = create_sample_providers_dataset(2015, TRUE, TRUE, FALSE, TRUE)
-  acute_providers_2016 = create_sample_providers_dataset(2016, TRUE, TRUE, FALSE, TRUE)
-  acute_providers_2017 = create_sample_providers_dataset(2017, TRUE, TRUE, FALSE, TRUE)
-  acute_providers_appendix = bind_rows(acute_providers_2012, 
-                              acute_providers_2013, 
-                              acute_providers_2014, 
-                              acute_providers_2015, 
-                              acute_providers_2016, 
-                              acute_providers_2017)
-  acute_providers_appendix = acute_providers_appendix %>% mutate(YEAR=as_factor(YEAR), ORG_CODE=as_factor(ORG_CODE))
-  
+  acute_providers_appendix = create_sample_providers_dataset("pooled", TRUE, TRUE, FALSE, TRUE)
+
   for (dep_var in dependent_vars) {
     for (indep_var in c("fte","spend")) {
       for (log_var in c(FALSE,TRUE)) {
@@ -1351,3 +1378,4 @@ produce_figures_and_tables_for_paper = function(figure_year=2017){
   # produce regressions for paper and appendix
   #regressions_for_publication()
 }
+

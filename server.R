@@ -23,7 +23,7 @@ shinyServer(function(input, output, session) {
   ##### outputs on descriptives tab ####  
   output$scatter_plot = renderPlotly({
     withProgress(message = paste0('Updating trust scatter plot'),{
-      scatter_plot(providerData(), variable_definitions, input$x_var, input$y_var, input$size_var, input$trim, input$specialist, input$trend_line, input$facet_var, input$log_x_var, input$log_y_var, input$year, input$show_titles, input$outliers)
+      scatter_plot(providerData(), variable_definitions, input$x_var, input$y_var, input$size_var, input$specialist, input$trend_line, input$facet_var, input$log_x_var, input$log_y_var, input$year, input$show_titles, input$outliers)
     })
   })
   
@@ -161,7 +161,7 @@ shinyServer(function(input, output, session) {
 	
 	output$regression_results = renderText({
 	  withProgress(message = paste0('Calculating regression results'),{
-	    run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, "html", input$specialist_reg, input$outliers_reg, input$all_outcomes_reg, (input$fixed_effects & input$year=="pooled"))
+	    run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, "html", input$specialist_reg, input$outliers_reg, input$all_outcomes_reg, (input$fixed_effects & input$year=="pooled"), input$year, input$labels_reg)
 	  })
 	})
 	
@@ -169,7 +169,7 @@ shinyServer(function(input, output, session) {
 	  filename = function() {
 	    paste0("regression_results_",input$year,".txt")},
 	  content = function(file) {
-	    results = run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, input$regression_output_type, input$specialist_reg, input$outliers_reg, input$all_outcomes_reg, (input$fixed_effects & input$year=="pooled"))
+	    results = run_regression(providerData(), variable_definitions, input$dependent_vars, input$independent_vars, input$mean_centre, input$log_dep_vars, input$log_indep_vars, input$interactions, input$regression_output_type, input$specialist_reg, input$outliers_reg, input$all_outcomes_reg, (input$fixed_effects & input$year=="pooled"), input$year, input$labels_reg)
 	    cat(results,file=file)
 	  }
 	)
