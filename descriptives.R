@@ -737,6 +737,8 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
 make_regression_formula = function(dependent_var, independent_vars, logged, lagged){
   independent_vars_string = vector(mode="character")
   independent_vars_labels = vector(mode="character")
+  year_labels = paste(paste0("Financial Year 20",13:18),14:19,sep="/")
+  year = 1
   for(x_var in independent_vars){
     x = get_variable(x_var, variable_definitions)
     if(logged & x_var %in% c("fte","nhs_ss","simple_fte","consultants","beds","spend")){
@@ -745,6 +747,10 @@ make_regression_formula = function(dependent_var, independent_vars, logged, lagg
     } else {
       indep_var = x$variable
       indep_var_label = latexTranslate(x$label)
+      if(x_var=="year"){
+        indep_var_label = latexTranslate(year_labels[year])
+        year = year + 1
+      }
     }    
     if(!(dependent_var=="shmi" & x_var=="specialist")){
       independent_vars_string = c(independent_vars_string, indep_var)
@@ -787,7 +793,7 @@ make_regression_formula = function(dependent_var, independent_vars, logged, lagg
 appendix_regression = function(acute_providers, independent_var, dependent_var, logged, output_filename){
   
   independent_vars_basic = c("consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
-  
+
   if(logged){
     if(independent_var=="fte"){
       covars = c(independent_var, paste0("simple_",independent_var), independent_vars_basic, "specialist",rep("year",6))
@@ -968,23 +974,74 @@ appendix_regression = function(acute_providers, independent_var, dependent_var, 
     se_clustered[[11]] = sqrt(diag(vcov))
   }
   
-  #independent_vars_labels = c(independent_vars_labels_fte[1:2],independent_vars_labels_spend[1:2],independent_vars_labels_changes[3:length(independent_vars_changes)])
   if(independent_var=="fte"){
-    dependent_vars_labels = rep(model_1_formula$depvar_label,11)
+    ncols = 11
   } else {
-    dependent_vars_labels = rep(model_1_formula$depvar_label,6)
+    ncols = 6
   }
+  depvar_label = model_1_formula$depvar_label
+  dependent_vars_labels = rep(depvar_label,ncols)
   
   independent_vars_labels = make_regression_formula(dependent_var, covars, logged, lagged = TRUE)$covar_labels
+  
+  
+  independent_var_label = "Management"
+  if(independent_var=="fte"){
+    independent_var_label = paste0(independent_var_label," (FTE)")
+  } else if(independent_var=="spend"){
+    independent_var_label = paste0(independent_var_label," Spend (£)")
+  }
+  logged_title = ""
+  logged_label = ""
+  if (logged) {
+    logged_title = "log "
+    logged_label = "log_"
+  }
+  
+  title = paste0("\\caption{",depvar_label," against ",logged_title,independent_var_label,"}")
+  label = paste0("\\label{table:",logged_label,dependent_var,"_",independent_var,"_reg}")
+    
+  table_head = paste("\\begin{landscape}",
+  "\\begin{table}[!htbp] \\centering",title, label,
+  "\\resizebox*{!}{\\textheight}{",sep="\n")
+    
+  table_foot = paste("}",
+  "\\end{table}", 
+  "\\end{landscape}",sep="\n") 
   
   regression_results = paste(capture.output(stargazer(regressions, 
                                                       covariate.labels=independent_vars_labels,
                                                       dep.var.labels=dependent_vars_labels,
                                                       model.names = TRUE,
                                                       model.numbers = TRUE,
-                                                      type="latex")), collapse="\n") 
-  sink(file=paste0("tables/",output_filename))
-  cat(regression_results)
+                                                      type="latex",
+                                                      float=FALSE,
+                                                      header=FALSE)), collapse="\n") 
+ 
+  dep_var_line = paste0(rep(depvar_label,ncols),collapse = " & ")
+  dep_var_line_new = paste0("\\multicolumn{",ncols,"}{c}{",depvar_label,"}")
+  regression_results = gsub(dep_var_line, dep_var_line_new, regression_results, fixed=TRUE)
+  
+  model_line = paste0(rep("& \\textit{panel}",ncols),collapse = " ")
+  if(ncols==11){
+    model_line_new = "& \\textit{cross-section} & \\textit{cross-section} & \\textit{cross-section} & \\textit{pooled} & \\textit{fixed effects} & \\textit{lagged dependent variable} & \\textit{random effects} & \\textit{pooled} & \\textit{fixed effects} & \\textit{lagged dependent variable} & \\textit{random effects}"
+  } else {
+    model_line_new = "& \\textit{cross-section} & \\textit{cross-section} & \\textit{cross-section} & \\textit{pooled} & \\textit{fixed effects} & \\textit{lagged dependent variable}"
+  }
+  regression_results = gsub(model_line, model_line_new, regression_results, fixed=TRUE)
+  
+  year_line = paste0(rep("& \\textit{linear}",ncols),collapse = " ")
+  if(ncols==11){
+    year_line_new = "& \\textit{2016/17} & \\textit{2017/18} & \\textit{2018/19} & \\textit{2016/17-2018/19} & \\textit{2016/17-2018/19} & \\textit{2016/17-2018/19} & \\textit{2016/17-2018/19} & \\textit{2012/13-2018/19} & \\textit{2012/13-2018/19} & \\textit{2012/13-2018/19} & \\textit{2012/13-2018/19}"
+  } else {
+    year_line_new = "& \\textit{2016/17} & \\textit{2017/18} & \\textit{2018/19} & \\textit{2016/17-2018/19} & \\textit{2016/17-2018/19} & \\textit{2016/17-2018/19}"
+  }
+  regression_results = gsub(year_line, year_line_new, regression_results, fixed=TRUE)
+  
+  regression_results_table = paste(table_head,regression_results,table_foot,sep="\n")
+    
+  sink(file=paste0("tables2/",output_filename))
+  cat(regression_results_table)
   sink()
 }
 

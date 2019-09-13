@@ -115,7 +115,7 @@ junior_doctors_percent,JUNIOR_DOCTORS_PERCENT,Junior Doctors (% of all staff)
 junior_doctors,JUNIOR_DOCTORS,Junior Doctors (FTE)
 spend,MANAGEMENT_SPEND,Management spend (£ million)
 spend_fce,MAN_SPEND_PER_1000_FCE,Management spend (£ per 1000 admissions)
-spend_sq,MANAGEMENT_SPEND_SQ,Management spend squared (£ million)
+spend_sq,MANAGEMENT_SPEND_SQ,Management spend (£ million) squared
 fte_clin_ratio,MANAGER_CLINICIAN_RATIO,Manager to clinical staff ratio
 man_percent,MANAGERS_PERCENT,Managers (% of all staff)
 simple_fte,SIMPLE_MANAGERS_FTE,Managers (FTE - basic definition)
