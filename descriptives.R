@@ -278,14 +278,10 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            CONSULTANTS_SQ = round(SIMPLE_CONSULTANTS_FTE^2,1),
            MANAGEMENT_QUALITY_SQ = round(MANAGEMENT_QUALITY^2,1),
            SIMPLE_MANAGERS_FTE_SQ = round(SIMPLE_MANAGERS_FTE^2,1),
-           MAN_SPEND_PER_1000_FCE = round(MANAGEMENT_SPEND*1000/TOTAL_EPISODES,0), 
-           MAN_FTE_PER_1000_FCE = if_else(is.na(MANAGERS),round(SIMPLE_MANAGERS_FTE*1000/TOTAL_EPISODES,2),round(MANAGERS*1000/TOTAL_EPISODES,2)),
            MANAGEMENT_SPEND_SQ = round((MANAGEMENT_SPEND^2)/1000000,2),
            MANAGEMENT_SPEND = round((MANAGEMENT_SPEND)/1000000,2),
            MANAGERS_PERCENT = if_else(is.na(MANAGERS),round((SIMPLE_MANAGERS_FTE/ALL_STAFF)*100,2),round((MANAGERS/ALL_STAFF)*100,2)),
            CONSULTANTS_PERCENT = if_else(is.na(CONSULTANTS_PERCENT),round((SIMPLE_CONSULTANTS_FTE/ALL_STAFF)*100,2),CONSULTANTS_PERCENT),
-           QUALITY_WEIGHTED_FTE = round(MAN_FTE_PER_1000_FCE*MANAGEMENT_QUALITY/100,2),
-           QUALITY_WEIGHTED_SPEND = round(MAN_SPEND_PER_1000_FCE*MANAGEMENT_QUALITY/100,0),
            FIN_POS_PERC = round((FINANCIAL_POSITION/OP_COST)*100,2),
            HEE_REGION_NAME = gsub("Health Education ","",HEE_REGION_NAME),
            ORG_NAME = gsub("NHS Trust","",ORG_NAME),
@@ -299,8 +295,8 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            STAFF_PER_MAN = if_else(is.na(MANAGERS),round(ALL_STAFF/SIMPLE_MANAGERS_FTE,2),round(ALL_STAFF/MANAGERS,2)),
            BEDS_PER_MAN = if_else(is.na(MANAGERS),round(BEDS/SIMPLE_MANAGERS_FTE,2),round(BEDS/MANAGERS,2)),
            FCE_PER_NON_AE_CONSULTANT = (TOTAL_EPISODES/NON_EMERGENCY_MEDICS),
-           YEAR = as.factor(YEAR),
-           ORG_CODE = as.factor(ORG_CODE)
+           YEAR,
+           ORG_CODE
            ) %>%
     select(ORG_CODE,
            ORG_NAME,
@@ -309,7 +305,6 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            HEE_REGION=HEE_REGION_NAME,
            OPERATING_COST=OP_COST,
            BEDS,
-           BEDS_OCCUPIED_PERCENT,
            ADMISSIONS=TOTAL_EPISODES,
            FEMALE_ADMISSIONS,
            AGE_0_14,
@@ -328,7 +323,7 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            SHMI,
            ALL_STAFF,
            JUNIOR_DOCTORS,
-           CONSULTANTS,
+           CONSULTANTS = SIMPLE_CONSULTANTS_FTE,
            CARDIOLOGISTS,
            EMERGENCY_MEDICS,
            NON_EMERGENCY_MEDICS,
@@ -349,37 +344,29 @@ attach_management_measure = function(providers, afc_pay, managers, selected_staf
            MANAGERS_PERCENT,
            NHS_SS=MANAGEMENT_QUALITY,
            MANAGEMENT_SPEND,
-           MAN_FTE_PER_TEN_MIL_OC,
-           MAN_FTE_PER_1000_FCE,
-           MAN_FTE_PER_10_BED,
-           MAN_SPEND_PER_1000_FCE,
            FCE_PER_MAN,
            OC_MIL_PER_MAN,
            STAFF_PER_MAN,
            BEDS_PER_MAN,
-           QUALITY_WEIGHTED_FTE,
-           QUALITY_WEIGHTED_SPEND,
            MANAGER_CLINICIAN_RATIO,
            MANAGERS_SQ,
            MANAGEMENT_SPEND_SQ,
            FCE_PER_NON_AE_CONSULTANT,
            SIMPLE_MANAGERS_FTE,
            SIMPLE_MANAGERS_FTE_SQ,
-           SIMPLE_CONSULTANTS_FTE,
            CONSULTANTS_SQ,
            BEDS_SQ,
            NHS_SS_SQ=MANAGEMENT_QUALITY_SQ)
   
   changes_18 = calculate_changes_over_time(results,2017,2018)
-  changes_17 = calculate_changes_over_time(results,2016,2017)
+  # changes_17 = calculate_changes_over_time(results,2016,2017)
   # changes_16 = calculate_changes_over_time(results,2015,2016)
   # changes_15 = calculate_changes_over_time(results,2014,2015)
   # changes_14 = calculate_changes_over_time(results,2013,2014)
   if(year!="pooled"){
     results = results %>% filter(YEAR==year)
   }
-  results = left_join(results,changes_17) %>% 
-    left_join(changes_18)
+  results = left_join(results,changes_18)
   
   return(results)
 }
@@ -418,6 +405,8 @@ calculate_changes_over_time = function(providers,t1,t2){
 
 ##### scatter plots and histigrams for UI ####
 scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, specialist, trend_line, facet_var, log_x_var, log_y_var, year, show_titles, include_outliers){
+
+  acute_providers = acute_providers %>% mutate(YEAR=as.factor(YEAR))
   if(!specialist){
     acute_providers = acute_providers %>% filter(SPECIALIST=="Non-specialist")
   }
@@ -427,7 +416,7 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, spec
     acute_providers = acute_providers %>% 
       filter(!is.na(MANAGERS_PERCENT)) %>%
       group_by(YEAR) %>%
-      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95)) %>%
+      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.025) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.975)) %>%
       ungroup()
   }
   
@@ -503,6 +492,46 @@ scatter_plot = function(acute_providers, variables, x_var, y_var, size_var, spec
   return(plotly)
 }
 
+histogram_plot = function(acute_providers, variables, x_var, specialist, year, show_titles, include_outliers){
+  
+  if(!specialist){
+    acute_providers = acute_providers %>% filter(SPECIALIST=="Non-specialist")
+  }
+  
+  if(!include_outliers){
+    # e.g RAJ = Southend has a suspiciously low number of managers
+    acute_providers = acute_providers %>% 
+      filter(!is.na(MANAGERS_PERCENT)) %>%
+      group_by(YEAR) %>%
+      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.025) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.975)) %>%
+      ungroup()
+  }
+  
+  x = get_variable(x_var, variables)
+  
+  graph_data = acute_providers
+  
+  
+  plot = ggplot(data=graph_data,aes_string(x$variable)) + 
+    geom_histogram(fill="#E69F00", colour="black") + 
+    xlab(x$label) +
+    ylab("Count of acute NHS trusts") +
+    theme_bw() + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(), 
+          plot.title = element_blank(),
+          plot.margin = unit(c(1, 1, 1, 1), "lines"),
+          legend.position="none",
+          text=element_text(family = "Roboto", colour = "#3e3f3a"))
+  
+  if(show_titles){
+    plot = plot + ggtitle(paste0("Based on data from the ",sum(!is.na(graph_data[x$variable]))," NHS trusts with data available for ",year))
+  }
+  
+  plotly = ggplotly(plot)
+  return(plotly)
+}
+
 ##### ranking tables ####
 create_ranking_table = function(providers, variables, rank_var){
   x = get_variable(rank_var, variables)$variable
@@ -524,45 +553,6 @@ create_ranking_table = function(providers, variables, rank_var){
   return(ranked_providers)
 }
 
-histogram_plot = function(acute_providers, variables, x_var, specialist, year, show_titles, include_outliers){
-  
-  if(!specialist){
-    acute_providers = acute_providers %>% filter(SPECIALIST=="Non-specialist")
-  }
-  
-  if(!include_outliers){
-    # e.g RAJ = Southend has a suspiciously low number of managers
-    acute_providers = acute_providers %>% 
-      filter(!is.na(MANAGERS_PERCENT)) %>%
-      group_by(YEAR) %>%
-      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95)) %>%
-      ungroup()
-  }
-  
-  x = get_variable(x_var, variables)
-  
-  graph_data = acute_providers
-
-    
-  plot = ggplot(data=graph_data,aes_string(x$variable)) + 
-    geom_histogram(fill="#E69F00", colour="black") + 
-    xlab(x$label) +
-    ylab("Count of acute NHS trusts") +
-    theme_bw() + 
-    theme(panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank(), 
-          plot.title = element_blank(),
-          plot.margin = unit(c(1, 1, 1, 1), "lines"),
-          legend.position="none",
-          text=element_text(family = "Roboto", colour = "#3e3f3a"))
- 
-  if(show_titles){
-    plot = plot + ggtitle(paste0("Based on data from the ",sum(!is.na(graph_data[x$variable]))," NHS trusts with data available for ",year))
-  }
-  
-  plotly = ggplotly(plot)
-  return(plotly)
-}
 
 ##### tables of desriptives on managers ####
 manager_counts = function(managers, acute_providers, specialist, year, include_outliers){
@@ -575,7 +565,7 @@ manager_counts = function(managers, acute_providers, specialist, year, include_o
     acute_providers = acute_providers %>% 
       filter(!is.na(MANAGERS_PERCENT)) %>%
       group_by(YEAR) %>%
-      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95)) %>%
+      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.025) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.975)) %>%
       ungroup()
   }
   
@@ -619,7 +609,7 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
     acute_providers = acute_providers %>% 
       filter(!is.na(MANAGERS_PERCENT)) %>%
       group_by(YEAR) %>%
-      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95)) %>%
+      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.025) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.975)) %>%
       ungroup()
   }
   
@@ -737,7 +727,10 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
 make_regression_formula = function(dependent_var, independent_vars, logged, lagged){
   independent_vars_string = vector(mode="character")
   independent_vars_labels = vector(mode="character")
-  year_labels = paste(paste0("Financial Year 20",13:18),14:19,sep="/")
+  n_year = sum(grepl("year",independent_vars))
+  if(n_year>0){
+    year_labels = paste(paste0("Financial Year 20",(18-(n_year-1)):18),(19-(n_year-1)):19,sep="/")
+  }
   year = 1
   for(x_var in independent_vars){
     x = get_variable(x_var, variable_definitions)
@@ -790,10 +783,8 @@ make_regression_formula = function(dependent_var, independent_vars, logged, lagg
   return(results)
 }
 
-appendix_regression = function(acute_providers, independent_var, dependent_var, logged, output_filename){
+appendix_regression = function(acute_providers, independent_vars_basic, independent_var, dependent_var, logged, output_filename){
   
-  independent_vars_basic = c("consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
-
   if(logged){
     if(independent_var=="fte"){
       covars = c(independent_var, paste0("simple_",independent_var), independent_vars_basic, "specialist",rep("year",6))
@@ -1040,7 +1031,7 @@ appendix_regression = function(acute_providers, independent_var, dependent_var, 
   
   regression_results_table = paste(table_head,regression_results,table_foot,sep="\n")
     
-  sink(file=paste0("tables2/",output_filename))
+  sink(file=paste0("tables/",output_filename))
   cat(regression_results_table)
   sink()
 }
@@ -1068,13 +1059,13 @@ create_sample_providers_dataset = function(year, specialist, include_outliers, a
     acute_providers = acute_providers %>% 
       filter(!is.na(MANAGERS_PERCENT)) %>%
       group_by(YEAR) %>%
-      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.05) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.95)) %>%
+      filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.025) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.975)) %>%
       ungroup()
   }
   
   if(all_outcomes){
     acute_providers = acute_providers %>% drop_na(NET_FINANCIAL_POSITION,RTT_SCORE,AE_SCORE,SHMI,FCE_PER_NON_AE_CONSULTANT) 
-  }
+   }
   
   return(acute_providers)
 }
@@ -1123,7 +1114,11 @@ descriptives = function(acute_providers, percentage){
 }
 
 create_summary_tables = function(year, specialist, include_outliers, all_outcomes, all_paygrades, file_prefix){
-  acute_providers = create_sample_providers_dataset(year, specialist, include_outliers, all_outcomes, all_paygrades)
+  acute_providers = create_sample_providers_dataset("pooled", specialist, include_outliers, all_outcomes, all_paygrades)
+  acute_providers = acute_providers %>% filter(YEAR %in% c("2018","2017","2016"))
+  panel_data = pdata.frame(acute_providers, index=c("ORG_CODE","YEAR"), drop.index=FALSE, row.names=TRUE)
+  panel_data = make.pbalanced(panel_data,"shared.individuals")
+  acute_providers = panel_data %>% filter(YEAR==year) %>% mutate(YEAR=year, ORG_CODE=as.character(ORG_CODE))
   
   staff_breakdown_numbers = descriptives(acute_providers, FALSE)
   
@@ -1298,7 +1293,38 @@ create_summary_tables = function(year, specialist, include_outliers, all_outcome
   
   ggsave(paste0("figures/",file_prefix,"_manager_scatter_fte_",year,".png"), manager_scatter_plots_fte, width=24, height=10, units="cm", dpi="print")
   
+  x_variables = (get_variable(c("fte","spend","man_percent","nhs_ss"), variable_definitions) %>% arrange(label))[c(3,1,2,4),]
+  y_variables = (get_variable(c("fin_pos","ae","rtt","fce_per_non_ae_consultant","shmi"), variable_definitions)%>% arrange(label))[c(3,1,4,2,5),]
+  graph_data_7 = acute_providers %>% 
+    select(c(x_variables$variable,y_variables$variable)) %>% 
+    gather("x_var", "x_val", x_variables$variable) %>%
+    gather("y_var", "y_val", -x_var, -x_val)
+  graph_data_7$x_var = factor(graph_data_7$x_var,x_variables$variable,x_variables$label)
+  graph_data_7$y_var = factor(graph_data_7$y_var,y_variables$variable,y_variables$label)
   
+  manager_outcome_scatter_plots = ggplot(data=graph_data_7, aes(x=x_val, y=y_val)) +
+    xlab("") +
+    ylab("") +
+    geom_point(colour="#E69F00") +
+    geom_smooth(method = "lm", colour="darkred", linetype="dashed", size=0.8, se=FALSE) + 
+    facet_grid(y_var~x_var, scales = "free", labeller = labeller(y_var = label_wrap_gen(35), x_var = label_wrap_gen(35))) + 
+    theme_bw() + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(), 
+          plot.title = element_blank(),
+          plot.margin = unit(c(1, 1, 1, 1), "lines"),
+          legend.position="none",
+          text=element_text(family = "Roboto", colour = "#3e3f3a"))
+  
+  ggsave(paste0("figures/",file_prefix,"_manager_outcome_scatter_fte_",year,".png"), manager_outcome_scatter_plots, width=24, height=30, units="cm", dpi="print")
+  
+}
+
+format_basecase_regression_table = function(table,caption,label){
+  table = gsub("\\caption{}",paste0("\\caption{",latexTranslate(caption),"}"),table,fixed=TRUE)
+  table = gsub("\\label{}",paste0("\\label{table:",label,"}\n\\resizebox{\\linewidth}{!}{\n"),table,fixed=TRUE)
+  table = gsub("\\end{tabular}","\\end{tabular}\n}\n",table,fixed=TRUE)
+  return(table)
 }
 
 regressions_for_publication = function(){
@@ -1328,8 +1354,11 @@ regressions_for_publication = function(){
                  fixed_effects=TRUE,
                  year="pooled",
                  labels=TRUE)
+  
   sink(file="tables/basecase_fte_regressions.tex")
-  cat(regression_results_fte_levels)
+  cat(format_basecase_regression_table(regression_results_fte_levels,
+                                       caption="Management (FTE) regressions for selected NHS Trusts between 2016/17 - 2018/19",
+                                       label="basecase_fte_reg"))
   sink()
   
   regression_results_fte_logs = run_regression(acute_providers_paper, 
@@ -1348,7 +1377,9 @@ regressions_for_publication = function(){
                                                  year="pooled",
                                                  labels=TRUE)
   sink(file="tables/basecase_fte_log_regressions.tex")
-  cat(regression_results_fte_logs)
+  cat(format_basecase_regression_table(regression_results_fte_logs,
+                                       caption="Log Management (FTE) regressions for selected NHS Trusts between 2016/17 - 2018/19",
+                                       label="basecase_fte_log_reg"))
   sink()
   
   regression_results_spend_levels = run_regression(acute_providers_paper, 
@@ -1367,7 +1398,9 @@ regressions_for_publication = function(){
                                                  year="pooled",
                                                  labels=TRUE)
   sink(file="tables/basecase_spend_regressions.tex")
-  cat(regression_results_spend_levels)
+  cat(format_basecase_regression_table(regression_results_spend_levels,
+                                       caption="Management spend (£) regressions for selected NHS Trusts between 2016/17 - 2018/19",
+                                       label="basecase_spend_reg"))
   sink()
   
   regression_results_spend_logs = run_regression(acute_providers_paper, 
@@ -1382,14 +1415,21 @@ regressions_for_publication = function(){
                                                specialist=FALSE, 
                                                include_outliers=TRUE, 
                                                all_outcomes=TRUE, 
-                                               fixed_effects=TRUE)
+                                               fixed_effects=TRUE,
+                                               year="pooled",
+                                               labels=TRUE)
   sink(file="tables/basecase_spend_log_regressions.tex")
-  cat(regression_results_spend_logs)
+  cat(format_basecase_regression_table(regression_results_spend_logs,
+                                       caption="Log Management spend (£) regressions for selected NHS Trusts between 2016/17 - 2018/19",
+                                       label="basecase_spend_log_reg"))
   sink()
   #############################################################
   # run regressions for appendix on full dataset with various
   # models with unrestricted management definition + simple def
   #############################################################
+  independent_vars_basic = c("consultants","nhs_ss","beds","op_cost","fce","female","age_0_14","age_15_29","age_30_44","age_45_59","age_60_74","age_75_89","age_90")
+
+  dependent_vars = c("fce_per_non_ae_consultant","fin_pos","ae","rtt","shmi")
   
   acute_providers_appendix = create_sample_providers_dataset("pooled", TRUE, TRUE, FALSE, TRUE)
 
@@ -1400,6 +1440,7 @@ regressions_for_publication = function(){
         filename = paste("appendix",dep_var,indep_var,ifelse(log_var,"logged","linear"),"regression.tex",sep="_")
         print(paste("generating:",filename))
         appendix_regression(acute_providers_appendix,
+                            independent_vars_basic,
                             dependent_var = dep_var,
                             independent_var = indep_var,
                             logged = log_var,
@@ -1412,27 +1453,29 @@ regressions_for_publication = function(){
 }
 
 
-produce_figures_and_tables_for_paper = function(figure_year=2017){
+produce_figures_and_tables_for_paper = function(){
   
-  # basecase exclude specialist trusts and outliers 
-  # restrict to managers on AFC 7 and above  
-  # only include trusts that have data on all outcomes
-  create_summary_tables(year=figure_year,
-                        specialist=FALSE,
-                        all_outcomes=TRUE,
-                        all_paygrades=FALSE,
-                        include_outliers=FALSE,
-                        file_prefix="basecase")
-
-  # results for appendix include all trusts and managers
-  create_summary_tables(year=figure_year,
-                      specialist=TRUE,
-                      all_outcomes=FALSE,
-                      all_paygrades=TRUE,
-                      include_outliers=TRUE,
-                      file_prefix="allmanagers")
- 
+  for (figure_year in 2016:2018) {
+    # basecase exclude specialist trusts and outliers 
+    # restrict to managers on AFC 7 and above  
+    # only include trusts that have data on all outcomes
+    create_summary_tables(year=figure_year,
+                          specialist=FALSE,
+                          all_outcomes=TRUE,
+                          all_paygrades=FALSE,
+                          include_outliers=FALSE,
+                          file_prefix="basecase")
+  
+    # results for appendix include all trusts and managers
+    create_summary_tables(year=figure_year,
+                        specialist=TRUE,
+                        all_outcomes=FALSE,
+                        all_paygrades=TRUE,
+                        include_outliers=TRUE,
+                        file_prefix="allmanagers")
+  }
+  
   # produce regressions for paper and appendix
-  #regressions_for_publication()
+  regressions_for_publication()
 }
 

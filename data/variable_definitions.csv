@@ -12,48 +12,7 @@ oc_mil_per_man,OC_MIL_PER_MAN,Average operating cost per manager (£ million)
 staff_per_man,STAFF_PER_MAN,Average staff per manager
 beds,BEDS,Beds (total number)
 beds_sq,BEDS_SQ,Beds (total number) squared
-beds_occupied,BEDS_OCCUPIED_PERCENT,Beds occupied (%)
 cardiologists,CARDIOLOGISTS,Cardiology consultants (FTE)
-change_17_ae,CHANGE_2016_2017_AE_SCORE,Change 16/17 to 17/18 A&E 4 hour wait target met (%)
-change_17_ae_doc,CHANGE_2016_2017_EMERGENCY_MEDICS,Change 16/17 to 17/18 in A&E consultants (FTE)
-change_17_all_clinical_percent,CHANGE_2016_2017_CLINICAL_STAFF_PERCENT,Change 16/17 to 17/18 in All clinical staff (% of all staff)
-change_17_all_clinical,CHANGE_2016_2017_CLINICAL_STAFF,Change 16/17 to 17/18 in All clinical staff (FTE)
-change_17_doctors_percent,CHANGE_2016_2017_DOCTORS_PERCENT,Change 16/17 to 17/18 in All doctors (% of all staff)
-change_17_doctors,CHANGE_2016_2017_DOCTORS,Change 16/17 to 17/18 in All doctors (FTE)
-change_17_all_staff,CHANGE_2016_2017_ALL_STAFF,Change 16/17 to 17/18 in All staff (FTE)
-change_17_cardiologists,CHANGE_2016_2017_CARDIOLOGISTS,Change 16/17 to 17/18 in Cardiology consultants (FTE)
-change_17_consultants_percent,CHANGE_2016_2017_CONSULTANTS_PERCENT,Change 16/17 to 17/18 in Consultants (% of all staff)
-change_17_non_ae_doc,CHANGE_2016_2017_NON_EMERGENCY_MEDICS,Change 16/17 to 17/18 in Consultants (FTE excluding A&E)
-change_17_consultants,CHANGE_2016_2017_CONSULTANTS,Change 16/17 to 17/18 in Consultants (FTE)
-change_17_female,CHANGE_2016_2017_FEMALE_ADMISSIONS,Change 16/17 to 17/18 in Female share of inpatient admissions (%)
-change_17_fce_per_non_ae_consultant,CHANGE_2016_2017_FCE_PER_NON_AE_CONSULTANT,Change 16/17 to 17/18 in Inpatient admissions per consultant (excluding A&E)
-change_17_junior_doctors_percent,CHANGE_2016_2017_JUNIOR_DOCTORS_PERCENT,Change 16/17 to 17/18 in Junior Doctors (% of all staff)
-change_17_junior_doctors,CHANGE_2016_2017_JUNIOR_DOCTORS,Change 16/17 to 17/18 in Junior Doctors (FTE)
-change_17_spend,CHANGE_2016_2017_MANAGEMENT_SPEND,Change 16/17 to 17/18 in Management spend (£ million)
-change_17_spend_fce,CHANGE_2016_2017_MAN_SPEND_PER_1000_FCE,Change 16/17 to 17/18 in Management spend (£ per 1000 admissions)
-change_17_spend_sq,CHANGE_2016_2017_MANAGEMENT_SPEND_SQ,Change 16/17 to 17/18 in Management spend squared (£ million)
-change_17_fte_clin_ratio,CHANGE_2016_2017_MANAGER_CLINICIAN_RATIO,Change 16/17 to 17/18 in Manager to clinical staff ratio
-change_17_man_percent,CHANGE_2016_2017_MANAGERS_PERCENT,Change 16/17 to 17/18 in Managers (% of all staff)
-change_17_fte_per_ten_mil,CHANGE_2016_2017_MAN_FTE_PER_TEN_MIL_OC,Change 16/17 to 17/18 in Managers (FTE per £10 million operating cost)
-change_17_fte_fce,CHANGE_2016_2017_MAN_FTE_PER_1000_FCE,Change 16/17 to 17/18 in Managers (FTE per 1000 admissions)
-change_17_fte,CHANGE_2016_2017_MANAGERS,Change 16/17 to 17/18 in Managers (FTE)
-change_17_fte_sq,CHANGE_2016_2017_MANAGERS_SQ,Change 16/17 to 17/18 in Managers (FTE) squared
-change_17_fin_pos_perc,CHANGE_2016_2017_NET_FINANCIAL_POSITION_PERCENT,Change 16/17 to 17/18 in Net financial position (% of operating cost)
-change_17_fin_pos,CHANGE_2016_2017_NET_FINANCIAL_POSITION,Change 16/17 to 17/18 in Net financial position (£ million)
-change_17_nhs_ss,CHANGE_2016_2017_NHS_SS,Change 16/17 to 17/18 in NHS SS management score (%)
-change_17_nurses_percent,CHANGE_2016_2017_NURSES_PERCENT,Change 16/17 to 17/18 in Nurses (% of all staff)
-change_17_nurses,CHANGE_2016_2017_NURSES,Change 16/17 to 17/18 in Nurses (FTE)
-change_17_orthopods,CHANGE_2016_2017_ORTHOPAEDIC_SURGEONS,Change 16/17 to 17/18 in Orthopaedic surgeons (FTE)
-change_17_other_clinical_percent,CHANGE_2016_2017_OTHER_CLINICAL_STAFF_PERCENT,Change 16/17 to 17/18 in Other clinical (% of all staff)
-change_17_other_clinical,CHANGE_2016_2017_OTHER_CLINICAL_STAFF,Change 16/17 to 17/18 in Other clinical (FTE)
-change_17_other_non_clinical_percent,CHANGE_2016_2017_OTHER_STAFF_PERCENT,Change 16/17 to 17/18 in Other non-clinical (% of all staff)
-change_17_other_non_clinical,CHANGE_2016_2017_OTHER_STAFF,Change 16/17 to 17/18 in Other non-clinical (FTE)
-change_17_spend_quality,CHANGE_2016_2017_QUALITY_WEIGHTED_SPEND,Change 16/17 to 17/18 in Quality adjusted (£ per 1000 admissions)
-change_17_fte_quality,CHANGE_2016_2017_QUALITY_WEIGHTED_FTE,Change 16/17 to 17/18 in Quality adjusted (FTE per 1000 admissions)
-change_17_rtt,CHANGE_2016_2017_RTT_SCORE,Change 16/17 to 17/18 in Referral to treatment in 18 weeks (%)
-change_17_shmi,CHANGE_2016_2017_SHMI,Change 16/17 to 17/18 in Summary Hospital-level Mortality Indicator
-change_17_fce,CHANGE_2016_2017_ADMISSIONS,Change 16/17 to 17/18 in Total inpatient admissions
-change_17_op_cost,CHANGE_2016_2017_OPERATING_COST,Change 16/17 to 17/18 in Total Operating Cost (£ million)
 change_18_ae,CHANGE_2017_2018_AE_SCORE,Change 17/18 to 18/19 A&E 4 hour wait target met (%)
 change_18_ae_doc,CHANGE_2017_2018_EMERGENCY_MEDICS,Change 17/18 to 18/19 in A&E consultants (FTE)
 change_18_all_clinical_percent,CHANGE_2017_2018_CLINICAL_STAFF_PERCENT,Change 17/18 to 18/19 in All clinical staff (% of all staff)
@@ -88,15 +47,13 @@ change_18_other_clinical_percent,CHANGE_2017_2018_OTHER_CLINICAL_STAFF_PERCENT,C
 change_18_other_clinical,CHANGE_2017_2018_OTHER_CLINICAL_STAFF,Change 17/18 to 18/19 in Other clinical (FTE)
 change_18_other_non_clinical_percent,CHANGE_2017_2018_OTHER_STAFF_PERCENT,Change 17/18 to 18/19 in Other non-clinical (% of all staff)
 change_18_other_non_clinical,CHANGE_2017_2018_OTHER_STAFF,Change 17/18 to 18/19 in Other non-clinical (FTE)
-change_18_spend_quality,CHANGE_2017_2018_QUALITY_WEIGHTED_SPEND,Change 17/18 to 18/19 in Quality adjusted (£ per 1000 admissions)
-change_18_fte_quality,CHANGE_2017_2018_QUALITY_WEIGHTED_FTE,Change 17/18 to 18/19 in Quality adjusted (FTE per 1000 admissions)
 change_18_rtt,CHANGE_2017_2018_RTT_SCORE,Change 17/18 to 18/19 in Referral to treatment in 18 weeks (%)
 change_18_shmi,CHANGE_2017_2018_SHMI,Change 17/18 to 18/19 in Summary Hospital-level Mortality Indicator
 change_18_fce,CHANGE_2017_2018_ADMISSIONS,Change 17/18 to 18/19 in Total inpatient admissions
 change_18_op_cost,CHANGE_2017_2018_OPERATING_COST,Change 17/18 to 18/19 in Total Operating Cost (£ million)
 consultants_percent,CONSULTANTS_PERCENT,Consultants (% of all staff)
 non_ae_doc,NON_EMERGENCY_MEDICS,Consultants (FTE excluding A&E)
-consultants,SIMPLE_CONSULTANTS_FTE,Consultants (FTE)
+consultants,CONSULTANTS,Consultants (FTE)
 consultants_sq,CONSULTANTS_SQ,Consultants (FTE) squared
 cqc_rating,CQC_RATING,CQC Overall Rating
 cqc_well_led_rating,CQC_WELL_LED_RATING,CQC Well Led Rating
@@ -120,9 +77,6 @@ fte_clin_ratio,MANAGER_CLINICIAN_RATIO,Manager to clinical staff ratio
 man_percent,MANAGERS_PERCENT,Managers (% of all staff)
 simple_fte,SIMPLE_MANAGERS_FTE,Managers (FTE - basic definition)
 simple_fte_sq,SIMPLE_MANAGERS_FTE_SQ,Managers (FTE basic definition) squared
-fte_per_ten_mil,MAN_FTE_PER_TEN_MIL_OC,Managers (FTE per £10 million operating cost)
-fte_per_ten_beds,MAN_FTE_PER_10_BED,Managers (FTE per 10 beds)
-fte_fce,MAN_FTE_PER_1000_FCE,Managers (FTE per 1000 admissions)
 fte,MANAGERS,Managers (FTE)
 fte_sq,MANAGERS_SQ,Managers (FTE) squared
 fin_pos_perc,NET_FINANCIAL_POSITION_PERCENT,Net financial position (% of operating cost)
@@ -137,8 +91,6 @@ other_clinical_percent,OTHER_CLINICAL_STAFF_PERCENT,Other clinical (% of all sta
 other_clinical,OTHER_CLINICAL_STAFF,Other clinical (FTE)
 other_non_clinical_percent,OTHER_STAFF_PERCENT,Other non-clinical (% of all staff)
 other_non_clinical,OTHER_STAFF,Other non-clinical (FTE)
-spend_quality,QUALITY_WEIGHTED_SPEND,Quality adjusted (£ per 1000 admissions)
-fte_quality,QUALITY_WEIGHTED_FTE,Quality adjusted (FTE per 1000 admissions)
 rtt,RTT_SCORE,Referral to treatment in 18 weeks (%)
 specialist,SPECIALIST,Specialist status
 shmi,SHMI,Summary Hospital-level Mortality Indicator

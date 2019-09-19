@@ -43,7 +43,7 @@ shinyUI(
 	    
 	    checkboxInput("trend_line", label="Show linear trend line on the plot", value=TRUE),
 
-	    checkboxInput("outliers", label="Include top and bottom 5% of trusts (management %)", value=TRUE),
+	    checkboxInput("outliers", label="Include top and bottom 2.5% of trusts (management %)", value=TRUE),
 
 	    checkboxInput("log_x_var", label="Log the x-axis variable", value=FALSE),
 
@@ -115,7 +115,7 @@ tabPanel("Managment Definition",
                           "As percentage of all staff" = "man_percent",
                           "Unadjusted" = "fte"), 
                      selected="man_percent"),
-                     checkboxInput("outliers_man", label="Include top and bottom 5% of trusts (management %)", value=TRUE),
+                     checkboxInput("outliers_man", label="Include top and bottom 2.5% of trusts (management %)", value=TRUE),
                      checkboxInput("specialist_hist_man", label="Include specialist hospitals", value=TRUE)
          ),
          mainPanel(
@@ -147,7 +147,7 @@ tabPanel("Managment Definition",
                                               "Variable to plot distribution of:",
                                               all_vars, 
                                               selected="ae"),
-                                  checkboxInput("outliers_hist", label="Include top and bottom 5% of trusts (management %)", value=TRUE),
+                                  checkboxInput("outliers_hist", label="Include top and bottom 2.5% of trusts (management %)", value=TRUE),
                                   checkboxInput("specialist_hist", label="Include specialist hospitals", value=TRUE),
                                   checkboxInput("show_titles_hist", label="Show chart title", value=FALSE),
                                   downloadButton("download_raw_data", "Download Full Dataset in CSV format")
@@ -195,7 +195,7 @@ tabPanel("Ranking Table",
              
              checkboxInput("all_outcomes_reg", label="Restrict to trusts that have data on all outcomes", value=TRUE),
              checkboxInput("specialist_reg", label="Include specialist trusts", value=TRUE),
-             checkboxInput("outliers_reg", label="Include top and bottom 5% of trusts (management %)", value=TRUE),
+             checkboxInput("outliers_reg", label="Include top and bottom 2.5% of trusts (management %)", value=TRUE),
              checkboxInput("mean_centre", label="Mean centre covariates", value=TRUE),
              checkboxInput("fixed_effects", label="Include trust and year fixed effects", value=FALSE),
              checkboxInput("log_dep_vars", label="Log dependent variables", value=FALSE),
