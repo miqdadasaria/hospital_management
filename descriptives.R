@@ -593,10 +593,11 @@ manager_counts = function(managers, acute_providers, specialist, year, include_o
 }
 
 ##### run regressions ####
-run_regression = function(acute_providers, variables, dependent_vars, independent_vars, mean_centre, log_dep_vars, log_indep_vars, interactions, output, specialist, include_outliers, all_outcomes, fixed_effects, year, labels){
+run_regression = function(acute_providers, variables, dependent_vars, independent_vars, log_dep_vars, log_indep_vars, interactions, output, specialist, include_outliers, all_outcomes, fixed_effects, year, labels, balanced){
   
   independent_vars_string = vector(mode="character")
   independent_vars_labels = vector(mode="character")
+  dependent_vars_string = vector(mode="character")
   dependent_vars_labels = vector(mode="character")
   year_labels = vector(mode="character")
   
@@ -611,13 +612,6 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
       group_by(YEAR) %>%
       filter(MANAGERS_PERCENT>quantile(MANAGERS_PERCENT,probs=0.025) & MANAGERS_PERCENT<quantile(MANAGERS_PERCENT,probs=0.975)) %>%
       ungroup()
-  }
-  
-  if(all_outcomes){
-    for(y_var in dependent_vars){
-      y = get_variable(y_var, variables)
-      acute_providers = acute_providers %>% drop_na(y$variable)
-    }
   }
   
   if("casemix" %in% independent_vars){
@@ -648,12 +642,11 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
     formula_independents = paste(independent_vars_string, collapse=" + ")
   }
   
-  independent_vars_data = acute_providers %>% select(c("YEAR","ORG_CODE",gsub("log\\(|)","",independent_vars_string)))
-  if(mean_centre){
-    independent_vars_data = independent_vars_data %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
-  }
-  regressions = list()
-  regression_se = list()
+  independent_vars_data = acute_providers %>% select(c("YEAR","ORG_CODE",gsub("log\\(|)","",independent_vars_string))) %>% drop_na()
+  # if(mean_centre){
+  #   independent_vars_data = independent_vars_data %>% mutate_if(is.numeric,scale,center=TRUE,scale=FALSE)
+  # }
+  
   for(y_var in dependent_vars){
     y = get_variable(y_var, variables)
     if(log_dep_vars){
@@ -666,25 +659,40 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
       dep_var = y$variable
       dep_var_label = y$label
     }
+    dependent_vars_string = c(dependent_vars_string, dep_var)
     dependent_vars_labels = c(dependent_vars_labels, dep_var_label)
-    reg_formula = as.formula(paste(dep_var,formula_independents,sep=" ~ "))
-    panel_data = pdata.frame(bind_cols(independent_vars_data,acute_providers%>%select(y$variable)), index=c("ORG_CODE","YEAR"), drop.index=FALSE, row.names=TRUE)
+  }
+  
+  regressions = list()
+  regression_se = list()
+  
+  dep_vars_data = acute_providers %>% select(c("YEAR","ORG_CODE",gsub("log\\(|)","",dependent_vars_string)))
+  if(all_outcomes){
+    dep_vars_data = dep_vars_data %>% drop_na()
+  }
+  
+  panel_data = pdata.frame(inner_join(independent_vars_data,dep_vars_data,by=c("YEAR","ORG_CODE")), index=c("ORG_CODE","YEAR"), drop.index=FALSE, row.names=TRUE)
+  if(balanced){
     panel_data = make.pbalanced(panel_data,"shared.individuals")
+  }
+  
+  for(dep_var in dependent_vars_string){
+    reg_formula = as.formula(paste(dep_var,formula_independents,sep=" ~ "))
     if(fixed_effects){
       fe_model = plm(reg_formula, 
                      data = panel_data,
                      model = "within", 
                      effect = "twoways")
       
-      regressions[[y$variable]] = fe_model
+      regressions[[dep_var]] = fe_model
       vcov = try(vcovHC(fe_model, type="sss", cluster="group"), TRUE)
       if(grepl("Error", vcov[1])){
         vcov=vcov(fe_model)
-        print(paste0("Error calculating clustered standard errors for: ", y$label, " using default stadard errors"))
+        print(paste0("Error calculating clustered standard errors for: ", dep_var, " using default stadard errors"))
       }
     } else {
         lm_model = lm(reg_formula, data=panel_data)
-        regressions[[y$variable]] = lm_model
+        regressions[[dep_var]] = lm_model
         vcov = vcov(lm_model)
         if("year" %in% independent_vars){
           if(panel_data %>% select(YEAR) %>% n_distinct() > 1){
@@ -692,7 +700,7 @@ run_regression = function(acute_providers, variables, dependent_vars, independen
           }
         }
     }
-    regression_se[[y$variable]] = sqrt(diag(vcov))
+    regression_se[[dep_var]] = sqrt(diag(vcov))
   }
   
   if("Financial Year" %in% independent_vars_labels){
@@ -1113,12 +1121,17 @@ descriptives = function(acute_providers, percentage){
   return(staff_summary)
 }
 
-create_summary_tables = function(year, specialist, include_outliers, all_outcomes, all_paygrades, file_prefix){
+create_summary_tables = function(year, specialist, include_outliers, all_outcomes, all_paygrades, file_prefix, balanced){
   acute_providers = create_sample_providers_dataset("pooled", specialist, include_outliers, all_outcomes, all_paygrades)
-  acute_providers = acute_providers %>% filter(YEAR %in% c("2018","2017","2016"))
+  acute_providers = acute_providers %>% filter(YEAR %in% 2016:2018)
   panel_data = pdata.frame(acute_providers, index=c("ORG_CODE","YEAR"), drop.index=FALSE, row.names=TRUE)
   panel_data = make.pbalanced(panel_data,"shared.individuals")
+  
   acute_providers = panel_data %>% filter(YEAR==year) %>% mutate(YEAR=year, ORG_CODE=as.character(ORG_CODE))
+  
+  provider_list = acute_providers %>% select(ORG_NAME,ORG_CODE,MANAGERS_PERCENT,MANAGERS,MANAGEMENT_SPEND,NHS_SS) %>% arrange(ORG_NAME)
+  names(provider_list) = c("Trust Name","Organisation Code", "Managers (% of all staff)" , "Managers (FTE)" , "Spend on Management (£ millions)" ,"Staff Survey Management Score")
+  write_csv(provider_list,paste0("figures/",file_prefix,"_provider_list_",year,".csv"))
   
   staff_breakdown_numbers = descriptives(acute_providers, FALSE)
   
@@ -1343,7 +1356,6 @@ regressions_for_publication = function(){
                  variable_definitions, 
                  dependent_vars, 
                  c("fte", "fte_sq", independent_vars), 
-                 mean_centre=FALSE, 
                  log_dep_vars=FALSE, 
                  log_indep_vars=FALSE, 
                  interactions=FALSE, 
@@ -1353,7 +1365,8 @@ regressions_for_publication = function(){
                  all_outcomes=TRUE, 
                  fixed_effects=TRUE,
                  year="pooled",
-                 labels=TRUE)
+                 labels=TRUE,
+                 balanced=TRUE)
   
   sink(file="tables/basecase_fte_regressions.tex")
   cat(format_basecase_regression_table(regression_results_fte_levels,
@@ -1365,7 +1378,6 @@ regressions_for_publication = function(){
                                                  variable_definitions, 
                                                  dependent_vars, 
                                                  c("fte", independent_vars), 
-                                                 mean_centre=FALSE, 
                                                  log_dep_vars=TRUE, 
                                                  log_indep_vars=TRUE, 
                                                  interactions=FALSE, 
@@ -1375,7 +1387,8 @@ regressions_for_publication = function(){
                                                  all_outcomes=TRUE, 
                                                  fixed_effects=TRUE,
                                                  year="pooled",
-                                                 labels=TRUE)
+                                                 labels=TRUE,
+                                                 balanced=TRUE)
   sink(file="tables/basecase_fte_log_regressions.tex")
   cat(format_basecase_regression_table(regression_results_fte_logs,
                                        caption="Log Management (FTE) regressions for selected NHS Trusts between 2016/17 - 2018/19",
@@ -1386,7 +1399,6 @@ regressions_for_publication = function(){
                                                  variable_definitions, 
                                                  dependent_vars, 
                                                  c("spend", "spend_sq", independent_vars), 
-                                                 mean_centre=FALSE, 
                                                  log_dep_vars=FALSE, 
                                                  log_indep_vars=FALSE, 
                                                  interactions=FALSE, 
@@ -1396,7 +1408,8 @@ regressions_for_publication = function(){
                                                  all_outcomes=TRUE, 
                                                  fixed_effects=TRUE,
                                                  year="pooled",
-                                                 labels=TRUE)
+                                                 labels=TRUE,
+                                                 balanced=TRUE)
   sink(file="tables/basecase_spend_regressions.tex")
   cat(format_basecase_regression_table(regression_results_spend_levels,
                                        caption="Management spend (£) regressions for selected NHS Trusts between 2016/17 - 2018/19",
@@ -1407,7 +1420,6 @@ regressions_for_publication = function(){
                                                variable_definitions, 
                                                dependent_vars, 
                                                c("spend", independent_vars), 
-                                               mean_centre=FALSE, 
                                                log_dep_vars=TRUE, 
                                                log_indep_vars=TRUE, 
                                                interactions=FALSE, 
@@ -1417,7 +1429,8 @@ regressions_for_publication = function(){
                                                all_outcomes=TRUE, 
                                                fixed_effects=TRUE,
                                                year="pooled",
-                                               labels=TRUE)
+                                               labels=TRUE,
+                                               balanced=FALSE)
   sink(file="tables/basecase_spend_log_regressions.tex")
   cat(format_basecase_regression_table(regression_results_spend_logs,
                                        caption="Log Management spend (£) regressions for selected NHS Trusts between 2016/17 - 2018/19",
@@ -1478,4 +1491,3 @@ produce_figures_and_tables_for_paper = function(){
   # produce regressions for paper and appendix
   regressions_for_publication()
 }
-
