@@ -1,6 +1,7 @@
 library("tidyverse")
 library("lubridate")
 library("RSQLite")
+library("scales")
 
 db_file = "data/NHS_management.sqlite3"
 con = dbConnect(SQLite(), dbname=db_file)
@@ -19,7 +20,7 @@ acute_trusts = tbl(con, "provider") %>%
 
 dbDisconnect(con)
 
-acute_trusts = acute_trusts %>% filter(ORG_TYPE=="Acute") %>% select(ORG_CODE)
+acute_trusts = acute_trusts %>% filter(ORG_TYPE=="Acute", SPECIALIST==0) %>% select(ORG_CODE)
 
 esr_2016_2017_2018 = 
   bind_rows(
@@ -125,37 +126,23 @@ as.month = function(month_name){
 
 esr = esr %>% 
   mutate(YEAR = substr(`Tm End Date`,1,4), MONTH = as.month(substr(`Tm End Date`,6,9)), DATE = paste("01",MONTH,YEAR,sep="/")) %>%
-  mutate(ORG_CODE = `Org Code`)
+  mutate(ORG_CODE = `Org Code`) %>%
+  inner_join(acute_trusts)
 
 esr_medics = esr_medics %>% 
   mutate(YEAR = substr(`Tm End Date`,1,4), MONTH = as.month(substr(`Tm End Date`,6,9)), DATE = paste("01",MONTH,YEAR,sep="/")) %>%
-  mutate(ORG_CODE = `Org Code`)
-
-all_england = esr %>% 
-  filter(HEE_Region_Name=='England', `Staff Group` %in% c("Manager", "Senior manager", "NonMed Total")) %>%
-  select(DATE,STAFF_GROUP = 'Staff Group', FTE=Table4NonMedFTE)
-
-all_england_medics = bind_rows(esr_medics %>% 
-  filter(HEE_Region_Name=='England',HCHS_GROUP_EQUIVALENT=="Consultant") %>%
-  select(DATE,STAFF_GROUP = HCHS_GROUP_EQUIVALENT, FTE=Table2DocFTE),
-  esr_medics %>%
-  group_by(DATE) %>%
-  summarise(FTE = sum(Table2DocFTE)) %>%
-    mutate(STAFF_GROUP = 'Med Total'))
-
-all_england = bind_rows(all_england, all_england_medics)
+  mutate(ORG_CODE = `Org Code`) %>%
+  inner_join(acute_trusts)
 
 acute_england = esr %>% 
   filter(`Staff Group` %in% c("Manager", "Senior manager", "NonMed Total")) %>%
-  inner_join(acute_trusts) %>%
-  select(DATE,ORG_CODE, STAFF_GROUP = 'Staff Group', FTE=Table4NonMedFTE) %>%
+  select(DATE, ORG_CODE, STAFF_GROUP = 'Staff Group', FTE=Table4NonMedFTE) %>%
   group_by(DATE, STAFF_GROUP) %>%
   summarise(FTE = sum(FTE)) %>%
   ungroup()
 
 acute_england_medics= bind_rows(esr_medics %>% 
-  inner_join(acute_trusts) %>%
-  select(DATE,ORG_CODE, FTE=Table2DocFTE) %>%
+  select(DATE, ORG_CODE, FTE=Table2DocFTE) %>%
   group_by(DATE) %>%
   summarise(FTE = sum(FTE)) %>%
   mutate(STAFF_GROUP="Med Total") %>%
@@ -171,8 +158,9 @@ acute_england_medics= bind_rows(esr_medics %>%
 
 acute_england = bind_rows(acute_england, acute_england_medics)
 
-plot_management_timeseries = function(data, esr_data, title){
-  graph_data = bind_rows(data, 
+plot_management_timeseries = function(data, title){
+  data = data %>% filter(dmy(DATE)>dmy("31/08/2012"))
+  graph_data = bind_rows( 
     data %>%
     filter(STAFF_GROUP %in% c("Manager", "Senior manager")) %>%
     group_by(DATE) %>%
@@ -186,21 +174,21 @@ plot_management_timeseries = function(data, esr_data, title){
     summarise(FTE = sum(FTE)) %>%
     mutate(STAFF_GROUP="All Staff Total") %>%
     ungroup() %>%
-    select(DATE, STAFF_GROUP, FTE),
-    esr_data) %>% 
+    select(DATE, STAFF_GROUP, FTE)) %>% 
     spread(STAFF_GROUP, FTE) %>%
-    mutate(`Manager %` = 100*`Manager Total`/(`NonMed Total`+`Med Total`)) %>%
+    mutate(`Manager %` = 100*`Manager Total`/(`All Staff Total`)) %>%
     gather(key=STAFF_GROUP, value=FTE, -DATE) %>%
-    mutate(DATE = dmy(DATE), STAFF_GROUP = factor(STAFF_GROUP, levels = c("Manager","Senior manager","Manager Total", "NonMed Total", "Consultant", "Med Total", "All Staff Total", "Manager %"))) %>%
+    mutate(DATE = dmy(DATE), STAFF_GROUP = factor(STAFF_GROUP, levels = c("Manager Total", "All Staff Total", "Manager %"))) %>%
     arrange(DATE)
 
 
-  plot = ggplot(data=graph_data %>% filter(STAFF_GROUP %in% c("Manager Total","All Staff Total","Manager %")),aes(x=DATE, y=FTE)) + 
+  plot = ggplot(data=graph_data, aes(x=DATE, y=FTE)) + 
     geom_line() +
     geom_point(colour="darkred") +
     geom_vline(xintercept=dmy("01/09/2015"), linetype="dashed", colour="darkgrey") +
     scale_x_date(date_labels="%b %Y", breaks="6 months") +
     facet_grid(STAFF_GROUP~., scales = "free") +
+    scale_y_continuous(labels = comma, limits=c(0,NA)) +
     ggtitle(title) +
     theme_bw() + theme(panel.grid.major = element_blank(), 
                        panel.grid.minor = element_blank(),
@@ -211,12 +199,7 @@ plot_management_timeseries = function(data, esr_data, title){
  return(plot)
 }
 
-plot_all_nhs = plot_management_timeseries(data=all_england, esr_2016_2017_2018, title = "Total managers across acute NHS trusts only in England") 
-
-plot_acute_trusts = plot_management_timeseries(data=acute_england, esr_2016_2017_2018_acute, title = "")#Total managers across acute NHS trusts only in England") 
-
-
-#ggsave("figures/all_nhs_manager.png", plot_all_nhs, width=14, height=10, units="in", dpi="print")
+plot_acute_trusts = plot_management_timeseries(data=bind_rows(acute_england, esr_2016_2017_2018_acute), title = "")#Total managers across acute NHS trusts only in England") 
 
 ggsave("figures/acute_nhs_manager.png",plot_acute_trusts, width=14, height=10, units="in", dpi="print")
 

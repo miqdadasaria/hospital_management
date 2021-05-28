@@ -1,31 +1,31 @@
-﻿code,variable,label
-ae,AE_SCORE,A&E 4 hour wait target met (%)
-ae_doc,EMERGENCY_MEDICS,A&E consultants (FTE)
+code,variable,label
+ae,AE_SCORE,A&E waiting time target met (%)
+ae_doc,EMERGENCY_MEDICS,A&E senior doctors (FTE)
 all_clinical_percent,CLINICAL_STAFF_PERCENT,All clinical staff (% of all staff)
 all_clinical,CLINICAL_STAFF,All clinical staff (FTE)
 doctors_percent,DOCTORS_PERCENT,All doctors (% of all staff)
 doctors,DOCTORS,All doctors (FTE)
-all_staff,ALL_STAFF,All staff (FTE)
+all_staff,ALL_STAFF,Number of staff (FTE)
 beds_per_man,BEDS_PER_MAN,Average beds per manager
 fce_k_per_man,FCE_PER_MAN,Average inpatient admissions per manager
-oc_mil_per_man,OC_MIL_PER_MAN,Average operating cost per manager (£ million)
+oc_mil_per_man,OC_MIL_PER_MAN,Average budget per manager (£ million)
 staff_per_man,STAFF_PER_MAN,Average staff per manager
-beds,BEDS,Beds (total number)
+beds,BEDS,Number of beds
 beds_sq,BEDS_SQ,Beds (total number) squared
-cardiologists,CARDIOLOGISTS,Cardiology consultants (FTE)
-change_18_ae,CHANGE_2017_2018_AE_SCORE,Change 17/18 to 18/19 A&E 4 hour wait target met (%)
-change_18_ae_doc,CHANGE_2017_2018_EMERGENCY_MEDICS,Change 17/18 to 18/19 in A&E consultants (FTE)
+cardiologists,CARDIOLOGISTS,Cardiology senior doctors (FTE)
+change_18_ae,CHANGE_2017_2018_AE_SCORE,Change 17/18 to 18/19 A&E waiting time
+change_18_ae_doc,CHANGE_2017_2018_EMERGENCY_MEDICS,Change 17/18 to 18/19 in A&E senior doctors (FTE)
 change_18_all_clinical_percent,CHANGE_2017_2018_CLINICAL_STAFF_PERCENT,Change 17/18 to 18/19 in All clinical staff (% of all staff)
 change_18_all_clinical,CHANGE_2017_2018_CLINICAL_STAFF,Change 17/18 to 18/19 in All clinical staff (FTE)
 change_18_doctors_percent,CHANGE_2017_2018_DOCTORS_PERCENT,Change 17/18 to 18/19 in All doctors (% of all staff)
 change_18_doctors,CHANGE_2017_2018_DOCTORS,Change 17/18 to 18/19 in All doctors (FTE)
 change_18_all_staff,CHANGE_2017_2018_ALL_STAFF,Change 17/18 to 18/19 in All staff (FTE)
-change_18_cardiologists,CHANGE_2017_2018_CARDIOLOGISTS,Change 17/18 to 18/19 in Cardiology consultants (FTE)
-change_18_consultants_percent,CHANGE_2017_2018_CONSULTANTS_PERCENT,Change 17/18 to 18/19 in Consultants (% of all staff)
-change_18_non_ae_doc,CHANGE_2017_2018_NON_EMERGENCY_MEDICS,Change 17/18 to 18/19 in Consultants (FTE excluding A&E)
-change_18_consultants,CHANGE_2017_2018_CONSULTANTS,Change 17/18 to 18/19 in Consultants (FTE)
+change_18_cardiologists,CHANGE_2017_2018_CARDIOLOGISTS,Change 17/18 to 18/19 in Cardiology senior doctors (FTE)
+change_18_consultants_percent,CHANGE_2017_2018_CONSULTANTS_PERCENT,Change 17/18 to 18/19 in senior doctors (% of all staff)
+change_18_non_ae_doc,CHANGE_2017_2018_NON_EMERGENCY_MEDICS,Change 17/18 to 18/19 in senior doctors (FTE excluding A&E)
+change_18_consultants,CHANGE_2017_2018_CONSULTANTS,Change 17/18 to 18/19 in senior doctors (FTE)
 change_18_female,CHANGE_2017_2018_FEMALE_ADMISSIONS,Change 17/18 to 18/19 in Female share of inpatient admissions (%)
-change_18_fce_per_non_ae_consultant,CHANGE_2017_2018_FCE_PER_NON_AE_CONSULTANT,Change 17/18 to 18/19 in Inpatient admissions per consultant (excluding A&E)
+change_18_fce_per_non_ae_consultant,CHANGE_2017_2018_FCE_PER_NON_AE_CONSULTANT,Change 17/18 to 18/19 in Inpatient admissions per senior doctor (excluding A&E)
 change_18_junior_doctors_percent,CHANGE_2017_2018_JUNIOR_DOCTORS_PERCENT,Change 17/18 to 18/19 in Junior Doctors (% of all staff)
 change_18_junior_doctors,CHANGE_2017_2018_JUNIOR_DOCTORS,Change 17/18 to 18/19 in Junior Doctors (FTE)
 change_18_spend,CHANGE_2017_2018_MANAGEMENT_SPEND,Change 17/18 to 18/19 in Management spend (£ million)
@@ -47,14 +47,15 @@ change_18_other_clinical_percent,CHANGE_2017_2018_OTHER_CLINICAL_STAFF_PERCENT,C
 change_18_other_clinical,CHANGE_2017_2018_OTHER_CLINICAL_STAFF,Change 17/18 to 18/19 in Other clinical (FTE)
 change_18_other_non_clinical_percent,CHANGE_2017_2018_OTHER_STAFF_PERCENT,Change 17/18 to 18/19 in Other non-clinical (% of all staff)
 change_18_other_non_clinical,CHANGE_2017_2018_OTHER_STAFF,Change 17/18 to 18/19 in Other non-clinical (FTE)
-change_18_rtt,CHANGE_2017_2018_RTT_SCORE,Change 17/18 to 18/19 in Referral to treatment in 18 weeks (%)
+change_18_rtt,CHANGE_2017_2018_RTT_SCORE,Change 17/18 to 18/19 in Elective waiting time
 change_18_shmi,CHANGE_2017_2018_SHMI,Change 17/18 to 18/19 in Summary Hospital-level Mortality Indicator
 change_18_fce,CHANGE_2017_2018_ADMISSIONS,Change 17/18 to 18/19 in Total inpatient admissions
 change_18_op_cost,CHANGE_2017_2018_OPERATING_COST,Change 17/18 to 18/19 in Total Operating Cost (£ million)
-consultants_percent,CONSULTANTS_PERCENT,Consultants (% of all staff)
-non_ae_doc,NON_EMERGENCY_MEDICS,Consultants (FTE excluding A&E)
-consultants,CONSULTANTS,Consultants (FTE)
-consultants_sq,CONSULTANTS_SQ,Consultants (FTE) squared
+consultants_percent,CONSULTANTS_PERCENT,Senior doctors (% of all staff)
+non_ae_doc,NON_EMERGENCY_MEDICS,Senior doctors (FTE excluding A&E)
+consultants,CONSULTANTS,Senior doctors (FTE)
+consultants_sq,CONSULTANTS_SQ,Senior doctors (FTE) squared
+consultants_per_man,CONSULTANTS_PER_MAN,Average senior doctors per manager (FTE)
 cqc_rating,CQC_RATING,CQC Overall Rating
 cqc_well_led_rating,CQC_WELL_LED_RATING,CQC Well Led Rating
 female,FEMALE_ADMISSIONS,Female share of inpatient admissions (%)
@@ -67,16 +68,18 @@ age_45_59,AGE_45_59,Inpatient admissions age 45-59 (%)
 age_60_74,AGE_60_74,Inpatient admissions age 60-74 (%)
 age_75_89,AGE_75_89,Inpatient admissions age 75-89 (%)
 age_90,AGE_90_PLUS,Inpatient admissions age 90+ (%)
-fce_per_non_ae_consultant,FCE_PER_NON_AE_CONSULTANT,Inpatient admissions per consultant (excluding A&E)
+fce_per_non_ae_consultant,FCE_PER_NON_AE_CONSULTANT,Inpatient admissions per senior doctor (excluding A&E)
+fce_per_consultant,FCE_PER_CONSULTANT,Inpatient admissions per senior doctor
 junior_doctors_percent,JUNIOR_DOCTORS_PERCENT,Junior Doctors (% of all staff)
 junior_doctors,JUNIOR_DOCTORS,Junior Doctors (FTE)
 spend,MANAGEMENT_SPEND,Management spend (£ million)
 spend_fce,MAN_SPEND_PER_1000_FCE,Management spend (£ per 1000 admissions)
 spend_sq,MANAGEMENT_SPEND_SQ,Management spend (£ million) squared
+man_spend_percent,MANAGEMENT_SPEND_PERCENT,Management spend (% of operating cost)
 fte_clin_ratio,MANAGER_CLINICIAN_RATIO,Manager to clinical staff ratio
 man_percent,MANAGERS_PERCENT,Managers (% of all staff)
 simple_fte,SIMPLE_MANAGERS_FTE,Managers (FTE - basic definition)
-simple_fte_sq,SIMPLE_MANAGERS_FTE_SQ,Managers (FTE basic definition) squared
+simple_fte_sq,SIMPLE_MANAGERS_FTE_SQ,Managers (FTE - basic definition) squared
 fte,MANAGERS,Managers (FTE)
 fte_sq,MANAGERS_SQ,Managers (FTE) squared
 fin_pos_perc,NET_FINANCIAL_POSITION_PERCENT,Net financial position (% of operating cost)
@@ -91,8 +94,8 @@ other_clinical_percent,OTHER_CLINICAL_STAFF_PERCENT,Other clinical (% of all sta
 other_clinical,OTHER_CLINICAL_STAFF,Other clinical (FTE)
 other_non_clinical_percent,OTHER_STAFF_PERCENT,Other non-clinical (% of all staff)
 other_non_clinical,OTHER_STAFF,Other non-clinical (FTE)
-rtt,RTT_SCORE,Referral to treatment in 18 weeks (%)
+rtt,RTT_SCORE,Elective waiting time target met (%)
 specialist,SPECIALIST,Specialist status
 shmi,SHMI,Summary Hospital-level Mortality Indicator
 fce,ADMISSIONS,Total inpatient admissions
-op_cost,OPERATING_COST,Total Operating Cost (£ million)
+op_cost,OPERATING_COST,Total budget (£ million)
